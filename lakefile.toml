@@ -1,0 +1,38 @@
+name = "controlsystems"
+version = "0.1.0"
+defaultTargets = ["ControlSystems"]
+# Optional: Add test/lint drivers if you create them later
+# testDriver = "runTests"
+# lintDriver = "batteries/runLinter"
+
+[leanOptions]
+# Enable standard Mathlib linters for consistency
+weak.linter.mathlibStandardSet = true
+weak.linter.flexible = true
+
+# Disable specific linters that might be noisy or not applicable yet
+weak.linter.pythonStyle = false
+weak.linter.checkInitImports = false
+weak.linter.allScriptsDocumented = false
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+# Use a specific stable revision or "main" for latest
+rev = "v4.27.0" 
+
+# If you want to keep Cslib as a dependency, uncomment below:
+# [[require]]
+# name = "cslib"
+# git = "https://github.com/your-username/cslib.git"
+# rev = "main"
+
+[[lean_lib]]
+name = "ControlSystems"
+# This glob imports all files under the ControlSystems/ folder
+globs = ["ControlSystems.+"]
+
+# Optional: Separate test library
+# [[lean_lib]]
+# name = "ControlSystemsTests"
+# globs = ["ControlSystemsTests.+"]
