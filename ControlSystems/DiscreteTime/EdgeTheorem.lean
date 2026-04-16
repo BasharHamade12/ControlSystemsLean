@@ -88,4 +88,56 @@ theorem Product_of_Schur_Stable (f : Polynomial ℝ) (g : Polynomial ℝ) :
   -- Case 2: a is a root of g → apply Schur stability of g
   · exact hg a hga
 
+
+abbrev CoeffVec (n : ℕ) := Fin (n + 1) → ℝ
+
+/--
+A polytope Ω in coefficient space ℝ^{n+1}.
+It is defined as the convex hull of a finite set of vertices V.
+This matches the PDF: "the convex hull of a finite number of points".
+-/
+structure Polytope (n : ℕ) where
+  vertices : Finset (CoeffVec n)     -- finite set of vertex polynomials
+  nonempty  : vertices.Nonempty       -- at least one vertex
+
+/-- The actual set Ω ⊆ ℝ^{n+1} as a convex hull -/
+def Polytope.Ω (P : Polytope n) : Set (CoeffVec n) :=
+  convexHull ℝ (P.vertices : Set (CoeffVec n))
+
+open Polynomial
+
+/-- Convert a coefficient vector α : Fin(n+1) → ℝ to a polynomial
+    δ(s) = α(0) + α(1)·s + ... + α(n)·sⁿ
+-/
+noncomputable def polyOfVec {n : ℕ} (α : CoeffVec n) : Polynomial ℝ :=
+  ∑ j : Fin (n + 1), Polynomial.monomial j.val (α j)
+
+def RootSpace (W : Polytope n) : Set (ℝ) :=
+  { s | ∃ δ ∈ W.Ω,
+      (polyOfVec δ).IsRoot s
+  }
+
+/--
+def HyperPlaneAffineSet (f : Polynomial ℝ) (c : ℝ) : Set ℝ :=
+  { x | f.eval x = c }
+
+
+structure SupportingHyperplane (f : Polynomial ℝ) (c : ℕ ) (P : Polytope n) where
+   H : HyperPlaneAffineSet f c
+   inclusion : ∀ x ∈ P.Ω , f.eval x ≤ c
+   intersection : Ω_1 ∩ H ≠ ∅
+-/
+def Hyperplane {n : ℕ}
+    (f : CoeffVec n →ₗ[ℝ] ℝ)
+    (c : ℝ) : Set (CoeffVec n) :=
+  { x | f x = c }
+
+structure SupportingHyperplane (P : Polytope n) where
+  f : CoeffVec n →ₗ[ℝ] ℝ
+  c : ℝ
+  nonzero : f ≠ 0
+  upper_bound : ∀ x ∈ P.Ω, f x ≤ c
+  touches : ∃ x ∈ P.Ω, f x = c
+
+  H : Set (CoeffVec n) := Hyperplane f c
 end CoeffBox
