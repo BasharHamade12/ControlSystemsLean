@@ -112,10 +112,14 @@ open Polynomial
 noncomputable def polyOfVec {n : ℕ} (α : CoeffVec n) : Polynomial ℝ :=
   ∑ j : Fin (n + 1), Polynomial.monomial j.val (α j)
 
-def RootSpace (W : Polytope n) : Set (ℝ) :=
-  { s | ∃ δ ∈ W.Ω,
-      (polyOfVec δ).IsRoot s
-  }
+
+def RootSpaceSet {n : ℕ}
+  (W : Set (CoeffVec n)) : Set ℂ :=
+  { s | ∃ δ ∈ W,
+      ((polyOfVec δ).map (algebraMap ℝ ℂ)).IsRoot s }
+
+def RootSpace (P : Polytope n) : Set ℂ :=
+  RootSpaceSet P.Ω
 
 /--
 def HyperPlaneAffineSet (f : Polynomial ℝ) (c : ℝ) : Set ℝ :=
@@ -138,6 +142,34 @@ structure SupportingHyperplane (P : Polytope n) where
   nonzero : f ≠ 0
   upper_bound : ∀ x ∈ P.Ω, f x ≤ c
   touches : ∃ x ∈ P.Ω, f x = c
-
   H : Set (CoeffVec n) := Hyperplane f c
+
+def ExposedFace_ (P : Polytope n) (hp : SupportingHyperplane P) :=
+  P.Ω ∩ hp.H
+
+def ExposedFace {n : ℕ} {P : Polytope n} (hp : SupportingHyperplane P) :
+    Set (CoeffVec n) :=
+  { x | x ∈ P.Ω ∧ hp.f x = hp.c }
+  -- equivalently: P.Ω ∩ hp.H
+
+open Affine
+
+/-- `E` is an exposed edge of `P` if it is an exposed face of affine dimension 1. -/
+def IsExposedEdge {n : ℕ} (P : Polytope n) (E : Set (CoeffVec n)) : Prop :=
+  ∃ hp : SupportingHyperplane P,
+    E = ExposedFace hp ∧
+    ∃ p q : CoeffVec n, p ≠ q ∧ E = segment ℝ p q
+open FiniteDimensional
+
+def ExposedEdge {n : ℕ} {P : Polytope n} (hp : SupportingHyperplane P) : Prop :=
+  Module.finrank ℝ (affineSpan ℝ (ExposedFace hp)).direction = 1
+
+lemma lemma61a
+  (P : Polytope n)
+  {s : ℂ}
+  (hs : s ∈ RootSpace P) :
+  ∃ hp : SupportingHyperplane P,
+    s ∈ RootSpaceSet (ExposedFace hp) := by
+  sorry
+
 end CoeffBox
