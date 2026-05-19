@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proof Dependency Tree</title>
+
+    <!-- Vis.js for network visualization -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+    <!-- MathJax v3 configuration -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            startup: {
+                ready: () => {
+                    MathJax.startup.defaultReady();
+                    MathJax.startup.promise.then(() => {
+                        initNetwork();
+                    });
+                }
+            }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+        </script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Proof Dependency Tree</h1>
+            <p>Freely draggable math nodes with overlap prevention</p>
+        </div>
+
+        <div id="network-wrapper">
+            <div id="loading"
+                style="position: absolute; top: 45%; width: 100%; text-align: center; font-size: 20px; color: #7f8c8d; z-index: 3;">
+                Initializing Physics & Math...
+            </div>
+            <div id="network"></div>
+            <div id="html-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <button onclick="fitNetwork()">Fit View</button>
+            <button onclick="resetZoom()">Center View</button>
+            <div class="slider-container" style="display: inline-block; margin-left: 20px; vertical-align: middle;">
+                <label for="zoomSlider" style="font-size: 14px; font-weight: bold; margin-right: 5px;">Zoom:</label>
+                <input type="range" id="zoomSlider" min="0.1" max="2.5" step="0.05" value="1.0"
+                    oninput="setZoom(this.value)">
+            </div>
+            <span style="font-size: 12px; color: #666; margin-left: 20px;">Click a node to expand/collapse its
+                children.</span>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var globalNetwork = null;
+        var htmlNodesMap = {};
+        var nodesDataset = null;
+        var edgesDataset = null;
+
+        function initNetwork() {
+            var rawNodes = [
+                { id: 1, label: 'EdgeTheorem', group: 'root', level: 0 },
+                { id: 2, label: 'Assumption 6.1', group: 'assumption', level: 1 },
+                { id: 3, label: 'Lemma 6.1:\nRoot Space Decomposition', group: 'lemma', level: 1 },
+                { id: 4, label: 'Lemma 6.2:\nBoundary of root space\nfor exposed Faces', group: 'lemma', level: 1 },
+                { id: 5, label: '1st case:\n$s_r \\in \\mathbb{R} \\land s_r \\in R(\\omega)$\n$\\Rightarrow \\exists$ exposed Edge $E$ of $\\omega$\ns.t $s_r \\in R(E)$', group: 'case', level: 2 },
+                { id: 6, label: '2nd case:\n$s_c \\in \\mathbb{C} \\land s_c \\in R(\\omega)$\n$\\Rightarrow \\exists$ exposed Face $F$ of $\\omega$\ns.t $s_c \\in R(F)$', group: 'case', level: 2 },
+                { id: 7, label: '1) Let $\\delta \\in \\omega$ with $\\delta(s_r)=0$.\nDef $P_{s_r}$ as hyperplane of\npolynomials with root $s_r$', group: 'step', level: 3 },
+                { id: 8, label: '2) Assume $m \\geq 2$.\n$P_{s_r} \\cap \\operatorname{aff}(\\Omega)$ is an affine subspace\nwith $\\dim[P_{s_r} \\cap \\operatorname{aff}(\\Omega)] \\geq 1$', group: 'step', level: 3 },
+                { id: 9, label: '3) Since $P_{s_r} \\cap \\operatorname{aff}(\\Omega)$ is nontrivial\nand intersects polytope $\\Omega$,\nit must intersect the relative boundary', group: 'step', level: 3 },
+                { id: 10, label: '4) Relative boundary of $\\Omega$ is union of\n$(m{-}1)$-dimensional exposed sets\n(exposed faces of codimension 1)', group: 'step', level: 3 },
+                { id: 11, label: '5) $\\exists (m{-}1)$-dimensional exposed set\n$\\Omega_{m-1}$ of $\\Omega$ such that\n$s_r \\in R(\\Omega_{m-1})$', group: 'step', level: 3 },
+                { id: 12, label: '6) If $\\dim[\\operatorname{aff}(\\Omega_{m-1})] \\geq 2$,\nrepeat steps 4–5 for $\\Omega_{m-1}$', group: 'step', level: 3 },
+                { id: 13, label: '7) Each repetition reduces dimension by ≥1.\nYields 1-dimensional exposed set\n$\\Omega_1$ (exposed edge $E$) with $s_r \\in R(E)$', group: 'step', level: 3 },
+                { id: 14, label: '8) Proof complete for $m \\geq 2$.\n(Case $m=1$ trivial: $\\Omega$ is already\nan exposed edge)', group: 'step', level: 3 }
+            ];
+
+            var edgesData = [
+                { from: 1, to: 2 }, { from: 1, to: 3 }, { from: 1, to: 4 },
+                { from: 3, to: 5 }, { from: 3, to: 6 },
+                { from: 5, to: 7 }, { from: 5, to: 8 }, { from: 5, to: 9 }, { from: 5, to: 10 },
+                { from: 5, to: 11 }, { from: 5, to: 12 }, { from: 5, to: 13 }, { from: 5, to: 14 }
+            ];
+
+            var containerOverlay = document.getElementById('html-overlay');
+            var visNodes = [];
+
+            rawNodes.forEach(function (node) {
+                var el = document.createElement('div');
+                el.className = 'html-node node-' + node.group;
+                el.innerHTML = node.label.replace(/\n/g, '<br/>');
+                containerOverlay.appendChild(el);
+                htmlNodesMap[node.id] = el;
+
+                visNodes.push({
+                    id: node.id,
+                    level: node.level,
+                    shape: 'box',
+                    widthConstraint: 320,
+                    heightConstraint: { minimum: 100 },
+                    color: { background: 'rgba(0,0,0,0)', border: 'rgba(0,0,0,0)' },
+                    font: { color: 'rgba(0,0,0,0)' }
+                });
+            });
+
+            MathJax.typesetPromise([containerOverlay]).then(function () {
+                document.getElementById('loading').style.display = 'none';
+
+                var containerNetwork = document.getElementById('network');
+                nodesDataset = new vis.DataSet(visNodes);
+                edgesDataset = new vis.DataSet(edgesData);
+                var data = { nodes: nodesDataset, edges: edgesDataset };
+
+                var options = {
+                    edges: {
+                        smooth: { type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.4 },
+                        color: '#2c3e50', width: 2, arrows: 'to'
+                    },
+                    layout: {
+                        hierarchical: {
+                            enabled: true,
+                            direction: 'LR',
+                            sortMethod: 'directed',
+                            levelSeparation: 450,
+                            nodeSpacing: 300,
+                            treeSpacing: 200
+                        }
+                    },
+                    physics: {
+                        enabled: false
+                    },
+                    interaction: { dragNodes: true, zoomView: true, dragView: true }
+                };
+
+                globalNetwork = new vis.Network(containerNetwork, data, options);
+
+                // Sync HTML elements with Canvas positions
+                globalNetwork.on("afterDrawing", function () {
+                    var scale = globalNetwork.getScale();
+                    var positions = globalNetwork.getPositions();
+                    Object.keys(htmlNodesMap).forEach(function (id) {
+                        var el = htmlNodesMap[id];
+                        // Object.keys returns strings, so we cast to Number if needed
+                        var numericId = isNaN(id) ? id : Number(id);
+                        var nodeData = nodesDataset.get(id) || nodesDataset.get(numericId);
+
+                        var pos = positions[id] || positions[numericId];
+
+                        if ((nodeData && nodeData.hidden) || !pos) {
+                            el.style.display = 'none';
+                        } else {
+                            el.style.display = 'flex';
+                            var domPos = globalNetwork.canvasToDOM({ x: pos.x, y: pos.y });
+                            el.style.left = domPos.x + 'px';
+                            el.style.top = domPos.y + 'px';
+                            el.style.transform = 'translate(-50%, -50%) scale(' + scale + ')';
+                        }
+                    });
+                });
+
+                // Node collapsibility on click
+                globalNetwork.on("click", function (params) {
+                    if (params.nodes.length > 0) {
+                        var clickedNodeId = params.nodes[0];
+                        var node = nodesDataset.get(clickedNodeId);
+                        var isCollapsed = node.collapsed || false;
+                        var newCollapsedStatus = !isCollapsed;
+
+                        nodesDataset.update({ id: clickedNodeId, collapsed: newCollapsedStatus });
+
+                        function getChildren(nodeId) {
+                            return edgesDataset.get().filter(function (e) { return e.from == nodeId; }).map(function (e) { return e.to; });
+                        }
+
+                        function recursivelySetHidden(id, hiddenStatus) {
+                            var children = getChildren(id);
+                            children.forEach(function (childId) {
+                                var childNode = nodesDataset.get(childId);
+                                nodesDataset.update({ id: childId, hidden: hiddenStatus });
+                                if (hiddenStatus === false && childNode.collapsed) {
+                                    // Do not unhide children of a child that is itself collapsed
+                                } else {
+                                    recursivelySetHidden(childId, hiddenStatus);
+                                }
+                            });
+                        }
+
+                        recursivelySetHidden(clickedNodeId, newCollapsedStatus);
+                    }
+                });
+
+                // Update zoom slider when zooming via mouse wheel
+                globalNetwork.on("zoom", function (params) {
+                    var slider = document.getElementById('zoomSlider');
+                    if (slider) {
+                        slider.value = params.scale;
+                    }
+                });
+
+                // Set initial scale to slider
+                document.getElementById('zoomSlider').value = globalNetwork.getScale();
+            });
+        }
+
+        function setZoom(scaleValue) {
+            if (globalNetwork) {
+                globalNetwork.moveTo({
+                    scale: parseFloat(scaleValue)
+                });
+            }
+        }
+
+        function fitNetwork() {
+            if (globalNetwork) {
+                globalNetwork.fit({ animation: true });
+                setTimeout(() => { document.getElementById('zoomSlider').value = globalNetwork.getScale(); }, 1200);
+            }
+        }
+
+        function resetZoom() {
+            if (globalNetwork) {
+                globalNetwork.moveTo({ position: { x: 0, y: 0 }, scale: 0.5, animation: true });
+                setTimeout(() => { document.getElementById('zoomSlider').value = 0.5; }, 1200);
+            }
+        }
+    </script>
+</body>
+
+</html>
