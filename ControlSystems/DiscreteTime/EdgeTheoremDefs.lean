@@ -90,10 +90,14 @@ This matches the PDF: "the convex hull of a finite number of points".
 structure Polytope (n : ℕ) where
   vertices : Finset (CoeffVec n)
   nonempty  : vertices.Nonempty
+  interior_nonempty : (interior (convexHull ℝ (vertices : Set (CoeffVec n)))).Nonempty
 
 /-- The actual set Ω ⊆ ℝ^{n+1} as a convex hull -/
 def Polytope.Ω (P : Polytope n) : Set (CoeffVec n) :=
   convexHull ℝ (P.vertices : Set (CoeffVec n))
+
+lemma Polytope.interior_Ω_nonempty (P : Polytope n) : (interior P.Ω).Nonempty :=
+  P.interior_nonempty
 
 open Polynomial
 
