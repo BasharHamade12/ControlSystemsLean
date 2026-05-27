@@ -529,8 +529,30 @@ private lemma gv_pos_from_interior {n : ℕ} (P : Polytope n) (g : CoeffVec n �
     g.toLinearMap v > 0 := by
   obtain ⟨δ_F, hδ_F_int, c, hc_pos, h_eq⟩ := h_from_interior
   have h_bound_in_Ω : δ_F + c • v ∈ P.Ω := by rw [← h_eq]; exact hδ_bound_in_Ω
-  have h_half_mem : δ_F + (1/2 : ℝ) • (c • v) ∈ interior P.Ω :=
-    h_convex_Ω.add_smul_mem_interior hδ_F_int h_bound_in_Ω ⟨by norm_num, by norm_num⟩
+  have h_half_mem : δ_F + (1/2 : ℝ) • (c • v) ∈ interior P.Ω := by
+    have h_eq :
+        δ_F + (1/2 : ℝ) • (c • v)
+          = (1/2 : ℝ) • δ_F + (1/2 : ℝ) • (δ_F + c • v) := by
+      simp [smul_add, add_smul, smul_smul]
+      ring_nf
+      simp [smul_add, add_smul, smul_smul]
+      ring
+      sorry -- TODO: calculation issue left
+
+
+    rw [h_eq]
+
+    have hmem : (1/2 : ℝ) • δ_F + (1/2 : ℝ) • (δ_F + c • v) ∈
+        openSegment ℝ δ_F (δ_F + c • v) := by
+      rw [openSegment_eq_image']
+      simp only [Set.mem_image]
+      refine ⟨1/2, ⟨by norm_num, by norm_num⟩, ?_⟩
+      simp [smul_add]
+      ring_nf
+      sorry -- TODO: calculation issue left
+
+    exact h_convex_Ω.openSegment_interior_self_subset_interior hδ_F_int h_bound_in_Ω hmem
+
   have h_simplify : δ_F + (1/2 : ℝ) • (c • v) = δ_bound - (c/2) • v := by
     calc
       δ_F + (1/2 : ℝ) • (c • v) = δ_F + ((c/2) • v) := by ring
