@@ -1,7 +1,47 @@
 module
 
 public import ControlSystems.Init
-public import Mathlib
+public import Mathlib.Algebra.Algebra.Basic
+public import Mathlib.Algebra.Module.Equiv.Defs
+public import Mathlib.Algebra.Module.LinearMap.Defs
+public import Mathlib.Algebra.Module.Submodule.Basic
+public import Mathlib.Algebra.Module.Submodule.Defs
+public import Mathlib.Algebra.Module.Submodule.LinearMap
+public import Mathlib.Algebra.Module.Submodule.Range
+public import Mathlib.Algebra.Polynomial.Basic
+public import Mathlib.Algebra.Polynomial.Eval.Defs
+public import Mathlib.Analysis.Convex.Basic
+public import Mathlib.Analysis.Convex.Combination
+public import Mathlib.Analysis.Convex.Hull
+public import Mathlib.Analysis.Convex.PathConnected
+public import Mathlib.Analysis.Convex.Segment
+public import Mathlib.Analysis.Convex.Topology
+public import Mathlib.Analysis.Normed.Affine.AddTorsorBases
+public import Mathlib.Analysis.LocallyConvex.Separation
+public import Mathlib.Analysis.Normed.Group.Basic
+public import Mathlib.Analysis.Normed.Module.Basic
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Analysis.Normed.Operator.ContinuousLinearMap
+public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Data.Complex.Basic
+public import Mathlib.Data.Fin.Basic
+public import Mathlib.Data.Finset.Basic
+public import Mathlib.Data.Real.Basic
+public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Basic
+public import Mathlib.LinearAlgebra.AffineSpace.AffineSubspace.Defs
+public import Mathlib.LinearAlgebra.Dimension.Constructions
+public import Mathlib.LinearAlgebra.Dimension.Finite
+public import Mathlib.LinearAlgebra.Dimension.Finrank
+public import Mathlib.LinearAlgebra.FiniteDimensional.Basic
+public import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
+public import Mathlib.Topology.Algebra.Monoid
+public import Mathlib.Topology.Algebra.Module.FiniteDimension
+public import Mathlib.Topology.Algebra.Module.LinearMap
+public import Mathlib.Topology.Basic
+public import Mathlib.Topology.Bornology.Basic
+public import Mathlib.Topology.Closure
+public import Mathlib.Topology.MetricSpace.Basic
+public import Mathlib.Topology.Order.OrderClosed
 
 @[expose] public section
 
@@ -158,15 +198,13 @@ noncomputable def evalLinear {n : ℕ} (r : ℝ) :
   map_smul' := by
     intros a δ
     unfold polyOfVec
-    simp only [Pi.smul_apply, smul_eq_mul, Real.ringHom_apply]
+    simp only [Pi.smul_apply, smul_eq_mul]
     rw [Polynomial.eval_finset_sum]
     rw [Polynomial.eval_finset_sum]
     rw [Finset.mul_sum]
     congr 1
     ext j
-    rw [Polynomial.eval_monomial]
-    rw [Polynomial.eval_monomial]
-    ring
+    simp [Polynomial.eval_monomial, mul_assoc, RingHom.id_apply]
 }
 
 def P_sr' {n : ℕ} (r : ℝ) : Set (CoeffVec n) :=
