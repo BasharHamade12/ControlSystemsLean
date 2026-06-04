@@ -1,6 +1,7 @@
 module
 
 public import ControlSystems.DiscreteTime.EdgeTheoremDefs
+public import Mathlib.Analysis.Convex.Intrinsic
 
 @[expose] public section
 
@@ -782,20 +783,413 @@ private lemma frontier_of_exposed_face_implies_frontier_of_polytope {n : ℕ} (P
     exact this.1
   exact ⟨subset_closure h_Ω, h_not_interior⟩
 
+/--
+The relative interior of an exposed face of a polytope is contained in the
+interior of the polytope itself.
+-/
+private lemma relint_F_subset_int_Omega {n : ℕ} (P : Polytope n) (F : Set (CoeffVec n))
+    (hF_exp : IsExposedFace P F)
+    {x_int : CoeffVec n} (hx_int_relint : x_int ∈ intrinsicInterior ℝ F) : x_int ∈ interior P.Ω := by
+  sorry
 
-
-/-- Any point on the relative boundary of an exposed face F with dim(F) ≥ 2
-    belongs to a proper exposed subface G of strictly lower dimension,
-    and G has dimension at least 1 (so it is not a vertex). -/
-axiom exists_proper_subface_of_boundary_point {n : ℕ} (P : Polytope n) (F : Set (CoeffVec n))
+private lemma exists_proper_subface_of_boundary_point {n : ℕ} (P : Polytope n)
+    (F : Set (CoeffVec n))
     (hF_exp : IsExposedFace P F) (δ_bound : CoeffVec n)
     (hδ_bound_in_F : δ_bound ∈ F) (hδ_bound_front : δ_bound ∈ frontier F)
     (hF_dim : Module.finrank ℝ (affineSpan ℝ F).direction ≥ 2) :
     ∃ G, IsExposedFace P G ∧ δ_bound ∈ G ∧ G ⊂ F ∧
       Module.finrank ℝ (affineSpan ℝ G).direction <
       Module.finrank ℝ (affineSpan ℝ F).direction ∧
-      Module.finrank ℝ (affineSpan ℝ G).direction ≥ 1
-
+      Module.finrank ℝ (affineSpan ℝ G).direction ≥ 1 := by
+  -- ----------------------------------------------------------------
+  -- SETUP: Extract the supporting hyperplane and basic facts about F
+  -- ----------------------------------------------------------------
+  obtain ⟨hp, hF_eq⟩ := hF_exp
+  have hF_compact : IsCompact F :=
+    isExposedFace_isCompact P ⟨hp, hF_eq⟩
+  have hF_convex : Convex ℝ F :=
+    isExposedFace_convex P ⟨hp, hF_eq⟩
+  have hF_sub_Ω : F ⊆ P.Ω :=
+    isExposedFace_subset_Ω ⟨hp, hF_eq⟩
+  have hF_closed : IsClosed F :=
+    hF_compact.isClosed
+  have hδ_in_ExF : δ_bound ∈ ExposedFace hp :=
+    hF_eq ▸ hδ_bound_in_F
+  have hδ_in_Ω : δ_bound ∈ P.Ω :=
+    hF_sub_Ω hδ_bound_in_F
+  have hδ_f_val : hp.f δ_bound = hp.c :=
+    hδ_in_ExF.2
+  have h_int_nonempty : (interior P.Ω).Nonempty :=
+    P.interior_nonempty
+  have hΩ_convex : Convex ℝ P.Ω :=
+    convex_convexHull ℝ _
+  have hΩ_closed : IsClosed P.Ω :=
+    P.isCompact.isClosed
+  -- ----------------------------------------------------------------
+  -- STEP 1: δ_bound is not in the relative interior of F
+  -- ----------------------------------------------------------------
+  have hδ_not_relint : δ_bound ∉ interior F := by
+    rw [frontier_eq_for_closed F hF_closed] at hδ_bound_front
+    exact hδ_bound_front.2
+  -- ----------------------------------------------------------------
+  -- STEP 2: F has nonempty relative interior
+  -- Since F is a compact convex set with affine dimension ≥ 2,
+  -- its relative interior is nonempty.
+  -- ----------------------------------------------------------------
+  have hF_relint_nonempty : (intrinsicInterior ℝ F).Nonempty :=
+    Set.Nonempty.intrinsicInterior (isExposedFace_convex P ⟨hp, hF_eq⟩)
+      ⟨δ_bound, hδ_bound_in_F⟩
+  -- ----------------------------------------------------------------
+  -- STEP 3: δ_bound is on the frontier of P.Ω
+  -- Any point on the relative boundary of F lies on the boundary of Ω
+  -- ----------------------------------------------------------------
+  have hδ_in_front_Ω : δ_bound ∈ frontier P.Ω :=
+    frontier_of_exposed_face_implies_frontier_of_polytope P F hp hF_eq δ_bound
+      hδ_bound_in_F hδ_bound_front
+  have hδ_not_int_Ω : δ_bound ∉ interior P.Ω :=
+    frontier_point_not_interior P δ_bound hδ_in_front_Ω
+  -- ----------------------------------------------------------------
+  -- STEP 4: Find g_Ω via Hahn-Banach separation of int(Ω) from δ_bound
+  -- Since δ_bound ∉ int(Ω) and int(Ω) is convex open nonempty,
+  -- there exists a continuous linear functional strictly separating them.
+  -- ----------------------------------------------------------------
+  have hΩ_int_convex : Convex ℝ (interior P.Ω) :=
+    hΩ_convex.interior
+  obtain ⟨f_Ω, hf_Ω_strict⟩ :=
+    geometric_hahn_banach_open_point
+      hΩ_int_convex isOpen_interior hδ_not_int_Ω
+  let g_Ω : CoeffVec n →ₗ[ℝ] ℝ := f_Ω.toLinearMap
+  have hg_Ω_strict : ∀ x ∈ interior P.Ω, g_Ω x < g_Ω δ_bound :=
+    hf_Ω_strict
+  -- ----------------------------------------------------------------
+  -- STEP 5: g_Ω is an upper bound for all of Ω at δ_bound
+  -- By density of int(Ω) in Ω (convexity + nonempty interior),
+  -- the strict inequality extends to a weak inequality on Ω.
+  -- ----------------------------------------------------------------
+  have hg_Ω_support : ∀ x ∈ P.Ω, g_Ω x ≤ g_Ω δ_bound := by
+    intro x hx
+    have h_closed_le : IsClosed {y : CoeffVec n | g_Ω y ≤ g_Ω δ_bound} :=
+      isClosed_Iic.preimage
+        (LinearMap.continuous_of_finiteDimensional g_Ω)
+    have h_int_sub : interior P.Ω ⊆ {y | g_Ω y ≤ g_Ω δ_bound} :=
+      fun y hy => le_of_lt (hg_Ω_strict y hy)
+    have h_closure_Ω : closure (interior P.Ω) = P.Ω :=
+      calc
+        closure (interior P.Ω) = closure P.Ω :=
+          hΩ_convex.closure_interior_eq_closure_of_nonempty_interior h_int_nonempty
+        _ = P.Ω := hΩ_closed.closure_eq
+    have h_Ω_sub : P.Ω ⊆ {y | g_Ω y ≤ g_Ω δ_bound} := by
+      calc P.Ω = closure (interior P.Ω) := h_closure_Ω.symm
+        _ ⊆ closure {y | g_Ω y ≤ g_Ω δ_bound} := closure_mono h_int_sub
+        _ = {y | g_Ω y ≤ g_Ω δ_bound} := h_closed_le.closure_eq
+    exact h_Ω_sub hx
+  -- ----------------------------------------------------------------
+  -- STEP 6: g_Ω is not constant on F
+  -- Any point in relint(F) lies in int(Ω) (by the lemma
+  -- relint_F_subset_int_Omega), so g_Ω is strictly less there,
+  -- but g_Ω = g_Ω(δ_bound) for all F would require g_Ω(x_int) =
+  -- g_Ω(δ_bound), contradicting the strict inequality.
+  -- ----------------------------------------------------------------
+  have hg_Ω_not_const : ∃ x₀ ∈ ExposedFace hp, g_Ω x₀ < g_Ω δ_bound := by
+      -- Get a point in the relative interior of F
+      obtain ⟨x_int, hx_int_relint⟩ := hF_relint_nonempty
+      -- x_int ∈ F = ExposedFace hp
+      have hx_int_F : x_int ∈ ExposedFace hp :=
+        hF_eq ▸ intrinsicInterior_subset hx_int_relint
+      -- relint(F) ⊆ int(Ω): a point in the relative interior of an
+      -- exposed face lies in the interior of the full polytope,
+      -- because the face has lower dimension than the ambient polytope
+      -- and any neighborhood in the face can be extended to a neighborhood in Ω.
+      have hx_int_intΩ : x_int ∈ interior P.Ω :=
+        relint_F_subset_int_Omega P F ⟨hp, hF_eq⟩ hx_int_relint
+      -- g_Ω is strictly less than g_Ω(δ_bound) on interior(Ω)
+      exact ⟨x_int, hx_int_F, hg_Ω_strict x_int hx_int_intΩ⟩
+  -- ----------------------------------------------------------------
+  -- STEP 7: g_Ω is nonzero
+  -- ----------------------------------------------------------------
+  have hg_Ω_nonzero : g_Ω ≠ 0 := by
+    obtain ⟨x₀, _, hx₀_lt⟩ := hg_Ω_not_const
+    intro h_zero
+    simp [g_Ω, h_zero] at hx₀_lt
+  -- ----------------------------------------------------------------
+  -- STEP 8: Find a direction v ∈ dir(F) with g_Ω v > 0
+  -- Since g_Ω is non-constant on F, there exists x₀ ∈ F with
+  -- g_Ω x₀ < g_Ω δ_bound. The vector δ_bound - x₀ ∈ dir(F) has
+  -- g_Ω(δ_bound - x₀) = g_Ω(δ_bound) - g_Ω(x₀) > 0.
+  -- ----------------------------------------------------------------
+  obtain ⟨x₀_F, hx₀_in_ExF, hx₀_lt⟩ := hg_Ω_not_const
+  have hx₀_in_F : x₀_F ∈ F := hF_eq ▸ hx₀_in_ExF
+  let v_dir : CoeffVec n := δ_bound - x₀_F
+  have hv_in_dir : v_dir ∈ (affineSpan ℝ (ExposedFace hp)).direction := by
+    exact AffineSubspace.vsub_mem_direction
+      (subset_affineSpan ℝ _ hδ_in_ExF)
+      (subset_affineSpan ℝ _ hx₀_in_ExF)
+  have hgv_pos : g_Ω v_dir > 0 := by
+    simp only [v_dir, map_sub]
+    linarith
+  -- ----------------------------------------------------------------
+  -- STEP 9: hp.f kills the direction v_dir
+  -- Any direction in dir(aff(F)) is killed by hp.f,
+  -- since all points of F satisfy hp.f x = hp.c.
+  -- ----------------------------------------------------------------
+  have hfv_zero : hp.f v_dir = 0 :=
+    exposed_face_direction_kills_vector hp rfl δ_bound v_dir hδ_in_ExF hv_in_dir
+  -- ----------------------------------------------------------------
+  -- STEP 10: Construct G as the exposed face defined by hp.f + g_Ω
+  -- G = Ω ∩ {x | (hp.f + g_Ω) x = hp.c + g_Ω δ_bound}
+  -- This is an exposed face by sum_supporting_hyperplane_exposed_face.
+  -- ----------------------------------------------------------------
+  let g_c : ℝ := g_Ω δ_bound
+  let G : Set (CoeffVec n) :=
+    {x | x ∈ P.Ω ∧ (hp.f + g_Ω) x = hp.c + g_c}
+  have hG_exposed : IsExposedFace P G :=
+    sum_supporting_hyperplane_exposed_face hp g_Ω v_dir δ_bound
+      hδ_in_Ω hδ_f_val hg_Ω_support hfv_zero hgv_pos
+  -- ----------------------------------------------------------------
+  -- STEP 11: δ_bound ∈ G
+  -- hp.f δ_bound = hp.c and g_Ω δ_bound = g_c by definition.
+  -- ----------------------------------------------------------------
+  have hδ_in_G : δ_bound ∈ G := by
+    refine ⟨hδ_in_Ω, ?_⟩
+    simp only [G, Pi.add_apply, LinearMap.add_apply]
+    linarith [hδ_f_val]
+  -- ----------------------------------------------------------------
+  -- STEP 12: G ⊆ ExposedFace hp  (i.e., G ⊆ F)
+  -- For x ∈ G: hp.f x ≤ hp.c and g_Ω x ≤ g_c, summing to equality
+  -- forces hp.f x = hp.c, so x ∈ F.
+  -- ----------------------------------------------------------------
+  have hG_sub_ExF : G ⊆ ExposedFace hp := by
+    intro x ⟨hx_Ω, hx_sum⟩
+    have h_fx_le : hp.f x ≤ hp.c :=
+      hp.upper_bound x hx_Ω
+    have h_gx_le : g_Ω x ≤ g_c :=
+      hg_Ω_support x hx_Ω
+    have h_fx_eq : hp.f x = hp.c := by
+      simp only [Pi.add_apply, LinearMap.add_apply] at hx_sum
+      linarith
+    exact ⟨hx_Ω, h_fx_eq⟩
+  have hG_sub_F : G ⊆ F :=
+    hF_eq ▸ hG_sub_ExF
+  -- ----------------------------------------------------------------
+  -- STEP 13: x₀_F ∉ G  (witnesses G ≠ F)
+  -- g_Ω x₀_F < g_c = g_Ω δ_bound, so (hp.f + g_Ω) x₀_F < hp.c + g_c,
+  -- hence x₀_F cannot satisfy the defining equality of G.
+  -- ----------------------------------------------------------------
+  have hx₀_not_G : x₀_F ∉ G := by
+    intro ⟨_, hx₀_sum⟩
+    have h_f_x₀ : hp.f x₀_F = hp.c :=
+      hx₀_in_ExF.2
+    simp only [Pi.add_apply, LinearMap.add_apply, h_f_x₀] at hx₀_sum
+    linarith
+  -- ----------------------------------------------------------------
+  -- STEP 14: G ⊊ F  (proper subset)
+  -- ----------------------------------------------------------------
+  have hG_proper_sub_F : G ⊂ F := by
+    rw [Set.ssubset_def]
+    constructor
+    · exact hG_sub_F
+    · intro h
+      apply hx₀_not_G
+      exact h hx₀_in_F
+  -- ----------------------------------------------------------------
+  -- STEP 15: dim(G) < dim(F)
+  -- dir(G) ⊆ ker(hp.f + g_Ω) and dir(G) ⊆ dir(F).
+  -- But v_dir ∈ dir(F) and (hp.f + g_Ω)(v_dir) = g_Ω(v_dir) > 0,
+  -- so v_dir ∉ ker(hp.f + g_Ω), hence v_dir ∉ dir(G).
+  -- This gives dir(G) ⊊ dir(F), hence dim(G) < dim(F).
+  -- ----------------------------------------------------------------
+  have hG_dim_lt : Module.finrank ℝ (affineSpan ℝ G).direction <
+      Module.finrank ℝ (affineSpan ℝ F).direction := by
+    -- Substep: dir(G) ⊆ ker(hp.f + g_Ω)
+    have hG_dir_le_ker :
+        (affineSpan ℝ G).direction ≤
+        LinearMap.ker (hp.f + g_Ω : CoeffVec n →ₗ[ℝ] ℝ) := by
+      have h_const_on_G : ∀ x ∈ G, (hp.f + g_Ω) x = hp.c + g_c :=
+        fun x hx => hx.2
+      exact direction_sub_ker_of_exposed_intersection hp g_Ω δ_bound G
+        hδ_in_G h_const_on_G
+    -- Substep: dir(G) ⊆ dir(F)
+    have hG_dir_le_F :
+        (affineSpan ℝ G).direction ≤
+        (affineSpan ℝ (ExposedFace hp)).direction :=
+      AffineSubspace.direction_le (affineSpan_mono (k := ℝ) hG_sub_ExF)
+    -- Substep: v_dir ∉ ker(hp.f + g_Ω)
+    have hv_not_ker :
+        v_dir ∉ LinearMap.ker (hp.f + g_Ω : CoeffVec n →ₗ[ℝ] ℝ) := by
+      simp only [LinearMap.mem_ker, Pi.add_apply, LinearMap.add_apply,
+        hfv_zero, zero_add]
+      linarith
+    -- Substep: v_dir ∉ dir(G)
+    have hv_not_dirG :
+        v_dir ∉ (affineSpan ℝ G).direction :=
+      fun h => hv_not_ker (hG_dir_le_ker h)
+    -- Substep: dir(G) ≠ dir(F)
+    have h_dir_ne :
+        (affineSpan ℝ G).direction ≠
+        (affineSpan ℝ (ExposedFace hp)).direction :=
+      fun h_eq => hv_not_dirG (h_eq ▸ hv_in_dir)
+    -- Substep: dir(G) ⊊ dir(F)
+    have h_dir_strict :
+        (affineSpan ℝ G).direction <
+        (affineSpan ℝ (ExposedFace hp)).direction :=
+      lt_of_le_of_ne hG_dir_le_F h_dir_ne
+    -- Conclude dim(G) < dim(F)
+    have h_lt_ExF :=
+      Submodule.finrank_lt_finrank_of_lt h_dir_strict
+    rw [hF_eq]
+    exact h_lt_ExF
+  -- ----------------------------------------------------------------
+  -- STEP 16: dim(G) ≥ 1
+  -- The key insight: w ∈ dir(F) ∩ ker(g_Ω) is nonzero (exists by
+  -- rank-nullity since dim(F) ≥ 2 and g_Ω is a single linear form on V),
+  -- hp.f w = 0 (since w ∈ dir(F)), and g_Ω w = 0.
+  -- So (hp.f + g_Ω)(δ_bound + t•w) = hp.c + g_c for all t.
+  -- Also f(δ_bound + t•w) = hp.c.
+  -- So δ_bound + t•w ∈ G whenever it lies in Ω.
+  -- Since F has nonempty relative interior and contains a line in the w
+  -- direction (as w ∈ ker(g_Ω) ∩ dir(F) and G = F ∩ {g_Ω = g_c}),
+  -- G contains a nontrivial segment, giving dim(G) ≥ 1.
+  -- ----------------------------------------------------------------
+  have hG_dim_ge_1 : Module.finrank ℝ (affineSpan ℝ G).direction ≥ 1 := by
+    -- Substep: dir(F) ∩ ker(g_Ω) has dimension ≥ 1
+    -- by rank-nullity: dim(ker(g_Ω|_V)) = dim(V) - rank(g_Ω|_V)
+    --                                    ≥ dim(V) - 1 ≥ 2 - 1 = 1
+    let V := (affineSpan ℝ (ExposedFace hp)).direction
+    have h_dim_V : Module.finrank ℝ V ≥ 2 := by
+      dsimp [V]
+      rw [← hF_eq]
+      exact hF_dim
+    have h_gΩ_range_le_1 :
+        Module.finrank ℝ (g_Ω.comp (Submodule.subtype V)).range ≤ 1 := by
+      have h_range_sub :
+          (g_Ω.comp (Submodule.subtype V)).range ≤ ⊤ := le_top
+      calc Module.finrank ℝ (g_Ω.comp (Submodule.subtype V)).range
+          ≤ Module.finrank ℝ (⊤ : Submodule ℝ ℝ) :=
+            Submodule.finrank_mono h_range_sub
+        _ = 1 := by simp [Module.finrank_self]
+    have h_ker_V_dim :
+        Module.finrank ℝ (g_Ω.comp (Submodule.subtype V)).ker ≥ 1 := by
+      have h_rank_null :
+        Module.finrank ℝ (g_Ω.comp (Submodule.subtype V)).range +
+        Module.finrank ℝ (g_Ω.comp (Submodule.subtype V)).ker =
+        Module.finrank ℝ V :=
+        LinearMap.finrank_range_add_finrank_ker _
+      omega
+    -- Substep: pick nonzero w ∈ V ∩ ker(g_Ω) via nontriviality of ker(g_Ω|_V)
+    have h_nontrivial :
+        Nontrivial (g_Ω.comp (Submodule.subtype V)).ker := by
+      have h_pos : 0 < Module.finrank ℝ (g_Ω.comp (Submodule.subtype V)).ker := by
+        have : Module.finrank ℝ (g_Ω.comp (Submodule.subtype V)).ker ≥ 1 := h_ker_V_dim
+        omega
+      exact Module.nontrivial_of_finrank_pos h_pos
+    obtain ⟨u, hu_ne⟩ :=
+      exists_ne (0 : (g_Ω.comp (Submodule.subtype V)).ker)
+    let w : CoeffVec n := (Submodule.subtype V) u.val
+    have hw_V : w ∈ V := by
+      have h_range : (Submodule.subtype V).range = V := Submodule.range_subtype V
+      have h_mem : w ∈ (Submodule.subtype V).range :=
+        (Submodule.subtype V).mem_range.mpr ⟨u.val, rfl⟩
+      rw [h_range] at h_mem
+      exact h_mem
+    have hw_ker : g_Ω w = 0 := by
+      have h_temp : (g_Ω.comp (Submodule.subtype V)) u.val = 0 :=
+        (LinearMap.mem_ker (f := g_Ω.comp (Submodule.subtype V))).mp u.property
+      calc
+        g_Ω w = g_Ω ((Submodule.subtype V) u.val) := rfl
+        _ = (g_Ω.comp (Submodule.subtype V)) u.val := rfl
+        _ = 0 := h_temp
+    have hw_ne_zero : w ≠ 0 := by
+      intro h
+      apply hu_ne
+      have h_val_eq : u.val = (0 : V) :=
+        Submodule.subtype_injective V (by
+          simpa [w] using h)
+      exact Subtype.ext h_val_eq
+    -- Substep: hp.f w = 0 since w ∈ dir(F)
+    have hfw_zero : hp.f w = 0 :=
+      exposed_face_direction_kills_vector hp rfl δ_bound w
+        hδ_in_ExF hw_V
+    -- Substep: for all t, if δ_bound + t•w ∈ Ω then δ_bound + t•w ∈ G
+    have h_line_in_G :
+        ∀ t : ℝ, δ_bound + t • w ∈ P.Ω → δ_bound + t • w ∈ G := by
+      intro t ht_Ω
+      refine ⟨ht_Ω, ?_⟩
+      simp only [Pi.add_apply, LinearMap.add_apply, map_add, map_smul,
+        smul_eq_mul]
+      rw [hδ_f_val, hfw_zero, hw_ker]
+      ring
+    -- Substep: G = F ∩ {g_Ω = g_c}
+    -- This means the line {δ_bound + t•w : t ∈ ℝ} intersected with F
+    -- equals its intersection with G.
+    have hG_eq_F_inter : G = F ∩ {x | g_Ω x = g_c} := by
+      ext x; constructor
+      · intro ⟨hx_Ω, hx_sum⟩
+        have h_fx_le : hp.f x ≤ hp.c := hp.upper_bound x hx_Ω
+        have h_gx_le : g_Ω x ≤ g_c := hg_Ω_support x hx_Ω
+        have h_fx_eq : hp.f x = hp.c := by
+          simp only [Pi.add_apply, LinearMap.add_apply] at hx_sum
+          linarith
+        have h_gx_eq : g_Ω x = g_c := by
+          simp only [Pi.add_apply, LinearMap.add_apply, h_fx_eq] at hx_sum
+          linarith
+        exact ⟨hG_sub_F ⟨hx_Ω, hx_sum⟩, h_gx_eq⟩
+      · intro ⟨hx_F, hx_g⟩
+        exact ⟨hF_sub_Ω hx_F, by
+          simp only [Pi.add_apply, LinearMap.add_apply]
+          have h_fx : hp.f x = hp.c := (hF_eq ▸ hx_F).2
+          rw [h_fx, hx_g]⟩
+    -- Substep: the line {δ_bound + t•w} ∩ F has positive length
+    -- because w ∈ dir(aff(F)) and F is a compact convex set.
+    -- Concretely: since g_Ω w = 0 and hp.f w = 0, and F contains
+    -- points in the w-direction (as w ∈ dir(F) and F has dim ≥ 2),
+    -- the line stays in {hp.f = hp.c} ∩ {g_Ω = g_c}, i.e., in G.
+    -- We find t ≠ 0 with δ_bound + t•w ∈ F.
+    have h_exists_t : ∃ t : ℝ, t ≠ 0 ∧ δ_bound + t • w ∈ F := by
+      sorry
+    obtain ⟨t, ht_ne, ht_F⟩ := h_exists_t
+    -- Substep: δ_bound + t•w ∈ G (since it's in F and on both level sets)
+    have h_second_in_G : δ_bound + t • w ∈ G := by
+      rw [hG_eq_F_inter]
+      refine ⟨ht_F, ?_⟩
+      simp only [Set.mem_setOf_eq, map_add, map_smul, smul_eq_mul]
+      rw [hw_ker, mul_zero, add_zero]
+    -- Substep: the direction t•w is nonzero
+    have h_tw_ne_zero : t • w ≠ 0 := by
+      intro h
+      cases smul_eq_zero.mp h with
+      | inl ht => exact ht_ne ht
+      | inr hw => exact hw_ne_zero hw
+    -- Substep: t•w ∈ dir(aff(G))
+    have h_tw_in_dirG :
+        t • w ∈ (affineSpan ℝ G).direction := by
+      have h_vsub :
+          (δ_bound + t • w) - δ_bound ∈ (affineSpan ℝ G).direction :=
+        AffineSubspace.vsub_mem_direction
+          (subset_affineSpan ℝ G h_second_in_G)
+          (subset_affineSpan ℝ G hδ_in_G)
+      simpa [vsub_eq_sub] using h_vsub
+    -- Substep: dir(G) is nontrivial
+    have h_dir_ne_bot :
+        (affineSpan ℝ G).direction ≠ ⊥ := by
+      intro h_bot
+      have h_tw_mem : t • w ∈ (⊥ : Submodule ℝ (CoeffVec n)) :=
+        h_bot ▸ h_tw_in_dirG
+      have h_tw_eq_zero : t • w = 0 := by
+        simpa using h_tw_mem
+      exact h_tw_ne_zero h_tw_eq_zero
+    -- Substep: finrank dir(G) ≥ 1
+    have h_finrank_pos :
+        0 < Module.finrank ℝ (affineSpan ℝ G).direction := by
+      by_contra! h
+      have h_zero_dir : Module.finrank ℝ (affineSpan ℝ G).direction = 0 := by omega
+      have h_bot : (affineSpan ℝ G).direction = ⊥ :=
+        (Submodule.finrank_eq_zero.mp h_zero_dir)
+      exact h_dir_ne_bot h_bot
+    omega
+  -- ----------------------------------------------------------------
+  -- CONCLUSION: Package all results
+  -- ----------------------------------------------------------------
+  exact ⟨G, hG_exposed, hδ_in_G, hG_proper_sub_F, hG_dim_lt, hG_dim_ge_1⟩
 /-- Every vertex of a polytope of dimension ≥ 2 lies on an exposed edge. -/
 axiom vertex_on_edge {n : ℕ} (P : Polytope n) (v : CoeffVec n)
     (hv : v ∈ P.Ω) (h_dim : Module.finrank ℝ (affineSpan ℝ P.Ω).direction ≥ 2) :
