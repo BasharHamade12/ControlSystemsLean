@@ -1636,6 +1636,11 @@ private lemma direction_nontrivial_from_dim_ge_1 {n : ℕ} {F : Set (CoeffVec n)
     Nat.lt_of_lt_of_le (by decide : (0 : ℕ) < 1) h_finrank
   exact Module.nontrivial_of_finrank_pos h_pos
 
+
+
+
+
+
 private lemma exists_boundary_point_in_face_rootspace {n : ℕ} (P : Polytope n) (r : ℝ)
     (δ_F : CoeffVec n) (F : Set (CoeffVec n)) (hF_exposed : IsExposedFace P F)
     (hδ_F_in_F : δ_F ∈ F) (hδ_F_root : δ_F ∈ (P_sr n r : Set (CoeffVec n)))
@@ -1696,7 +1701,11 @@ private lemma exists_boundary_point_in_face_rootspace {n : ℕ} (P : Polytope n)
     exact ⟨Subtype.val_image_subset _ (intrinsicClosure_subset (by rw [intrinsicClosure_eq_closure ℝ F]; exact subset_closure h_δ_bound_in_F)), h_not_int⟩
   exact ⟨⟨h_δ_bound_in_F, hδ_bound_in_Psr⟩, hδ_bound_frontier_F, (hδ_bound_frontier_F.2)⟩
 
-lemma descend_to_exposed_edge {n : ℕ} (P : Polytope n) (s : CoeffVec n) (r : ℝ)
+
+
+
+
+lemma descend_to_exposed_edge2 {n : ℕ} (P : Polytope n) (s : CoeffVec n) (r : ℝ)
     (hs : s ∈ F_face n P r) (hF : IsExposedFace P (ExposedFace_of_v n P s))
     (hm_face : Module.finrank ℝ (affineSpan ℝ (ExposedFace_of_v n P s)).direction ≥ 1) :
     ∃ E, IsExposedEdge P E ∧ s ∈ E := by
@@ -1718,43 +1727,7 @@ lemma descend_to_exposed_edge {n : ℕ} (P : Polytope n) (s : CoeffVec n) (r : �
     have h_edge_re : s ∈ E := sorry -- use the fact that E is an edge on the face containing s
     exact ⟨E, hE_edge, h_edge_re⟩
 termination_by Module.finrank ℝ (affineSpan ℝ (ExposedFace_of_v n P s)).direction
-/--
-theorem lemma61_real {n : ℕ} (P : Polytope n) (s : CoeffVec n) (hs : s ∈ P.Ω)
-    (h_root : ∃ r : ℝ, r > 1 ∧ s ∈ (P_sr n r : Set (CoeffVec n))) :
-    ∃ E, IsExposedEdge P E ∧ s ∈ E := by
-  rcases h_root with ⟨r, hr, h_sr⟩
-  let F := ExposedFace_of_v n P s
-  have hF_exposed : IsExposedFace P F := exposedFace_of_v_is_exposed n P s (hs) (⟨r, hr, h_sr⟩)
-  have h_finrank : Module.finrank ℝ (affineSpan ℝ F).direction ≥ 1 := Finrank_ExposedFace_ge_1 n P s r ⟨hs, h_sr⟩
-  exact descend_to_exposed_edge P s r ⟨hs, h_sr⟩ hF_exposed h_finrank
 
-theorem lemma61_complex {n : ℕ} (P : Polytope n) (s : CoeffVec n) (hs : s ∈ P.Ω)
-    (h_root : ∃ (r : ℂ), Complex.abs r > 1 ∧ s ∈ (P_sr_complex n r : Set (CoeffVec n))) :
-    ∃ E, IsExposedEdge P E ∧ s ∈ E := sorry
-
-theorem lemma61 {n : ℕ} (P : Polytope n) (s : CoeffVec n) (hs : s ∈ P.Ω)
-    (h_root : ∃ (r : ℂ), Complex.abs r > 1 ∧ Polynomial.aeval r (Poly n s) = 0) :
-    ∃ E, IsExposedEdge P E ∧ s ∈ E := by
-  have hs_root : s ∈ (P_root n (Set.Ioi 1) : Set (CoeffVec n)) := by
-    rcases h_root with ⟨r, hr_abs, hr_poly⟩
-    use r; constructor; exact hr_abs; exact hr_poly
-  rcases (mem_P_root_iff_real_or_complex_root n s).mp hs_root with h_real | h_complex
-  · exact lemma61_real P s hs h_real
-  · exact lemma61_complex P s hs h_complex
-
--/
-/--
-Given a vertex δ_bound of P.Ω that lies in P_sr n r, find an exposed edge E
-of P through δ_bound with (r : ℂ) ∈ RootSpaceSet E.
-
-This lemma handles the case where `exists_proper_subface_of_boundary_point`
-produces a 0-dimensional face (a vertex).  It relies on the polyhedral
-combinatorics fact that every vertex of a polytope of dimension ≥ 2 is
-incident to at least one edge.
-
-The detailed proof is non-trivial (requires constructing a supporting functional
-whose exposed face is 1‑dimensional and contains δ_bound).
--/
 private lemma vertex_to_exposed_edge {n : ℕ} (P : Polytope n) (r : ℝ)
     (δ_bound : CoeffVec n) (hδ_bound_Ω : δ_bound ∈ P.Ω)
     (hδ_bound_Psr : δ_bound ∈ (P_sr n r : Set (CoeffVec n)))
