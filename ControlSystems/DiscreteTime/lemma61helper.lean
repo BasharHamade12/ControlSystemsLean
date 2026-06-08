@@ -1,3 +1,6 @@
+module
+
+
 import Mathlib.Analysis.Convex.Intrinsic
 import Mathlib.Analysis.LocallyConvex.Separation
 import ControlSystems.DiscreteTime.EdgeTheoremDefs
@@ -81,5 +84,8 @@ lemma exists_strict_less_in_F {n : ℕ} (P : Polytope n) (F : Set (CoeffVec n))
   · have h_strict := separatingFunctionalRelint_strict (F := F) (hF_convex := hF_convex) (hF_compact := hF_compact)
       (δ_bound := δ_bound) (hδ_bound_front := hδ_bound_front) (x_int := x_int) (hx_int_relint := hx_int_relint) hx_ne
     simpa [g_F]
+
+
+
 
 end CoeffBox
