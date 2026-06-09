@@ -1,0 +1,1635 @@
+⚠ [7886/7894] Replayed ControlSystems.DiscreteTime.Cayley
+warning: ControlSystems/DiscreteTime/Cayley.lean:82:0: automatically included section variable(s) unused in theorem `helper1`:
+  [Inhabited ι]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Inhabited ι] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+⚠ [7888/7894] Replayed ControlSystems.DiscreteTime.lemma61helper
+warning: ControlSystems/DiscreteTime/lemma61helper.lean:18:5: unused variable `hF_convex`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: ControlSystems/DiscreteTime/lemma61helper.lean:18:30: unused variable `hF_compact`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: ControlSystems/DiscreteTime/lemma61helper.lean:19:28: unused variable `hδ_bound_front`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: ControlSystems/DiscreteTime/lemma61helper.lean:20:26: unused variable `hx_int_relint`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: ControlSystems/DiscreteTime/lemma61helper.lean:32:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/lemma61helper.lean:33:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/lemma61helper.lean:61:10: This simp argument is unused:
+  hx
+
+Hint: Omit it from the simp argument list.
+  simp [h̵x̵,̵ ̵mul_comm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/lemma61helper.lean:66:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/lemma61helper.lean:78:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/lemma61helper.lean:79:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/lemma61helper.lean:80:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/lemma61helper.lean:84:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/lemma61helper.lean:85:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/lemma61helper.lean:1:0: The current module only contains private declarations.
+
+Consider adding `@[expose] public section` at the beginning of the module, or selectively marking declarations as `public`.
+
+Note: This linter can be disabled with `set_option linter.privateModule false`
+⚠ [7890/7894] Replayed ControlSystems.DiscreteTime.caseb
+warning: ControlSystems/DiscreteTime/caseb.lean:7:0: Unscoped option maxHeartbeats is not allowed:
+Please scope this to individual declarations, as in
+```
+set_option maxHeartbeats in
+-- comment explaining why this is necessary
+example : ... := ...
+```
+
+Note: This linter can be disabled with `set_option linter.style.setOption false`
+warning: ControlSystems/DiscreteTime/caseb.lean:75:63: This simp argument is unused:
+  RingHom.id_apply
+
+Hint: Omit it from the simp argument list.
+  simp [Polynomial.eval_monomial, mul_assoc,̵ ̵R̵i̵n̵g̵H̵o̵m̵.̵i̵d̵_̵a̵p̵p̵l̵y̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:149:38: This simp argument is unused:
+  hx
+
+Hint: Omit it from the simp argument list.
+  simp [h̵x̵,̵ ̵mul_comm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:151:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:212:50: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: ControlSystems/DiscreteTime/caseb.lean:160:14: declaration uses 'sorry'
+warning: ControlSystems/DiscreteTime/caseb.lean:206:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:223:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:234:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:238:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:243:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:249:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:666:54: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: ControlSystems/DiscreteTime/caseb.lean:264:8: declaration uses 'sorry'
+warning: ControlSystems/DiscreteTime/caseb.lean:315:39: This simp argument is unused:
+  vadd_vsub
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵d̵d̵_̵v̵s̵u̵b̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:316:40: This simp argument is unused:
+  vsub_vadd
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵s̵u̵b̵_̵v̵a̵d̵d̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:343:84: This simp argument is unused:
+  add_left_comm
+
+Hint: Omit it from the simp argument list.
+  simp [add_comm,
+  ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲a̵d̵d̵_̵l̵e̵f̵t̵_̵c̵o̵m̵m̵,̵ ̵add_assoc, vadd_eq_add]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:343:99: This simp argument is unused:
+  add_assoc
+
+Hint: Omit it from the simp argument list.
+  simp [add_comm,
+  ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲add_left_comm, a̵d̵d̵_̵a̵s̵s̵o̵c̵,̵ ̵vadd_eq_add]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:352:64: This simp argument is unused:
+  add_left_comm
+
+Hint: Omit it from the simp argument list.
+  simp [add_comm, a̵d̵d̵_̵l̵e̵f̵t̵_̵c̵o̵m̵m̵,̵ ̵add_assoc, vadd_eq_add]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:352:79: This simp argument is unused:
+  add_assoc
+
+Hint: Omit it from the simp argument list.
+  simp [add_comm, add_left_comm, a̵d̵d̵_̵a̵s̵s̵o̵c̵,̵ ̵vadd_eq_add]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:371:28: This simp argument is unused:
+  vadd_vadd
+
+Hint: Omit it from the simp argument list.
+  simp [̵v̵a̵d̵d̵_̵v̵a̵d̵d̵,̵ ̵a̵d̵d̵_̵c̵o̵m̵m̵,̵[̲a̲d̲d̲_̲c̲o̲m̲m̲,̲ add_left_comm, add_assoc]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:371:64: This simp argument is unused:
+  add_assoc
+
+Hint: Omit it from the simp argument list.
+  simp [vadd_vadd, add_comm, add_left_comm,̵ ̵a̵d̵d̵_̵a̵s̵s̵o̵c̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:429:28: This simp argument is unused:
+  vadd_eq_add
+
+Hint: Omit it from the simp argument list.
+  simp [v̵a̵d̵d̵_̵e̵q̵_̵a̵d̵d̵,̵ ̵hx]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:431:32: This simp argument is unused:
+  vadd_eq_add
+
+Hint: Omit it from the simp argument list.
+  simp [hy,̵ ̵v̵a̵d̵d̵_̵e̵q̵_̵a̵d̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:441:16: This simp argument is unused:
+  vadd_eq_add
+
+Hint: Omit it from the simp argument list.
+  simp [v̵a̵d̵d̵_̵e̵q̵_̵a̵d̵d̵,̵ ̵smul_sub, sub_smul, add_comm, add_left_comm, add_assoc]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:441:39: This simp argument is unused:
+  sub_smul
+
+Hint: Omit it from the simp argument list.
+  simp [vadd_eq_add, smul_sub, s̵u̵b̵_̵s̵m̵u̵l̵,̵ ̵add_comm, add_left_comm, add_assoc]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:441:49: This simp argument is unused:
+  add_comm
+
+Hint: Omit it from the simp argument list.
+  simp [vadd_eq_add, smul_sub, sub_smul, add_c̵o̵m̵m̵,̵ ̵a̵d̵d̵_̵left_comm, add_assoc]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:441:59: This simp argument is unused:
+  add_left_comm
+
+Hint: Omit it from the simp argument list.
+  simp [vadd_eq_add, smul_sub, sub_smul, add_comm, a̵d̵d̵_̵l̵e̵f̵t̵_̵c̵o̵m̵m̵,̵ ̵add_assoc]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:441:74: This simp argument is unused:
+  add_assoc
+
+Hint: Omit it from the simp argument list.
+  simp [vadd_eq_add, smul_sub, sub_smul, add_comm, add_left_comm,̵ ̵a̵d̵d̵_̵a̵s̵s̵o̵c̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:643:35: This simp argument is unused:
+  LinearMap.map_smul
+
+Hint: Omit it from the simp argument list.
+  simp [LinearMap.map_add, L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵m̵a̵p̵_̵s̵m̵u̵l̵,̵ ̵LinearMap.map_sub, hu, hv, hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/caseb.lean:457:25: 'simp' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: ControlSystems/DiscreteTime/caseb.lean:457:25: Try this:
+  [apply] simp only [sub_add_cancel_left, norm_neg]
+info: ControlSystems/DiscreteTime/caseb.lean:458:6: 'have h_norm : ‖t • (y - x)‖ = t * ‖y - x‖ := by
+  rw [norm_smul, Real.norm_of_nonneg (show 0 ≤ t from by positivity)]' uses '⊢'!
+warning: ControlSystems/DiscreteTime/caseb.lean:457:25: 'simp' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: ControlSystems/DiscreteTime/caseb.lean:457:25: Try this:
+  [apply] simp only [sub_add_cancel_left, norm_neg]
+info: ControlSystems/DiscreteTime/caseb.lean:460:6: 'rw [h_norm]' uses '⊢'!
+warning: ControlSystems/DiscreteTime/caseb.lean:457:25: 'simp' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: ControlSystems/DiscreteTime/caseb.lean:457:25: Try this:
+  [apply] simp only [sub_add_cancel_left, norm_neg]
+info: ControlSystems/DiscreteTime/caseb.lean:461:6: 'have h_t_le : t ≤ ε / (2 * (‖y - x‖ + 1)) := min_le_left _ _' uses '⊢'!
+warning: ControlSystems/DiscreteTime/caseb.lean:457:25: 'simp' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: ControlSystems/DiscreteTime/caseb.lean:457:25: Try this:
+  [apply] simp only [sub_add_cancel_left, norm_neg]
+info: ControlSystems/DiscreteTime/caseb.lean:462:6: 'calc
+  t * ‖y - x‖ ≤ (ε / (2 * (‖y - x‖ + 1))) * ‖y - x‖ := mul_le_mul_of_nonneg_right h_t_le (norm_nonneg _)
+  _ = (ε / 2) * (‖y - x‖ / (‖y - x‖ + 1)) := by
+    field_simp [show ‖y - x‖ + 1 ≠ 0 from by nlinarith [norm_nonneg (y - x)]]
+  _ < (ε / 2) * 1 := by
+    apply mul_lt_mul_of_pos_left ?_ (by positivity)
+    have h_ratio : ‖y - x‖ < ‖y - x‖ + 1 := by nlinarith
+    exact (div_lt_one (by nlinarith [norm_nonneg (y - x)])).mpr h_ratio
+  _ = ε / 2 := by ring
+  _ < ε := by nlinarith' uses '⊢'!
+warning: ControlSystems/DiscreteTime/caseb.lean:343:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:352:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:357:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:364:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:386:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:403:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:426:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:427:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:478:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:497:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:515:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:516:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:523:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:533:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:558:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:562:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:590:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:604:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:617:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:621:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:623:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:636:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:652:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:658:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:659:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:671:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:682:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:688:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:691:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/caseb.lean:700:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+✖ [7891/7894] Building ControlSystems.DiscreteTime.Edge2copy (65s)
+trace: .> LEAN_PATH=/home/bashar/ControlSystems/.lake/packages/Cli/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/batteries/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/Qq/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/aesop/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/importGraph/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/plausible/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/mathlib/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/build/lib/lean /home/bashar/.elan/toolchains/leanprover--lean4---v4.27.0/bin/lean /home/bashar/ControlSystems/ControlSystems/DiscreteTime/Edge2copy.lean -o /home/bashar/ControlSystems/.lake/build/lib/lean/ControlSystems/DiscreteTime/Edge2copy.olean -i /home/bashar/ControlSystems/.lake/build/lib/lean/ControlSystems/DiscreteTime/Edge2copy.ilean -c /home/bashar/ControlSystems/.lake/build/ir/ControlSystems/DiscreteTime/Edge2copy.c --setup /home/bashar/ControlSystems/.lake/build/ir/ControlSystems/DiscreteTime/Edge2copy.setup.json --json
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:6:0: Unscoped option maxHeartbeats is not allowed:
+Please scope this to individual declarations, as in
+```
+set_option maxHeartbeats in
+-- comment explaining why this is necessary
+example : ... := ...
+```
+
+Note: This linter can be disabled with `set_option linter.style.setOption false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:893:4: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:909:47: This simp argument is unused:
+  Subtype.range_coe
+
+Hint: Omit it from the simp argument list.
+  simp [Set.image_preimage_eq_inter_range,̵ ̵S̵u̵b̵t̵y̵p̵e̵.̵r̵a̵n̵g̵e̵_̵c̵o̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:891:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:896:14: Please use 'fun' and not 'λ' to define anonymous functions.
+The 'λ' syntax is deprecated in mathlib4.
+
+Note: This linter can be disabled with `set_option linter.style.lambdaSyntax false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:897:16: Please use 'fun' and not 'λ' to define anonymous functions.
+The 'λ' syntax is deprecated in mathlib4.
+
+Note: This linter can be disabled with `set_option linter.style.lambdaSyntax false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:898:17: Please use 'fun' and not 'λ' to define anonymous functions.
+The 'λ' syntax is deprecated in mathlib4.
+
+Note: This linter can be disabled with `set_option linter.style.lambdaSyntax false`
+error: ControlSystems/DiscreteTime/Edge2copy.lean:924:8: Failed to rewrite using equation theorems for `intrinsicInterior`
+error: ControlSystems/DiscreteTime/Edge2copy.lean:928:19: failed to synthesize instance of type class
+  AddCommMonoid ↥affF
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: ControlSystems/DiscreteTime/Edge2copy.lean:928:59: Application type mismatch: The argument
+  affF.subtype
+has type
+  ↥affF →ᵃ[ℝ] CoeffVec n
+but is expected to have type
+  ?m.132 →ᵃ[ℝ] CoeffVec n
+in the application
+  @Convex.affine_preimage ℝ ?m.132 (CoeffVec n) Real.instRing Real.partialOrder ?m.136 Pi.addCommGroup ?m.138
+    (Pi.Function.module (Fin (n + 1)) ℝ ℝ) affF.subtype
+error: ControlSystems/DiscreteTime/Edge2copy.lean:942:43: Type mismatch
+  F
+has type
+  Set ?m.100
+but is expected to have type
+  Set (CoeffVec n)
+error: ControlSystems/DiscreteTime/Edge2copy.lean:952:4: unexpected token 'have'; expected command
+error: ControlSystems/DiscreteTime/Edge2copy.lean:1006:27: failed to synthesize instance of type class
+  Membership (CoeffVec n) (Set ?m.20)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: ControlSystems/DiscreteTime/Edge2copy.lean:1005:44: failed to synthesize instance of type class
+  Membership (CoeffVec n) (Set ?m.135)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: ControlSystems/DiscreteTime/Edge2copy.lean:1011:72: Application type mismatch: The argument
+  P.Ω
+has type
+  Set (CoeffVec n)
+but is expected to have type
+  Set ?m.135
+in the application
+  F ⊆ P.Ω
+error: ControlSystems/DiscreteTime/Edge2copy.lean:1595:10: Unknown identifier `exists_proper_subface_of_boundary_point_caseA`
+error: ControlSystems/DiscreteTime/Edge2copy.lean:1604:10: Unknown identifier `exists_proper_subface_of_boundary_point_caseB`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:1793:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:1843:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:1846:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:1874:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:1890:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:1895:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:1898:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:1901:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:1914:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+error: ControlSystems/DiscreteTime/Edge2copy.lean:1997:14: Unknown identifier `exists_exposed_edge_through_vertex`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:2060:8: Try `simp at h` instead of `simpa using h`
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:2066:8: Try `simp at h` instead of `simpa using h`
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:2123:14: declaration uses 'sorry'
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:2123:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:2143:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:2155:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                       ↓
+  ⏎  obtain ⟨δ, hδ_in_Ω, hδ_root⟩ := hs⏎⏎  have hs_real : s = ↑s.re := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ControlSystems/DiscreteTime/Edge2copy.lean:2214:8: declaration uses 'sorry'
+error: Lean exited with code 1
+✖ [7892/7894] Building ControlSystems.DiscreteTime.Edge2split (102s)
+trace: .> LEAN_PATH=/home/bashar/ControlSystems/.lake/packages/Cli/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/batteries/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/Qq/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/aesop/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/importGraph/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/plausible/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/mathlib/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/build/lib/lean /home/bashar/.elan/toolchains/leanprover--lean4---v4.27.0/bin/lean /home/bashar/ControlSystems/ControlSystems/DiscreteTime/Edge2split.lean -o /home/bashar/ControlSystems/.lake/build/lib/lean/ControlSystems/DiscreteTime/Edge2split.olean -i /home/bashar/ControlSystems/.lake/build/lib/lean/ControlSystems/DiscreteTime/Edge2split.ilean -c /home/bashar/ControlSystems/.lake/build/ir/ControlSystems/DiscreteTime/Edge2split.c --setup /home/bashar/ControlSystems/.lake/build/ir/ControlSystems/DiscreteTime/Edge2split.setup.json --json
+warning: ControlSystems/DiscreteTime/Edge2split.lean:893:4: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:909:47: This simp argument is unused:
+  Subtype.range_coe
+
+Hint: Omit it from the simp argument list.
+  simp [Set.image_preimage_eq_inter_range,̵ ̵S̵u̵b̵t̵y̵p̵e̵.̵r̵a̵n̵g̵e̵_̵c̵o̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:891:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:896:14: Please use 'fun' and not 'λ' to define anonymous functions.
+The 'λ' syntax is deprecated in mathlib4.
+
+Note: This linter can be disabled with `set_option linter.style.lambdaSyntax false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:897:16: Please use 'fun' and not 'λ' to define anonymous functions.
+The 'λ' syntax is deprecated in mathlib4.
+
+Note: This linter can be disabled with `set_option linter.style.lambdaSyntax false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:898:17: Please use 'fun' and not 'λ' to define anonymous functions.
+The 'λ' syntax is deprecated in mathlib4.
+
+Note: This linter can be disabled with `set_option linter.style.lambdaSyntax false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1420:4: Try `simp at this` instead of `simpa using this`
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1464:8: Try `simp at hv_Sverts` instead of `simpa using hv_Sverts`
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1518:49: Try `simp at hv_Sverts` instead of `simpa using hv_Sverts`
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1573:31: This simp argument is unused:
+  LinearMap.map_smul
+
+Hint: Omit it from the simp argument list.
+  simp [LinearMap.map_add, L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵m̵a̵p̵_̵s̵m̵u̵l̵,̵ ̵LinearMap.map_sub, hu, hv, hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1610:12: This simp argument is unused:
+  LinearMap.map_smul
+
+Hint: Omit it from the simp argument list.
+  simp [̵L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵m̵a̵p̵_̵s̵m̵u̵l̵,̵ ̵s̵m̵u̵l̵_̵e̵q̵_̵m̵u̵l̵,̵[̲s̲m̲u̲l̲_̲e̲q̲_̲m̲u̲l̲,̲ hx, mul_comm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1610:45: This simp argument is unused:
+  hx
+
+Hint: Omit it from the simp argument list.
+  simp [LinearMap.map_smul, smul_eq_mul, h̵x̵,̵ ̵mul_comm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:922:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:957:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:961:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:966:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:969:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:989:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:991:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:995:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:996:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1002:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1005:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1006:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1009:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1012:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1014:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1015:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1021:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1022:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1043:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1045:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1047:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1055:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1058:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1067:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1092:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1096:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1108:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1125:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1127:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1134:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1144:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1164:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1172:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1177:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1178:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1183:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1192:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1211:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1218:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1222:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1229:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1243:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1255:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1258:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1260:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1275:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1288:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1294:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1295:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1303:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1304:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1306:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1314:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1324:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1330:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1331:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1339:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1340:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1342:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1350:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1351:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1354:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1386:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1387:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1388:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1389:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1390:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1432:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1440:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1543:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1619:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1636:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1527:8: This central dot `·` is isolated; please merge it with the next line.
+
+Note: This linter can be disabled with `set_option linter.style.cdot false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1695:42: This simp argument is unused:
+  hv
+
+Hint: Omit it from the simp argument list.
+  simp [S_verts, Finset.mem_filter, hv̵,̵ ̵h̵w_gt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1854:31: This simp argument is unused:
+  LinearMap.map_smul
+
+Hint: Omit it from the simp argument list.
+  simp [LinearMap.map_add, L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵m̵a̵p̵_̵s̵m̵u̵l̵,̵ ̵LinearMap.map_sub, hu, hv, hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1890:12: This simp argument is unused:
+  LinearMap.map_smul
+
+Hint: Omit it from the simp argument list.
+  simp [̵L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵m̵a̵p̵_̵s̵m̵u̵l̵,̵ ̵s̵m̵u̵l̵_̵e̵q̵_̵m̵u̵l̵,̵[̲s̲m̲u̲l̲_̲e̲q̲_̲m̲u̲l̲,̲ hx, mul_comm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1890:45: This simp argument is unused:
+  hx
+
+Hint: Omit it from the simp argument list.
+  simp [LinearMap.map_smul, smul_eq_mul, h̵x̵,̵ ̵mul_comm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1695:8: 'simp [S_verts, Finset.mem_filter, hv, hw_gt]' is a flexible tactic modifying '⊢'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: ControlSystems/DiscreteTime/Edge2split.lean:1697:8: 'exact hv' uses '⊢'!
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1696:8: 'simp at hv' is a flexible tactic modifying 'hv'. Try 'simp?' and use the suggested 'simp only [...]'. Alternatively, use `suffices` to explicitly state the simplified form.
+
+Note: This linter can be disabled with `set_option linter.flexible false`
+info: ControlSystems/DiscreteTime/Edge2split.lean:1697:8: 'exact hv' uses 'hv'!
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1707:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1733:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1900:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:1916:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+error: ControlSystems/DiscreteTime/Edge2split.lean:2241:76: Tactic `simp` failed with a nested error:
+(deterministic) timeout at `simp`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: ControlSystems/DiscreteTime/Edge2split.lean:2244:8: (deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: ControlSystems/DiscreteTime/Edge2split.lean:2268:4: (deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+warning: ControlSystems/DiscreteTime/Edge2split.lean:2065:17: This simp argument is unused:
+  G
+
+Hint: Omit it from the simp argument list.
+  simp only [G̵,̵ ̵Pi.add_apply, LinearMap.add_apply]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:2065:20: This simp argument is unused:
+  Pi.add_apply
+
+Hint: Omit it from the simp argument list.
+  simp only [G, P̵i̵.̵a̵d̵d̵_̵a̵p̵p̵l̵y̵,̵ ̵LinearMap.add_apply]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:2075:19: This simp argument is unused:
+  Pi.add_apply
+
+Hint: Omit it from the simp argument list.
+  simp only [P̵i̵.̵a̵d̵d̵_̵a̵p̵p̵l̵y̵,̵ ̵LinearMap.add_apply] at hx_sum
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:2096:38: This simp argument is unused:
+  Pi.add_apply
+
+Hint: Omit it from the simp argument list.
+  simp only [LinearMap.mem_ker, P̵i̵.̵a̵d̵d̵_̵a̵p̵p̵l̵y̵,̵ ̵LinearMap.add_apply, hfv_zero, zero_add]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:2142:41: This simp argument is unused:
+  vadd_vsub
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵d̵d̵_̵v̵s̵u̵b̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:2143:42: This simp argument is unused:
+  vsub_vadd
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵s̵u̵b̵_̵v̵a̵d̵d̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+error: ControlSystems/DiscreteTime/Edge2split.lean:2585:10: Tactic `simp` failed with a nested error:
+(deterministic) timeout at `isDefEq`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: ControlSystems/DiscreteTime/Edge2split.lean:2588:8: (deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: ControlSystems/DiscreteTime/Edge2split.lean:2627:6: (deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: ControlSystems/DiscreteTime/Edge2split.lean:2492:2: (deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: ControlSystems/DiscreteTime/Edge2split.lean:2673:14: Unknown identifier `exists_exposed_edge_through_vertex`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:2736:8: Try `simp at h` instead of `simpa using h`
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:2742:8: Try `simp at h` instead of `simpa using h`
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:2799:14: declaration uses 'sorry'
+warning: ControlSystems/DiscreteTime/Edge2split.lean:2799:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:2819:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:2831:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                       ↓
+  ⏎  obtain ⟨δ, hδ_in_Ω, hδ_root⟩ := hs⏎⏎  have hs_real : s = ↑s.re := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ControlSystems/DiscreteTime/Edge2split.lean:2890:8: declaration uses 'sorry'
+error: Lean exited with code 1
+✖ [7893/7894] Building ControlSystems.DiscreteTime.Edge2 (151s)
+trace: .> LEAN_PATH=/home/bashar/ControlSystems/.lake/packages/Cli/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/batteries/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/Qq/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/aesop/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/importGraph/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/plausible/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/packages/mathlib/.lake/build/lib/lean:/home/bashar/ControlSystems/.lake/build/lib/lean /home/bashar/.elan/toolchains/leanprover--lean4---v4.27.0/bin/lean /home/bashar/ControlSystems/ControlSystems/DiscreteTime/Edge2.lean -o /home/bashar/ControlSystems/.lake/build/lib/lean/ControlSystems/DiscreteTime/Edge2.olean -i /home/bashar/ControlSystems/.lake/build/lib/lean/ControlSystems/DiscreteTime/Edge2.ilean -c /home/bashar/ControlSystems/.lake/build/ir/ControlSystems/DiscreteTime/Edge2.c --setup /home/bashar/ControlSystems/.lake/build/ir/ControlSystems/DiscreteTime/Edge2.setup.json --json
+warning: ControlSystems/DiscreteTime/Edge2.lean:6:0: Unscoped option maxHeartbeats is not allowed:
+Please scope this to individual declarations, as in
+```
+set_option maxHeartbeats in
+-- comment explaining why this is necessary
+example : ... := ...
+```
+
+Note: This linter can be disabled with `set_option linter.style.setOption false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:893:4: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:909:47: This simp argument is unused:
+  Subtype.range_coe
+
+Hint: Omit it from the simp argument list.
+  simp [Set.image_preimage_eq_inter_range,̵ ̵S̵u̵b̵t̵y̵p̵e̵.̵r̵a̵n̵g̵e̵_̵c̵o̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:891:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:896:14: Please use 'fun' and not 'λ' to define anonymous functions.
+The 'λ' syntax is deprecated in mathlib4.
+
+Note: This linter can be disabled with `set_option linter.style.lambdaSyntax false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:897:16: Please use 'fun' and not 'λ' to define anonymous functions.
+The 'λ' syntax is deprecated in mathlib4.
+
+Note: This linter can be disabled with `set_option linter.style.lambdaSyntax false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:898:17: Please use 'fun' and not 'λ' to define anonymous functions.
+The 'λ' syntax is deprecated in mathlib4.
+
+Note: This linter can be disabled with `set_option linter.style.lambdaSyntax false`
+error: ControlSystems/DiscreteTime/Edge2.lean:1719:16: Unknown identifier `mem_intrinsicInterior_add_smul`
+error: ControlSystems/DiscreteTime/Edge2.lean:1721:10: Function expected at
+  nhdsWithin_neBot
+but this term has type
+  (nhdsWithin ?m.2236 ?m.2237).NeBot ↔ ∀ ⦃t : Set ?m.2234⦄, t ∈ nhds ?m.2236 → (t ∩ ?m.2237).Nonempty
+
+Note: Expected a function because this term is being applied to the argument
+  (Set.mem_Ioi.mpr (by norm_num : (0 : ℝ) < 1))
+error: ControlSystems/DiscreteTime/Edge2.lean:1758:8: linarith failed to find a contradiction
+case h
+n : ℕ
+P : Polytope n
+F : Set (CoeffVec n)
+δ_bound : CoeffVec n
+hδ_bound_in_F : δ_bound ∈ F
+hδ_bound_front : δ_bound ∈ frontier F
+hδ_bound_not_relint : δ_bound ∉ intrinsicInterior ℝ F
+hF_dim : Module.finrank ℝ ↥(affineSpan ℝ F).direction ≥ 2
+hp : SupportingHyperplane P
+hF_eq : F = ExposedFace hp
+hF_compact : IsCompact F
+hF_convex : Convex ℝ F
+hF_sub_Ω : F ⊆ P.Ω
+hF_closed : IsClosed F
+hδ_in_ExF : δ_bound ∈ ExposedFace hp
+hδ_in_Ω : δ_bound ∈ P.Ω
+hδ_f_val : hp.f δ_bound = hp.c
+h_int_nonempty : (interior P.Ω).Nonempty
+hΩ_convex : Convex ℝ P.Ω
+hΩ_closed : IsClosed P.Ω
+hδ_not_relint : δ_bound ∉ interior F
+hF_relint_nonempty : (intrinsicInterior ℝ F).Nonempty
+hδ_in_front_Ω : δ_bound ∈ frontier P.Ω
+hδ_not_int_Ω : δ_bound ∉ interior P.Ω
+hΩ_int_convex : Convex ℝ (interior P.Ω)
+f_Ω : StrongDual ℝ (CoeffVec n)
+hf_Ω_strict : ∀ a ∈ interior P.Ω, f_Ω a < f_Ω δ_bound
+g_Ω : CoeffVec n →ₗ[ℝ] ℝ := ↑f_Ω
+hg_Ω_strict : ∀ x ∈ interior P.Ω, g_Ω x < g_Ω δ_bound
+g_c : ℝ := g_Ω δ_bound
+hg_Ω_support : ∀ x ∈ P.Ω, g_Ω x ≤ g_Ω δ_bound
+hg_Ω_nonconst : ¬∃ x₀ ∈ ExposedFace hp, g_Ω x₀ < g_Ω δ_bound
+hg_const_on_F : ∀ x ∈ F, g_Ω x = g_c
+V_dir : Submodule ℝ (CoeffVec n) := (affineSpan ℝ F).direction
+affF : AffineSubspace ℝ (CoeffVec n) := affineSpan ℝ F
+hδ_affF : δ_bound ∈ affF
+τ : ↥V_dir ≃ₜ ↥affF :=
+  { toFun := fun v => ⟨δ_bound +ᵥ ↑v, ⋯⟩, invFun := fun p => ⟨↑p - δ_bound, ⋯⟩, left_inv := ⋯, right_inv := ⋯,
+    continuous_toFun := ⋯, continuous_invFun := ⋯ }
+A : Set ↥V_dir := ⇑τ ⁻¹' (Subtype.val ⁻¹' F)
+C : Set ↥V_dir := ⇑τ ⁻¹' (Subtype.val ⁻¹' intrinsicInterior ℝ F)
+h_int_eq : Subtype.val ⁻¹' intrinsicInterior ℝ F = interior (Subtype.val ⁻¹' F)
+hC_eq_interior_A : C = interior A
+hA_convex : Convex ℝ A
+hC_convex : Convex ℝ C
+hC_open : IsOpen C
+h0_notin_C : 0 ∉ C
+f : StrongDual ℝ ↥V_dir
+hf : ∀ a ∈ C, f a < f 0
+hf_zero : f 0 = 0
+f_lin : ↥V_dir →ₗ[ℝ] ℝ := ↑f
+w_base : CoeffVec n →ₗ[ℝ] ℝ
+hw_base : w_base ∘ₗ V_dir.subtype = f_lin
+c_w : ℝ := w_base δ_bound
+h_on_intF : ∀ y ∈ intrinsicInterior ℝ F, w_base y < c_w
+h_closure_intF : closure (intrinsicInterior ℝ F) = F
+hw_nonpos_F : ∀ x ∈ F, w_base x ≤ c_w
+h_nonconst : ∃ x ∈ F, w_base x < c_w
+S_verts : Finset (CoeffVec n) := {v ∈ P.vertices | w_base v > c_w}
+hS_empty : S_verts = ∅
+lam : ℝ := 1
+hlam_pos : 0 < lam
+f_new : CoeffVec n →ₗ[ℝ] ℝ := hp.f + lam • w_base
+c_new : ℝ := hp.c + lam * c_w
+x : CoeffVec n
+hx : x ∈ (convexHull ℝ) ↑P.vertices
+v : CoeffVec n
+hv : v ∈ ↑P.vertices
+h_le : f_new x ≤ f_new v
+hv_w : w_base v ≤ c_w
+a✝ : hp.c + lam * c_w < hp.f x + lam * w_base x
+⊢ False
+failed
+error: ControlSystems/DiscreteTime/Edge2.lean:1767:78: Application type mismatch: The argument
+  h_eq
+has type
+  lam * w_base y = lam * c_w
+but is expected to have type
+  w_base y * lam = c_w * lam
+in the application
+  (mul_left_inj' (ne_of_gt hlam_pos)).mp h_eq
+error: ControlSystems/DiscreteTime/Edge2.lean:1789:12: push made no progress at hvS_not
+error: ControlSystems/DiscreteTime/Edge2.lean:1799:96: No goals to be solved
+error: ControlSystems/DiscreteTime/Edge2.lean:1814:46: Application type mismatch: The argument
+  Finset.mem_of_mem_filter ?m.3101
+has type
+  ?m.3101 ∈ Finset.filter ?m.3098 ?m.3100 → ?m.3101 ∈ ?m.3100
+but is expected to have type
+  y ∈ P.vertices
+in the application
+  hw_nonneg y (Finset.mem_of_mem_filter ?m.3101)
+error: ControlSystems/DiscreteTime/Edge2.lean:1814:72: Application type mismatch: The argument
+  hy
+has type
+  y ∈ {v ∈ P.vertices | v ∈ F}
+of sort `Prop` but is expected to have type
+  ?m.3097
+of sort `Type ?u.648326` in the application
+  Finset.mem_of_mem_filter hy
+error: ControlSystems/DiscreteTime/Edge2.lean:1882:43: Application type mismatch: The argument
+  h_eq
+has type
+  lam * w_base x = lam * c_w
+but is expected to have type
+  w_base x * lam = c_w * lam
+in the application
+  (mul_left_inj' hlam_ne).mp h_eq
+error: ControlSystems/DiscreteTime/Edge2.lean:1919:10: Unknown identifier `finrank_ker_eq_finrank_sub_one`
+error: ControlSystems/DiscreteTime/Edge2.lean:1920:78: failed to synthesize instance of type class
+  Min Type
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: ControlSystems/DiscreteTime/Edge2.lean:1923:39: Type mismatch: After simplification, term
+  x.property
+ has type
+  True
+but is expected to have type
+  w_base ↑↑x = 0
+error: ControlSystems/DiscreteTime/Edge2.lean:1932:45: failed to synthesize instance of type class
+  Min Type
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: ControlSystems/DiscreteTime/Edge2.lean:1935:30: failed to synthesize instance of type class
+  Min Type
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: ControlSystems/DiscreteTime/Edge2.lean:1957:10: linarith failed to find a contradiction
+case h
+n : ℕ
+P : Polytope n
+F : Set (CoeffVec n)
+δ_bound : CoeffVec n
+hδ_bound_in_F : δ_bound ∈ F
+hδ_bound_front : δ_bound ∈ frontier F
+hδ_bound_not_relint : δ_bound ∉ intrinsicInterior ℝ F
+hF_dim : Module.finrank ℝ ↥(affineSpan ℝ F).direction ≥ 2
+hp : SupportingHyperplane P
+hF_eq : F = ExposedFace hp
+hF_compact : IsCompact F
+hF_convex : Convex ℝ F
+hF_sub_Ω : F ⊆ P.Ω
+hF_closed : IsClosed F
+hδ_in_ExF : δ_bound ∈ ExposedFace hp
+hδ_in_Ω : δ_bound ∈ P.Ω
+hδ_f_val : hp.f δ_bound = hp.c
+h_int_nonempty : (interior P.Ω).Nonempty
+hΩ_convex : Convex ℝ P.Ω
+hΩ_closed : IsClosed P.Ω
+hδ_not_relint : δ_bound ∉ interior F
+hF_relint_nonempty : (intrinsicInterior ℝ F).Nonempty
+hδ_in_front_Ω : δ_bound ∈ frontier P.Ω
+hδ_not_int_Ω : δ_bound ∉ interior P.Ω
+hΩ_int_convex : Convex ℝ (interior P.Ω)
+f_Ω : StrongDual ℝ (CoeffVec n)
+hf_Ω_strict : ∀ a ∈ interior P.Ω, f_Ω a < f_Ω δ_bound
+g_Ω : CoeffVec n →ₗ[ℝ] ℝ := ↑f_Ω
+hg_Ω_strict : ∀ x ∈ interior P.Ω, g_Ω x < g_Ω δ_bound
+g_c : ℝ := g_Ω δ_bound
+hg_Ω_support : ∀ x ∈ P.Ω, g_Ω x ≤ g_Ω δ_bound
+hg_Ω_nonconst : ¬∃ x₀ ∈ ExposedFace hp, g_Ω x₀ < g_Ω δ_bound
+hg_const_on_F : ∀ x ∈ F, g_Ω x = g_c
+V_dir : Submodule ℝ (CoeffVec n) := (affineSpan ℝ F).direction
+affF : AffineSubspace ℝ (CoeffVec n) := affineSpan ℝ F
+hδ_affF : δ_bound ∈ affF
+τ : ↥V_dir ≃ₜ ↥affF :=
+  { toFun := fun v => ⟨δ_bound +ᵥ ↑v, ⋯⟩, invFun := fun p => ⟨↑p - δ_bound, ⋯⟩, left_inv := ⋯, right_inv := ⋯,
+    continuous_toFun := ⋯, continuous_invFun := ⋯ }
+A : Set ↥V_dir := ⇑τ ⁻¹' (Subtype.val ⁻¹' F)
+C : Set ↥V_dir := ⇑τ ⁻¹' (Subtype.val ⁻¹' intrinsicInterior ℝ F)
+h_int_eq : Subtype.val ⁻¹' intrinsicInterior ℝ F = interior (Subtype.val ⁻¹' F)
+hC_eq_interior_A : C = interior A
+hA_convex : Convex ℝ A
+hC_convex : Convex ℝ C
+hC_open : IsOpen C
+h0_notin_C : 0 ∉ C
+f : StrongDual ℝ ↥V_dir
+hf : ∀ a ∈ C, f a < f 0
+hf_zero : f 0 = 0
+f_lin : ↥V_dir →ₗ[ℝ] ℝ := ↑f
+w_base : CoeffVec n →ₗ[ℝ] ℝ
+hw_base : w_base ∘ₗ V_dir.subtype = f_lin
+c_w : ℝ := w_base δ_bound
+h_on_intF : ∀ y ∈ intrinsicInterior ℝ F, w_base y < c_w
+h_closure_intF : closure (intrinsicInterior ℝ F) = F
+hw_nonpos_F : ∀ x ∈ F, w_base x ≤ c_w
+h_nonconst : ∃ x ∈ F, w_base x < c_w
+S_verts : Finset (CoeffVec n) := {v ∈ P.vertices | w_base v > c_w}
+hS_empty : ¬S_verts = ∅
+hS_nonempty : S_verts.Nonempty
+allRatios : Finset ℝ := Finset.image (fun v => (hp.c - hp.f v) / (w_base v - c_w)) S_verts
+hallRatios_nonempty : allRatios.Nonempty
+v : CoeffVec n
+hvS : v ∈ S_verts
+hr : (hp.c - hp.f v) / (w_base v - c_w) ∈ allRatios
+hv_Ω : v ∈ P.Ω
+hb : hp.f v ≤ hp.c
+hne : hp.f v ≠ hp.c
+a✝ : hp.c - hp.f v ≤ 0
+⊢ False
+failed
+error: ControlSystems/DiscreteTime/Edge2.lean:1964:8: linarith failed to find a contradiction
+case h
+n : ℕ
+P : Polytope n
+F : Set (CoeffVec n)
+δ_bound : CoeffVec n
+hδ_bound_in_F : δ_bound ∈ F
+hδ_bound_front : δ_bound ∈ frontier F
+hδ_bound_not_relint : δ_bound ∉ intrinsicInterior ℝ F
+hF_dim : Module.finrank ℝ ↥(affineSpan ℝ F).direction ≥ 2
+hp : SupportingHyperplane P
+hF_eq : F = ExposedFace hp
+hF_compact : IsCompact F
+hF_convex : Convex ℝ F
+hF_sub_Ω : F ⊆ P.Ω
+hF_closed : IsClosed F
+hδ_in_ExF : δ_bound ∈ ExposedFace hp
+hδ_in_Ω : δ_bound ∈ P.Ω
+hδ_f_val : hp.f δ_bound = hp.c
+h_int_nonempty : (interior P.Ω).Nonempty
+hΩ_convex : Convex ℝ P.Ω
+hΩ_closed : IsClosed P.Ω
+hδ_not_relint : δ_bound ∉ interior F
+hF_relint_nonempty : (intrinsicInterior ℝ F).Nonempty
+hδ_in_front_Ω : δ_bound ∈ frontier P.Ω
+hδ_not_int_Ω : δ_bound ∉ interior P.Ω
+hΩ_int_convex : Convex ℝ (interior P.Ω)
+f_Ω : StrongDual ℝ (CoeffVec n)
+hf_Ω_strict : ∀ a ∈ interior P.Ω, f_Ω a < f_Ω δ_bound
+g_Ω : CoeffVec n →ₗ[ℝ] ℝ := ↑f_Ω
+hg_Ω_strict : ∀ x ∈ interior P.Ω, g_Ω x < g_Ω δ_bound
+g_c : ℝ := g_Ω δ_bound
+hg_Ω_support : ∀ x ∈ P.Ω, g_Ω x ≤ g_Ω δ_bound
+hg_Ω_nonconst : ¬∃ x₀ ∈ ExposedFace hp, g_Ω x₀ < g_Ω δ_bound
+hg_const_on_F : ∀ x ∈ F, g_Ω x = g_c
+V_dir : Submodule ℝ (CoeffVec n) := (affineSpan ℝ F).direction
+affF : AffineSubspace ℝ (CoeffVec n) := affineSpan ℝ F
+hδ_affF : δ_bound ∈ affF
+τ : ↥V_dir ≃ₜ ↥affF :=
+  { toFun := fun v => ⟨δ_bound +ᵥ ↑v, ⋯⟩, invFun := fun p => ⟨↑p - δ_bound, ⋯⟩, left_inv := ⋯, right_inv := ⋯,
+    continuous_toFun := ⋯, continuous_invFun := ⋯ }
+A : Set ↥V_dir := ⇑τ ⁻¹' (Subtype.val ⁻¹' F)
+C : Set ↥V_dir := ⇑τ ⁻¹' (Subtype.val ⁻¹' intrinsicInterior ℝ F)
+h_int_eq : Subtype.val ⁻¹' intrinsicInterior ℝ F = interior (Subtype.val ⁻¹' F)
+hC_eq_interior_A : C = interior A
+hA_convex : Convex ℝ A
+hC_convex : Convex ℝ C
+hC_open : IsOpen C
+h0_notin_C : 0 ∉ C
+f : StrongDual ℝ ↥V_dir
+hf : ∀ a ∈ C, f a < f 0
+hf_zero : f 0 = 0
+f_lin : ↥V_dir →ₗ[ℝ] ℝ := ↑f
+w_base : CoeffVec n →ₗ[ℝ] ℝ
+hw_base : w_base ∘ₗ V_dir.subtype = f_lin
+c_w : ℝ := w_base δ_bound
+h_on_intF : ∀ y ∈ intrinsicInterior ℝ F, w_base y < c_w
+h_closure_intF : closure (intrinsicInterior ℝ F) = F
+hw_nonpos_F : ∀ x ∈ F, w_base x ≤ c_w
+h_nonconst : ∃ x ∈ F, w_base x < c_w
+S_verts : Finset (CoeffVec n) := {v ∈ P.vertices | w_base v > c_w}
+hS_empty : ¬S_verts = ∅
+hS_nonempty : S_verts.Nonempty
+allRatios : Finset ℝ := Finset.image (fun v => (hp.c - hp.f v) / (w_base v - c_w)) S_verts
+hallRatios_nonempty : allRatios.Nonempty
+h_all_pos : ∀ r ∈ allRatios, 0 < r
+lam : ℝ := allRatios.min' hallRatios_nonempty / 2
+hmin : allRatios.min' hallRatios_nonempty ∈ allRatios
+hmin_pos : 0 < allRatios.min' hallRatios_nonempty
+a✝ : lam ≤ 0
+⊢ False
+failed
+error: ControlSystems/DiscreteTime/Edge2.lean:1974:40: unsolved goals
+n : ℕ
+P : Polytope n
+F : Set (CoeffVec n)
+δ_bound : CoeffVec n
+hδ_bound_in_F : δ_bound ∈ F
+hδ_bound_front : δ_bound ∈ frontier F
+hδ_bound_not_relint : δ_bound ∉ intrinsicInterior ℝ F
+hF_dim : Module.finrank ℝ ↥(affineSpan ℝ F).direction ≥ 2
+hp : SupportingHyperplane P
+hF_eq : F = ExposedFace hp
+hF_compact : IsCompact F
+hF_convex : Convex ℝ F
+hF_sub_Ω : F ⊆ P.Ω
+hF_closed : IsClosed F
+hδ_in_ExF : δ_bound ∈ ExposedFace hp
+hδ_in_Ω : δ_bound ∈ P.Ω
+hδ_f_val : hp.f δ_bound = hp.c
+h_int_nonempty : (interior P.Ω).Nonempty
+hΩ_convex : Convex ℝ P.Ω
+hΩ_closed : IsClosed P.Ω
+hδ_not_relint : δ_bound ∉ interior F
+hF_relint_nonempty : (intrinsicInterior ℝ F).Nonempty
+hδ_in_front_Ω : δ_bound ∈ frontier P.Ω
+hδ_not_int_Ω : δ_bound ∉ interior P.Ω
+hΩ_int_convex : Convex ℝ (interior P.Ω)
+f_Ω : StrongDual ℝ (CoeffVec n)
+hf_Ω_strict : ∀ a ∈ interior P.Ω, f_Ω a < f_Ω δ_bound
+g_Ω : CoeffVec n →ₗ[ℝ] ℝ := ↑f_Ω
+hg_Ω_strict : ∀ x ∈ interior P.Ω, g_Ω x < g_Ω δ_bound
+g_c : ℝ := g_Ω δ_bound
+hg_Ω_support : ∀ x ∈ P.Ω, g_Ω x ≤ g_Ω δ_bound
+hg_Ω_nonconst : ¬∃ x₀ ∈ ExposedFace hp, g_Ω x₀ < g_Ω δ_bound
+hg_const_on_F : ∀ x ∈ F, g_Ω x = g_c
+V_dir : Submodule ℝ (CoeffVec n) := (affineSpan ℝ F).direction
+affF : AffineSubspace ℝ (CoeffVec n) := affineSpan ℝ F
+hδ_affF : δ_bound ∈ affF
+τ : ↥V_dir ≃ₜ ↥affF :=
+  { toFun := fun v => ⟨δ_bound +ᵥ ↑v, ⋯⟩, invFun := fun p => ⟨↑p - δ_bound, ⋯⟩, left_inv := ⋯, right_inv := ⋯,
+    continuous_toFun := ⋯, continuous_invFun := ⋯ }
+A : Set ↥V_dir := ⇑τ ⁻¹' (Subtype.val ⁻¹' F)
+C : Set ↥V_dir := ⇑τ ⁻¹' (Subtype.val ⁻¹' intrinsicInterior ℝ F)
+h_int_eq : Subtype.val ⁻¹' intrinsicInterior ℝ F = interior (Subtype.val ⁻¹' F)
+hC_eq_interior_A : C = interior A
+hA_convex : Convex ℝ A
+hC_convex : Convex ℝ C
+hC_open : IsOpen C
+h0_notin_C : 0 ∉ C
+f : StrongDual ℝ ↥V_dir
+hf : ∀ a ∈ C, f a < f 0
+hf_zero : f 0 = 0
+f_lin : ↥V_dir →ₗ[ℝ] ℝ := ↑f
+w_base : CoeffVec n →ₗ[ℝ] ℝ
+hw_base : w_base ∘ₗ V_dir.subtype = f_lin
+c_w : ℝ := w_base δ_bound
+h_on_intF : ∀ y ∈ intrinsicInterior ℝ F, w_base y < c_w
+h_closure_intF : closure (intrinsicInterior ℝ F) = F
+hw_nonpos_F : ∀ x ∈ F, w_base x ≤ c_w
+h_nonconst : ∃ x ∈ F, w_base x < c_w
+S_verts : Finset (CoeffVec n) := {v ∈ P.vertices | w_base v > c_w}
+hS_empty : ¬S_verts = ∅
+hS_nonempty : S_verts.Nonempty
+allRatios : Finset ℝ := Finset.image (fun v => (hp.c - hp.f v) / (w_base v - c_w)) S_verts
+hallRatios_nonempty : allRatios.Nonempty
+h_all_pos : ∀ r ∈ allRatios, 0 < r
+lam : ℝ := allRatios.min' hallRatios_nonempty / 2
+hlam_pos : 0 < lam
+f_new : CoeffVec n →ₗ[ℝ] ℝ := hp.f + lam • w_base
+c_new : ℝ := hp.c + lam * c_w
+x : CoeffVec n
+hx : x ∈ (convexHull ℝ) ↑P.vertices
+v : CoeffVec n
+hv : v ∈ ↑P.vertices
+h_le : f_new x ≤ f_new v
+h_hp : hp.f v ≤ hp.c
+hw_gt : w_base v > c_w
+⊢ v ∈ P.vertices
+error: ControlSystems/DiscreteTime/Edge2.lean:1980:27: linarith failed to find a contradiction
+case h
+n : ℕ
+P : Polytope n
+F : Set (CoeffVec n)
+δ_bound : CoeffVec n
+hδ_bound_in_F : δ_bound ∈ F
+hδ_bound_front : δ_bound ∈ frontier F
+hδ_bound_not_relint : δ_bound ∉ intrinsicInterior ℝ F
+hF_dim : Module.finrank ℝ ↥(affineSpan ℝ F).direction ≥ 2
+hp : SupportingHyperplane P
+hF_eq : F = ExposedFace hp
+hF_compact : IsCompact F
+hF_convex : Convex ℝ F
+hF_sub_Ω : F ⊆ P.Ω
+hF_closed : IsClosed F
+hδ_in_ExF : δ_bound ∈ ExposedFace hp
+hδ_in_Ω : δ_bound ∈ P.Ω
+hδ_f_val : hp.f δ_bound = hp.c
+h_int_nonempty : (interior P.Ω).Nonempty
+hΩ_convex : Convex ℝ P.Ω
+hΩ_closed : IsClosed P.Ω
+hδ_not_relint : δ_bound ∉ interior F
+hF_relint_nonempty : (intrinsicInterior ℝ F).Nonempty
+hδ_in_front_Ω : δ_bound ∈ frontier P.Ω
+hδ_not_int_Ω : δ_bound ∉ interior P.Ω
+hΩ_int_convex : Convex ℝ (interior P.Ω)
+f_Ω : StrongDual ℝ (CoeffVec n)
+hf_Ω_strict : ∀ a ∈ interior P.Ω, f_Ω a < f_Ω δ_bound
+g_Ω : CoeffVec n →ₗ[ℝ] ℝ := ↑f_Ω
+hg_Ω_strict : ∀ x ∈ interior P.Ω, g_Ω x < g_Ω δ_bound
+g_c : ℝ := g_Ω δ_bound
+hg_Ω_support : ∀ x ∈ P.Ω, g_Ω x ≤ g_Ω δ_bound
+hg_Ω_nonconst : ¬∃ x₀ ∈ ExposedFace hp, g_Ω x₀ < g_Ω δ_bound
+hg_const_on_F : ∀ x ∈ F, g_Ω x = g_c
+V_dir : Submodule ℝ (CoeffVec n) := (affineSpan ℝ F).direction
+affF : AffineSubspace ℝ (CoeffVec n) := affineSpan ℝ F
+hδ_affF : δ_bound ∈ affF
+τ : ↥V_dir ≃ₜ ↥affF :=
+  { toFun := fun v => ⟨δ_bound +ᵥ ↑v, ⋯⟩, invFun := fun p => ⟨↑p - δ_bound, ⋯⟩, left_inv := ⋯, right_inv := ⋯,
+    continuous_toFun := ⋯, continuous_invFun := ⋯ }
+A : Set ↥V_dir := ⇑τ ⁻¹' (Subtype.val ⁻¹' F)
+C : Set ↥V_dir := ⇑τ ⁻¹' (Subtype.val ⁻¹' intrinsicInterior ℝ F)
+h_int_eq : Subtype.val ⁻¹' intrinsicInterior ℝ F = interior (Subtype.val ⁻¹' F)
+hC_eq_interior_A : C = interior A
+hA_convex : Convex ℝ A
+hC_convex : Convex ℝ C
+hC_open : IsOpen C
+h0_notin_C : 0 ∉ C
+f : StrongDual ℝ ↥V_dir
+hf : ∀ a ∈ C, f a < f 0
+hf_zero : f 0 = 0
+f_lin : ↥V_dir →ₗ[ℝ] ℝ := ↑f
+w_base : CoeffVec n →ₗ[ℝ] ℝ
+hw_base : w_base ∘ₗ V_dir.subtype = f_lin
+c_w : ℝ := w_base δ_bound
+h_on_intF : ∀ y ∈ intrinsicInterior ℝ F, w_base y < c_w
+h_closure_intF : closure (intrinsicInterior ℝ F) = F
+hw_nonpos_F : ∀ x ∈ F, w_base x ≤ c_w
+h_nonconst : ∃ x ∈ F, w_base x < c_w
+S_verts : Finset (CoeffVec n) := {v ∈ P.vertices | w_base v > c_w}
+hS_empty : ¬S_verts = ∅
+hS_nonempty : S_verts.Nonempty
+allRatios : Finset ℝ := Finset.image (fun v => (hp.c - hp.f v) / (w_base v - c_w)) S_verts
+hallRatios_nonempty : allRatios.Nonempty
+h_all_pos : ∀ r ∈ allRatios, 0 < r
+lam : ℝ := allRatios.min' hallRatios_nonempty / 2
+hlam_pos : 0 < lam
+f_new : CoeffVec n →ₗ[ℝ] ℝ := hp.f + lam • w_base
+c_new : ℝ := hp.c + lam * c_w
+x : CoeffVec n
+hx : x ∈ (convexHull ℝ) ↑P.vertices
+v : CoeffVec n
+hv : v ∈ ↑P.vertices
+h_le : f_new x ≤ f_new v
+h_hp : hp.f v ≤ hp.c
+hw_gt : w_base v > c_w
+h_mem : v ∈ S_verts
+h_ratio : (hp.c - hp.f v) / (w_base v - c_w) ∈ allRatios
+h_min : allRatios.min' hallRatios_nonempty ≤ (hp.c - hp.f v) / (w_base v - c_w)
+a✝ : (hp.c - hp.f v) / (w_base v - c_w) < allRatios.min' hallRatios_nonempty / 2
+⊢ False
+failed
+error: ControlSystems/DiscreteTime/Edge2.lean:1998:83: Application type mismatch: The argument
+  h_eq_lam
+has type
+  lam * w_base y = lam * c_w
+but is expected to have type
+  w_base y * lam = c_w * lam
+in the application
+  (mul_left_inj' (ne_of_gt hlam_pos)).mp h_eq_lam
+error: ControlSystems/DiscreteTime/Edge2.lean:2019:25: linarith failed to find a contradiction
+case h
+n : ℕ
+P : Polytope n
+F : Set (CoeffVec n)
+δ_bound : CoeffVec n
+hδ_bound_in_F : δ_bound ∈ F
+hδ_bound_front : δ_bound ∈ frontier F
+hδ_bound_not_relint : δ_bound ∉ intrinsicInterior ℝ F
+hF_dim : Module.finrank ℝ ↥(affineSpan ℝ F).direction ≥ 2
+hp : SupportingHyperplane P
+hF_eq : F = ExposedFace hp
+hF_compact : IsCompact F
+hF_convex : Convex ℝ F
+hF_sub_Ω : F ⊆ P.Ω
+hF_closed : IsClosed F
+hδ_in_ExF : δ_bound ∈ ExposedFace hp
+hδ_in_Ω : δ_bound ∈ P.Ω
+hδ_f_val : hp.f δ_bound = hp.c
+h_int_nonempty : (interior P.Ω).Nonempty
+hΩ_convex : Convex ℝ P.Ω
+hΩ_closed : IsClosed P.Ω
+hδ_not_relint : δ_bound ∉ interior F
+hF_relint_nonempty : (intrinsicInterior ℝ F).Nonempty
+hδ_in_front_Ω : δ_bound ∈ frontier P.Ω
+hδ_not_int_Ω : δ_bound ∉ interior P.Ω
+hΩ_int_convex : Convex ℝ (interior P.Ω)
+f_Ω : StrongDual ℝ (CoeffVec n)
+hf_Ω_strict : ∀ a ∈ interior P.Ω, f_Ω a < f_Ω δ_bound
+g_Ω : CoeffVec n →ₗ[ℝ] ℝ := ↑f_Ω
+hg_Ω_strict : ∀ x ∈ interior P.Ω, g_Ω x < g_Ω δ_bound
+g_c : ℝ := g_Ω δ_bound
+hg_Ω_support : ∀ x ∈ P.Ω, g_Ω x ≤ g_Ω δ_bound
+hg_Ω_nonconst : ¬∃ x₀ ∈ ExposedFace hp, g_Ω x₀ < g_Ω δ_bound
+hg_const_on_F : ∀ x ∈ F, g_Ω x = g_c
+V_dir : Submodule ℝ (CoeffVec n) := (affineSpan ℝ F).direction
+affF : AffineSubspace ℝ (CoeffVec n) := affineSpan ℝ F
+hδ_affF : δ_bound ∈ affF
+τ : ↥V_dir ≃ₜ ↥affF :=
+  { toFun := fun v => ⟨δ_bound +ᵥ ↑v, ⋯⟩, invFun := fun p => ⟨↑p - δ_bound, ⋯⟩, left_inv := ⋯, right_inv := ⋯,
+    continuous_toFun := ⋯, continuous_invFun := ⋯ }
+A : Set ↥V_dir := ⇑τ ⁻¹' (Subtype.val ⁻¹' F)
+C : Set ↥V_dir := ⇑τ ⁻¹' (Subtype.val ⁻¹' intrinsicInterior ℝ F)
+h_int_eq : Subtype.val ⁻¹' intrinsicInterior ℝ F = interior (Subtype.val ⁻¹' F)
+hC_eq_interior_A : C = interior A
+hA_convex : Convex ℝ A
+hC_convex : Convex ℝ C
+hC_open : IsOpen C
+h0_notin_C : 0 ∉ C
+f : StrongDual ℝ ↥V_dir
+hf : ∀ a ∈ C, f a < f 0
+hf_zero : f 0 = 0
+f_lin : ↥V_dir →ₗ[ℝ] ℝ := ↑f
+w_base : CoeffVec n →ₗ[ℝ] ℝ
+hw_base : w_base ∘ₗ V_dir.subtype = f_lin
+c_w : ℝ := w_base δ_bound
+h_on_intF : ∀ y ∈ intrinsicInterior ℝ F, w_base y < c_w
+h_closure_intF : closure (intrinsicInterior ℝ F) = F
+hw_nonpos_F : ∀ x ∈ F, w_base x ≤ c_w
+h_nonconst : ∃ x ∈ F, w_base x < c_w
+S_verts : Finset (CoeffVec n) := {v ∈ P.vertices | w_base v > c_w}
+hS_empty : ¬S_verts = ∅
+hS_nonempty : S_verts.Nonempty
+allRatios : Finset ℝ := Finset.image (fun v => (hp.c - hp.f v) / (w_base v - c_w)) S_verts
+hallRatios_nonempty : allRatios.Nonempty
+h_all_pos : ∀ r ∈ allRatios, 0 < r
+lam : ℝ := allRatios.min' hallRatios_nonempty / 2
+hlam_pos : 0 < lam
+f_new : CoeffVec n →ₗ[ℝ] ℝ := hp.f + lam • w_base
+c_new : ℝ := hp.c + lam * c_w
+h_support : ∀ x ∈ P.Ω, f_new x ≤ c_new
+h_touches : ∃ x ∈ P.Ω, f_new x = c_new
+h_nonzero : f_new ≠ 0
+G : Set (CoeffVec n) := {x | x ∈ P.Ω ∧ f_new x = c_new}
+hG_exposed : IsExposedFace P G
+hδ_in_G : δ_bound ∈ G
+v : CoeffVec n
+hv : v ∈ P.vertices
+hv_notF : v ∉ F
+hv_f_strict : hp.f v < hp.c
+hw_gt : w_base v > c_w
+h_mem : v ∈ S_verts
+h_ratio : (hp.c - hp.f v) / (w_base v - c_w) ∈ allRatios
+h_min : allRatios.min' hallRatios_nonempty ≤ (hp.c - hp.f v) / (w_base v - c_w)
+h_pos_den : 0 < w_base v - c_w
+a✝ : (hp.c - hp.f v) / (w_base v - c_w) ≤ allRatios.min' hallRatios_nonempty / 2
+⊢ False
+failed
+error: ControlSystems/DiscreteTime/Edge2.lean:2042:96: No goals to be solved
+error: ControlSystems/DiscreteTime/Edge2.lean:2057:46: Application type mismatch: The argument
+  Finset.mem_of_mem_filter ?m.5690
+has type
+  ?m.5690 ∈ Finset.filter ?m.5687 ?m.5689 → ?m.5690 ∈ ?m.5689
+but is expected to have type
+  y ∈ P.vertices
+in the application
+  hw_nonneg y (Finset.mem_of_mem_filter ?m.5690)
+error: ControlSystems/DiscreteTime/Edge2.lean:2057:72: Application type mismatch: The argument
+  hy
+has type
+  y ∈ {v ∈ P.vertices | v ∈ F}
+of sort `Prop` but is expected to have type
+  ?m.5686
+of sort `Type ?u.828567` in the application
+  Finset.mem_of_mem_filter hy
+error: ControlSystems/DiscreteTime/Edge2.lean:2079:20: Invalid `⟨...⟩` notation: The expected type
+  Real.lt✝ (w_poly v * f_new v) (w_poly v * c_new)
+is not an inductive type
+
+Note: This notation can only be used when the expected type is an inductive type with a single constructor
+error: ControlSystems/DiscreteTime/Edge2.lean:2101:43: Application type mismatch: The argument
+  h_eq
+has type
+  lam * w_base x = lam * c_w
+but is expected to have type
+  w_base x * lam = c_w * lam
+in the application
+  (mul_left_inj' hlam_ne).mp h_eq
+error: ControlSystems/DiscreteTime/Edge2.lean:2137:10: Unknown identifier `finrank_ker_eq_finrank_sub_one`
+error: ControlSystems/DiscreteTime/Edge2.lean:2138:78: failed to synthesize instance of type class
+  Min Type
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: ControlSystems/DiscreteTime/Edge2.lean:2141:39: Type mismatch: After simplification, term
+  x.property
+ has type
+  True
+but is expected to have type
+  w_base ↑↑x = 0
+error: ControlSystems/DiscreteTime/Edge2.lean:2150:45: failed to synthesize instance of type class
+  Min Type
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: ControlSystems/DiscreteTime/Edge2.lean:2153:30: failed to synthesize instance of type class
+  Min Type
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+warning: ControlSystems/DiscreteTime/Edge2.lean:1530:17: This simp argument is unused:
+  G
+
+Hint: Omit it from the simp argument list.
+  simp only [G̵,̵ ̵Pi.add_apply, LinearMap.add_apply]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:1530:20: This simp argument is unused:
+  Pi.add_apply
+
+Hint: Omit it from the simp argument list.
+  simp only [G, P̵i̵.̵a̵d̵d̵_̵a̵p̵p̵l̵y̵,̵ ̵LinearMap.add_apply]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:1540:19: This simp argument is unused:
+  Pi.add_apply
+
+Hint: Omit it from the simp argument list.
+  simp only [P̵i̵.̵a̵d̵d̵_̵a̵p̵p̵l̵y̵,̵ ̵LinearMap.add_apply] at hx_sum
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:1561:38: This simp argument is unused:
+  Pi.add_apply
+
+Hint: Omit it from the simp argument list.
+  simp only [LinearMap.mem_ker, P̵i̵.̵a̵d̵d̵_̵a̵p̵p̵l̵y̵,̵ ̵LinearMap.add_apply, hfv_zero, zero_add]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:1607:41: This simp argument is unused:
+  vadd_vsub
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵d̵d̵_̵v̵s̵u̵b̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:1608:42: This simp argument is unused:
+  vsub_vadd
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵s̵u̵b̵_̵v̵a̵d̵d̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:1895:37: This simp argument is unused:
+  LinearMap.map_smul
+
+Hint: Omit it from the simp argument list.
+  simp [LinearMap.map_add, L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵m̵a̵p̵_̵s̵m̵u̵l̵,̵ ̵LinearMap.map_sub, hu, hv, hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:1974:77: This simp argument is unused:
+  hv
+
+Hint: Omit it from the simp argument list.
+  simp [S_verts, Finset.mem_filter, hv̵,̵ ̵h̵w_gt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:2114:37: This simp argument is unused:
+  LinearMap.map_smul
+
+Hint: Omit it from the simp argument list.
+  simp [LinearMap.map_add, L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵m̵a̵p̵_̵s̵m̵u̵l̵,̵ ̵LinearMap.map_sub, hu, hv, hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:2345:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:2395:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:2398:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:2426:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:2442:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:2447:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:2450:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:2453:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:2466:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+error: ControlSystems/DiscreteTime/Edge2.lean:2549:14: Unknown identifier `exists_exposed_edge_through_vertex`
+warning: ControlSystems/DiscreteTime/Edge2.lean:2612:8: Try `simp at h` instead of `simpa using h`
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:2618:8: Try `simp at h` instead of `simpa using h`
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:2675:14: declaration uses 'sorry'
+warning: ControlSystems/DiscreteTime/Edge2.lean:2675:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:2695:0: This line exceeds the 100 character limit, please shorten it!
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:2707:0: Please, write a comment here or remove this line, but do not place empty lines within commands!
+Context:
+                                       ↓
+  ⏎  obtain ⟨δ, hδ_in_Ω, hδ_root⟩ := hs⏎⏎  have hs_real : s = ↑s.re := by⏎
+
+Note: This linter can be disabled with `set_option linter.style.emptyLine false`
+warning: ControlSystems/DiscreteTime/Edge2.lean:2766:8: declaration uses 'sorry'
+error: Lean exited with code 1
+Some required targets logged failures:
+- ControlSystems.DiscreteTime.Edge2copy
+- ControlSystems.DiscreteTime.Edge2split
+- ControlSystems.DiscreteTime.Edge2
