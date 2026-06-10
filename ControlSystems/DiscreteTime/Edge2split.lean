@@ -3,6 +3,8 @@ module
 public import ControlSystems.DiscreteTime.EdgeTheoremDefs
 public import Mathlib.Analysis.Convex.Intrinsic
 public import ControlSystems.DiscreteTime.lemma61helper
+public import ControlSystems.DiscreteTime.DirectionSubKerGΩ
+public import ControlSystems.DiscreteTime.NotMemIntrinsicInterior
 
 
 @[expose] public section
@@ -946,28 +948,174 @@ private lemma intrinsicInterior_polytope_eq_interior {n : ℕ} (P : Polytope n) 
     _ = interior P.Ω := by simp
 
 
-/--
-Given a polytope P, an exposed face F of P, and a boundary point δ_bound of F,
-construct a proper exposed subface G ⊊ F containing δ_bound with dim(G) < dim(F).
-
-lemma mem_intrinsicInterior_add_smul (F : Set (CoeffVec n)) (hF_convex : Convex ℝ F)
+private lemma mem_intrinsicInterior_add_smul (F : Set (CoeffVec n)) (hF_convex : Convex ℝ F)
     (hx : x ∈ F) (hy : y ∈ intrinsicInterior ℝ F) {t : ℝ} (ht0 : 0 < t) (ht1 : t < 1) :
     (1 - t) • x + t • y ∈ intrinsicInterior ℝ F := by
   let affF := affineSpan ℝ F
-  have hy' : y ∈ (Subtype.val : affF → CoeffVec n) '' interior ((Subtype.val : affF → CoeffVec n)⁻¹' F) := by
-    rw [intrinsicInterior]; exact hy
+  have hy' : y ∈ (↑) '' interior ((↑)⁻¹' F : Set affF) := by
+    simpa [intrinsicInterior] using hy
   rcases hy' with ⟨y_aff, hy_aff_int, hy_eq⟩
-  haveI : Nonempty affF := ⟨⟨x, subset_affineSpan ℝ F hx⟩⟩
-  let C : Set affF := affF.subtype ⁻¹' F
-  have hC_convex : Convex ℝ C := hF_convex.affine_preimage affF.subtype
-  have hx_aff : (⟨x, subset_affineSpan ℝ F hx⟩ : affF) ∈ C := by
-    simp [C, hx]
-  have hz_int : (1 - t) • (⟨x, subset_affineSpan ℝ F hx⟩ : affF) + t • y_aff ∈ interior C :=
-    hC_convex.add_smul_mem_interior hx_aff hy_aff_int ht0 ht1
-  rw [intrinsicInterior, Set.mem_image]
-  refine ⟨(1 - t) • (⟨x, subset_affineSpan ℝ F hx⟩ : affF) + t • y_aff, hz_int, ?_⟩
-  simp [hy_eq]
+  let V := affF.direction
+  let base : affF := ⟨x, subset_affineSpan ℝ F hx⟩
+  haveI : Nonempty affF := ⟨base⟩
+  let A : affF ≃ₜ V := {
+    toFun    := fun p => ⟨(p : CoeffVec n) - x,
+      AffineSubspace.vsub_mem_direction p.2 (subset_affineSpan ℝ F hx)⟩
+    invFun   := fun v => ⟨(v : CoeffVec n) +ᵥ x,
+      AffineSubspace.vadd_mem_of_mem_direction v.2 (subset_affineSpan ℝ F hx)⟩
+    left_inv  := by
+      intro p; ext; simp [vadd_eq_add, vsub_eq_sub]
+    right_inv := by
+      intro v; ext; simp [vadd_eq_add, vsub_eq_sub]
+    continuous_toFun  := by
+      apply Continuous.subtype_mk
+      apply Continuous.sub
+      · exact continuous_subtype_val
+      · exact continuous_const
+    continuous_invFun := by
+      apply Continuous.subtype_mk
+      apply Continuous.add
+      · exact continuous_subtype_val
+      · exact continuous_const
+  }
+  let f : V →ᵃ[ℝ] CoeffVec n :=
+    { toFun := λ v => x + (v : CoeffVec n)
+      linear := Submodule.subtype V
+      map_vadd' := λ v w => by
+        dsimp; abel }
+  have hS_eq : A '' ((↑)⁻¹' F : Set affF) = f⁻¹' F := by
+    ext v; constructor
+    · rintro ⟨p, hp, rfl⟩
+      have hAp : f (A p) = (p : CoeffVec n) := by
+        calc
+          f (A p) = x + ((A p : V) : CoeffVec n) := rfl
+          _ = x + ((p -ᵥ base : V) : CoeffVec n) := by
+            have : A p = (p -ᵥ base : V) := by
+              dsimp [A]
+              rfl
+            simpa [this]
+          _ = x + ((p : CoeffVec n) -ᵥ (base : CoeffVec n)) := by
+            simpa using congrArg (λ t => x + (t : CoeffVec n)) (AffineSubspace.coe_vsub affF p base)
+          _ = x + ((p : CoeffVec n) - (base : CoeffVec n)) := by simp
+          _ = x + ((p : CoeffVec n) - x) := rfl
+          _ = (p : CoeffVec n) := by simp
+      have hmem : f (A p) ∈ F := by
+        rw [hAp]
+        exact hp
+      exact hmem
+    · intro hv
+      have hfp : f (v : V) ∈ F := by
+        simpa using hv
+      have h_coe_vadd : ((v : V) +ᵥ base : CoeffVec n) = (v : CoeffVec n) +ᵥ (base : CoeffVec n) := by
+        calc
+          ((v : V) +ᵥ base : CoeffVec n) = ((v : V) +ᵥ base : affF).val := rfl
+          _ = (v : V).val +ᵥ base.val := rfl
+          _ = (v : CoeffVec n) +ᵥ (base : CoeffVec n) := rfl
+      have h_vadd_eq_add : (v : CoeffVec n) +ᵥ (base : CoeffVec n) = (v : CoeffVec n) + (base : CoeffVec n) := by simp
+      have h_base_coe : (base : CoeffVec n) = x := rfl
+      have h_eq : ((v : V) +ᵥ base : CoeffVec n) = f (v : V) := by
+        calc
+          ((v : V) +ᵥ base : CoeffVec n) = (v : CoeffVec n) +ᵥ (base : CoeffVec n) := h_coe_vadd
+          _ = (v : CoeffVec n) + (base : CoeffVec n) := h_vadd_eq_add
+          _ = (v : CoeffVec n) + x := by simp [base]
+          _ = x + (v : CoeffVec n) := by abel
+          _ = f (v : V) := rfl
+      have : (v : V) +ᵥ base ∈ ((↑)⁻¹' F : Set affF) := by
+        simpa [h_eq] using hfp
 
+      refine ⟨(v : V) +ᵥ base, this, ?_⟩
+      ext x'
+      show ((v +ᵥ base : affF) : CoeffVec n) x' - x x' = (v : CoeffVec n) x'
+      have : ((v +ᵥ base : affF) : CoeffVec n) x' = (v : CoeffVec n) x' + x x' := by
+        have := h_coe_vadd
+        simp [vadd_eq_add] at this
+        rw [this, h_base_coe]
+        simp [vadd_eq_add]
+      linarith
+
+  have hS_convex : Convex ℝ (f⁻¹' F) :=
+    hF_convex.affine_preimage f
+  have h0 : (0 : V) ∈ f⁻¹' F := by
+    simpa [f] using hx
+  have h_int : (y_aff -ᵥ base : V) ∈ interior (f⁻¹' F) := by
+    have hA_image : A '' interior ((↑)⁻¹' F : Set affF) = interior (f⁻¹' F) := by
+      rw [A.image_interior ((↑)⁻¹' F : Set affF)]
+      congr 1
+
+    have h_mem' : A y_aff ∈ interior (f⁻¹' F) := by
+      rw [← hA_image]
+      exact Set.mem_image_of_mem A hy_aff_int
+    have : A y_aff = (y_aff -ᵥ base : V) := by
+      dsimp [A]; rfl
+    rw [this] at h_mem'
+    exact h_mem'
+  have h_t_mem : t ∈ Set.Ioc (0 : ℝ) 1 := ⟨ht0, le_of_lt ht1⟩
+  have h_add_smul : t • (y_aff -ᵥ base : V) ∈ interior (f⁻¹' F) := by
+    have := hS_convex.add_smul_mem_interior h0 (by simpa [zero_add] using h_int) h_t_mem
+    simpa [zero_add] using this
+  have h_mem_int_C : (t • (y_aff -ᵥ base : V) : V) +ᵥ base ∈ interior ((↑)⁻¹' F : Set affF) := by
+    have h_eq_symm_image : A.symm '' (f⁻¹' F) = ((↑)⁻¹' F : Set affF) := by
+      calc
+        A.symm '' (f⁻¹' F) = A.symm '' (A '' ((↑)⁻¹' F : Set affF)) := by rw [hS_eq]
+        _ = (A.symm ∘ A) '' ((↑)⁻¹' F : Set affF) := by rw [Set.image_comp]
+        _ = _root_.id '' ((↑)⁻¹' F : Set affF) := by
+          have : A.symm ∘ A = _root_.id := by
+            ext p; simp
+          rw [this]
+        _ = ((↑)⁻¹' F : Set affF) := by simp
+    have h_image_eq : A.symm '' interior (f⁻¹' F) =
+        interior ((↑)⁻¹' F : Set affF) := by
+      have h1 : A.symm '' interior (f⁻¹' F) =
+                interior (A.symm '' (f⁻¹' F)) := by
+        exact Homeomorph.image_interior A.symm (f⁻¹' F)
+      have h2 : A.symm '' (f⁻¹' F) = A.symm '' (A '' ((↑)⁻¹' F : Set affF)) := by
+        rw [hS_eq]
+      have h3 : A.symm '' (A '' ((↑)⁻¹' F : Set affF)) = ((↑)⁻¹' F : Set affF) := by
+        rw [← Set.image_comp]
+        have : A.symm ∘ A = id := Homeomorph.symm_comp_self A
+        rw [this, Set.image_id]
+      rw [h1, h2, h3]
+    have h_mem_image' : A.symm (t • (y_aff -ᵥ base : V)) ∈ interior ((↑)⁻¹' F : Set affF) := by
+      rw [← h_image_eq]
+      exact Set.mem_image_of_mem A.symm h_add_smul
+    have h_A_symm : A.symm (t • (y_aff -ᵥ base : V)) = (t • (y_aff -ᵥ base : V) : V) +ᵥ base := by
+      dsimp [A]; rfl
+    rw [h_A_symm] at h_mem_image'
+    exact h_mem_image'
+  have h_proj : (((t • (y_aff -ᵥ base : V) : V) +ᵥ base : affF) : CoeffVec n) = (1 - t) • x + t • y := by
+    simp [base, hy_eq, vadd_eq_add, vsub_eq_sub, smul_sub, sub_smul]; abel
+  have h_final : (1 - t) • x + t • y ∈ (↑) '' interior ((↑)⁻¹' F : Set affF) :=
+    ⟨(t • (y_aff -ᵥ base : V) : V) +ᵥ base, h_mem_int_C, h_proj⟩
+  simpa [intrinsicInterior] using h_final
+
+lemma finrank_ker_eq_finrank_sub_one {U : Type*} [AddCommGroup U] [Module ℝ U]
+    [FiniteDimensional ℝ U] (g : U →ₗ[ℝ] ℝ) (hg_nonzero : g ≠ 0) :
+    Module.finrank ℝ (LinearMap.ker g) = Module.finrank ℝ U - 1 := by
+  -- Show that g is surjective, so its range is ⊤, hence finrank(range) = 1
+  have h_range_top : LinearMap.range g = ⊤ := by
+    apply LinearMap.range_eq_top.mpr
+    intro y
+    -- Since g ≠ 0, there exists some x with g x ≠ 0
+    have ⟨x, hx⟩ : ∃ x, g x ≠ 0 := by
+      by_contra h_allzero
+      apply hg_nonzero
+      apply LinearMap.ext
+      intro x
+      by_contra hgx_ne
+      apply h_allzero
+      exact ⟨x, hgx_ne⟩
+    refine ⟨(y / g x) • x, ?_⟩
+    simp [hx, mul_comm]
+    grind
+  have h_finrank_range : Module.finrank ℝ (LinearMap.range g) = 1 := by
+    rw [h_range_top]
+    simp
+  have h_total : Module.finrank ℝ (LinearMap.range g) + Module.finrank ℝ (LinearMap.ker g) = Module.finrank ℝ U :=
+    LinearMap.finrank_range_add_finrank_ker g
+  rw [h_finrank_range] at h_total
+  omega
+
+/--
 private lemma exists_proper_subface_of_boundary_point2 {n : ℕ} (P : Polytope n)
 (F : Set (CoeffVec n)) (hF_exp : IsExposedFace P F) (δ_bound : CoeffVec n)
 (hδ_bound_in_F : δ_bound ∈ F) (hδ_bound_front : δ_bound ∈ frontier F)
@@ -1052,48 +1200,9 @@ Module.finrank ℝ (affineSpan ℝ G).direction ≥ 1 := by
       rw [hF_eq]; exact h_lt_ExF
 
     have hG_dim_ge_1 : Module.finrank ℝ (affineSpan ℝ G).direction ≥ 1 := by
-      have h_dim_F_ge_2 : Module.finrank ℝ (affineSpan ℝ F).direction ≥ 2 := hF_dim
-      have h_dim_lt : Module.finrank ℝ (affineSpan ℝ G).direction < Module.finrank ℝ (affineSpan ℝ F).direction := hG_dim_lt
-      -- Since dim(F) >= 2 and dim(G) < dim(F), and the drop is exactly 1 (kernel of non-zero functional), dim(G) >= 1.
-      -- More formally, the restriction of g_Ω to dir(F) is non-zero, so dim(ker) = dim(F) - 1 >= 1.
-      let g_V := g_Ω.comp ((affineSpan ℝ F).direction).subtype
-      have hv_in_dir_F : v_dir ∈ (affineSpan ℝ F).direction := by
-        -- Use congr_arg to lift the set equality to the affine span direction equality
-        have h_span_eq : affineSpan ℝ F = affineSpan ℝ (ExposedFace hp) := by
-          rw [hF_eq]
-        -- Now rewrite the target using this new equality
-        rw [h_span_eq]
-        exact hv_in_dir
-      have hg_V_nonzero : g_V ≠ 0 := by
-        intro hzero
-        have : g_V ⟨v_dir, hv_in_dir_F⟩ = 0 := by
-          simpa [g_V, LinearMap.comp_apply, Submodule.subtype_apply] using
-            congrArg (fun f => f ⟨v_dir, hv_in_dir_F⟩) hzero
-        -- Simplify the term to show it equals g_Ω v_dir
-        have h_gv_zero : g_Ω v_dir = 0 := by
-          simp [g_V, LinearMap.comp_apply, Submodule.subtype_apply] at this
-          exact this
-        -- Use the previously established fact that g_Ω v_dir > 0 to derive False
-        linarith [hgv_pos]
-      have h_dim_ker : Module.finrank ℝ (LinearMap.ker g_V) = Module.finrank ℝ (affineSpan ℝ F).direction - 1 :=
-        finrank_ker_eq_finrank_sub_one g_V hg_V_nonzero
-      have h_iso : Module.finrank ℝ (LinearMap.ker g_V) = Module.finrank ℝ ((affineSpan ℝ F).direction ⊓ LinearMap.ker g_Ω) := by
-        let φ : LinearMap.ker g_V ≃ₗ[ℝ] ↥((affineSpan ℝ F).direction ⊓ LinearMap.ker g_Ω) := {
-          toFun := fun x => ⟨x.1.1, ⟨x.1.2, by change g_Ω x.1.1 = 0; simpa [g_V, LinearMap.comp_apply, Submodule.subtype_apply] using x.2⟩⟩
-          invFun := fun y => ⟨⟨y.1, y.2.1⟩, by change g_Ω y.1 = 0; exact y.2.2⟩
-          left_inv := fun x => by ext; simp
-          right_inv := fun y => by ext; simp
-          map_add' := fun x y => by ext; simp
-          map_smul' := fun a x => by ext; simp
-        }
-        exact LinearEquiv.finrank_eq φ
-      have h_dir_G_le_ker : (affineSpan ℝ G).direction ≤ (affineSpan ℝ F).direction ⊓ LinearMap.ker g_Ω :=
-        Submodule.le_inf hG_dir_le_F_dir hG_dir_le_ker
-      calc Module.finrank ℝ (affineSpan ℝ G).direction
-        ≤ Module.finrank ℝ ((affineSpan ℝ F).direction ⊓ LinearMap.ker g_Ω) := Submodule.finrank_mono h_dir_G_le_ker
-        _ = Module.finrank ℝ (LinearMap.ker g_V) := by rw [← h_iso]
-        _ = Module.finrank ℝ (affineSpan ℝ F).direction - 1 := h_dim_ker
-        _ ≥ 1 := by omega
+      sorry
+
+
     exact ⟨G, hG_exposed, hδ_in_G, hG_dim_lt, hG_dim_ge_1⟩
 
   · -- Case B: g_Ω is constant on F
@@ -1275,7 +1384,7 @@ Module.finrank ℝ (affineSpan ℝ G).direction ≥ 1 := by
             have h_le : hp.f v ≤ hp.c := hp.upper_bound v ((subset_convexHull ℝ _) hv)
             have h_eq' : hp.f v = hp.c := le_antisymm h_le (not_lt.mp h_eq)
             exact hv_not_F (hF_eq ▸ ⟨(subset_convexHull ℝ _) hv, h_eq'⟩)
-          have hv_w_le' : lam * w_base v ≤ lam * c_w := by apply mul_le_mul_of_nonneg_left (by simp [hS_empty] at *; push_neg at *; apply not_lt.mp; push_neg; exact * hv) (le_of_lt hlam_pos)
+          have hv_w_le' : lam * w_base v ≤ lam * c_w := by apply mul_le_mul_of_nonneg_left (by simp [hS_empty] at *; push_neg at *; apply not_lt.mp; push_neg; exact hv) (le_of_lt hlam_pos)
           nlinarith
         have h_sum_strict : ∑ v ∈ P.vertices, w_poly v * f_new v < c_new := by
           calc ∑ v ∈ P.vertices, w_poly v * f_new v
@@ -2248,23 +2357,10 @@ private lemma exists_proper_subface_of_boundary_point {n : ℕ} (P : Polytope n)
       rw [hC_eq_interior_A]; exact isOpen_interior
     have h0_notin_C : (0 : V_dir) ∉ C := by
       intro h
-      -- h : τ 0 ∈ (intrinsicInterior ℝ F : Set affF)
-      -- We need to show δ_bound ∈ intrinsicInterior ℝ F (as Set (CoeffVec n))
       have hτ0 : (τ 0 : CoeffVec n) = δ_bound := by
         simp [τ, vadd_eq_add]
-      have h_mem_affF : τ 0 ∈ (Subtype.val : affF → CoeffVec n) ⁻¹' (intrinsicInterior ℝ F) := by
-        -- Unfold τ 0 to show it equals ⟨δ_bound, _⟩
-        have hτ0 : (τ 0 : CoeffVec n) = δ_bound := by
-          simp only [τ, vadd_eq_add, add_zero]
-          grind
-        -- Now the goal reduces to δ_bound ∈ intrinsicInterior ℝ F
-        simpa [hτ0, Set.mem_preimage]
-
-      -- Convert from Set affF to Set (CoeffVec n) using the definition of intrinsicInterior
       have h_mem_ambient : δ_bound ∈ intrinsicInterior ℝ F := by
-        rw [← hτ0]
-        -- intrinsicInterior ℝ F as Set affF = Subtype.val ⁻¹' (intrinsicInterior ℝ F as Set (CoeffVec n))
-        simpa [intrinsicInterior] using h_mem_affF
+        simpa [C, intF_preimage, hτ0, Set.mem_preimage] using h
       exact hδ_bound_not_relint h_mem_ambient
 
     obtain ⟨f, hf⟩ := geometric_hahn_banach_open_point hC_convex hC_open h0_notin_C
@@ -2279,16 +2375,13 @@ private lemma exists_proper_subface_of_boundary_point {n : ℕ} (P : Polytope n)
         AffineSubspace.vsub_mem_direction (subset_affineSpan ℝ F (intrinsicInterior_subset hy)) hδ_affF
       set v : V_dir := ⟨y - δ_bound, hv⟩ with hv_def
       have hv_C : v ∈ C := by
-        dsimp [C, v]
-        -- We need to show: δ_bound +ᵥ (y - δ_bound) ∈ intrinsicInterior ℝ F
-        -- This simplifies to y ∈ intrinsicInterior ℝ F, which is exactly hy.
-        simpa [C, τ, v, vadd_eq_add] using hy
+        dsimp [C, intF_preimage, v]
+        simpa [τ, vadd_eq_add, Set.mem_preimage] using hy
       have hf_lt : f v < f 0 := hf v hv_C
       calc
         w_base y = w_base (y - δ_bound) + w_base δ_bound := by simp
         _ = w_base (v : CoeffVec n) + c_w := by
-            dsimp [v]
-
+            simp [v, c_w]
         _ = (w_base.comp V_dir.subtype) v + c_w := rfl
         _ = f_lin v + c_w := by rw [hw_base]
         _ = f v + c_w := rfl
@@ -2312,8 +2405,8 @@ private lemma exists_proper_subface_of_boundary_point {n : ℕ} (P : Polytope n)
         have h_tendsto : Filter.Tendsto (fun (t : ℝ) => (1 - t) • x + t • y) (nhdsWithin (0 : ℝ) (Set.Ioi 0)) (nhds x) :=
           h_tendsto'.mono_left nhdsWithin_le_nhds
         have h_nhd : Set.Ioo (0 : ℝ) 1 ∈ nhdsWithin (0 : ℝ) (Set.Ioi 0) := by
-          apply mem_nhdsWithin.mpr
-          refine ⟨Set.Ioo (-1 : ℝ) 1, isOpen_Ioo, by norm_num, ?_⟩
+          rw [mem_nhdsWithin_iff_exists_mem_nhds_inter]
+          refine ⟨Set.Ioo (-1 : ℝ) 1, IsOpen.mem_nhds isOpen_Ioo (by norm_num), ?_⟩
           rintro x ⟨⟨hx1, hx2⟩, hxpos⟩
           exact ⟨hxpos, hx2⟩
         have h_event : Filter.Eventually (fun t => (1 - t) • x + t • y ∈ intrinsicInterior ℝ F) (nhdsWithin (0 : ℝ) (Set.Ioi 0)) := by
@@ -2624,80 +2717,20 @@ private lemma exists_boundary_point_in_face_rootspace {n : ℕ} (P : Polytope n)
         apply Submodule.add_mem (P_sr n r)
         · exact hδ_F_root
         · apply Submodule.smul_mem (P_sr n r) t1 hv_in_Psr
-      have h_not_relint : δ_bound ∉ intrinsicInterior ℝ F := by
-        intro h_relint
-        rcases h_relint with ⟨x, hx_int, hx_eq⟩
-        have h_open_int : IsOpen (interior ((Subtype.val : affF → CoeffVec n)⁻¹' F : Set affF)) :=
-          isOpen_interior
-        haveI : Nonempty affF := ⟨⟨δ_F, hδ_F_affF⟩⟩
-        let v_dir : (affineSpan ℝ F).direction := ⟨v, hv_affF_dir⟩
-        have h_cont_ambient : Continuous (fun (t : ℝ) => (t • v : CoeffVec n) + (x : CoeffVec n)) := by
-          continuity
-        have h_mem_affF : ∀ (t : ℝ), (t • v : CoeffVec n) + (x : CoeffVec n) ∈ affF := by
-          intro t
-          simpa using
-            AffineSubspace.vadd_mem_of_mem_direction (s := affF) (hv := affF.direction.smul_mem t hv_affF_dir)
-              (hp := x.property)
-        have h_cont : Continuous (fun (t : ℝ) => (t • v_dir) +ᵥ (x : affF)) := by
-          have : (fun (t : ℝ) => ((t • v_dir) +ᵥ (x : affF) : CoeffVec n)) = (fun (t : ℝ) => (t • v : CoeffVec n) + (x : CoeffVec n)) := by
-            ext t
-            simp [v_dir, vadd_eq_add]
-          have h_cont_ambient' : Continuous (fun (t : ℝ) => ((t • v_dir) +ᵥ (x : affF) : CoeffVec n)) := by
-            simpa [this] using h_cont_ambient
-          exact h_cont_ambient'.subtype_mk (fun t => h_mem_affF t)
-        have h_preimage_open : IsOpen ((fun (t : ℝ) => (t • v_dir) +ᵥ (x : affF))⁻¹'
-            (interior ((Subtype.val : affF → CoeffVec n)⁻¹' F : Set affF))) :=
-          h_open_int.preimage h_cont
-        have h_zero_mem : (0 : ℝ) ∈ (fun (t : ℝ) => (t • v_dir) +ᵥ (x : affF))⁻¹'
-    (interior ((Subtype.val : affF → CoeffVec n)⁻¹' F : Set affF)) := by
-          -- Unfold the preimage: we need to show (0 • v_dir) +ᵥ x ∈ interior (...)
-          have h_eval : (0 : ℝ) • v_dir +ᵥ (x : affF) = x := by
-            simp [zero_smul, zero_vadd]
-          rw [h_eval]
-          -- Now the goal is exactly x ∈ interior (...), which is hx_int
-          exact hx_int
-        obtain ⟨ε, hε_pos, h_ball⟩ :=
-          Metric.isOpen_iff.mp h_preimage_open 0 h_zero_mem
-        have h_eps_div2_pos : 0 < ε / 2 := by linarith
-        have h_in_ball : ε / 2 ∈ Metric.ball (0 : ℝ) ε := by
-          rw [Metric.mem_ball, dist_eq_norm, sub_zero, Real.norm_eq_abs, abs_of_nonneg (by linarith)]
-          nlinarith
-        have h_interior : ((ε / 2) • v_dir) +ᵥ (x : affF) ∈
-            interior ((Subtype.val : affF → CoeffVec n)⁻¹' F : Set affF) :=
-          h_ball h_in_ball
-        have h_in_intrinsic : δ_bound + (ε / 2) • v ∈ intrinsicInterior ℝ F := by
-          refine ⟨((ε / 2) • v_dir) +ᵥ (x : affF), h_interior, ?_⟩
-          calc
-            (Subtype.val : affF → CoeffVec n) (((ε / 2) • v_dir) +ᵥ (x : affF))
-                = ((ε / 2) • v_dir).val + (x : CoeffVec n) := by
-              simp [vadd_eq_add]
-            _ = (ε / 2) • v + δ_bound := by
-              simp [v_dir, hx_eq]
-            _ = δ_bound + (ε / 2) • v := by abel
-        have h_in_F : δ_bound + (ε / 2) • v ∈ F :=
-          intrinsicInterior_subset h_in_intrinsic
-        have h_t1_plus_eps_div2 : t1 + ε / 2 ∈ S := by
-          refine ⟨by positivity, ?_⟩
-          have h_eq : δ_F + (t1 + ε / 2) • v = δ_bound + (ε / 2) • v := by
-            calc
-              δ_F + (t1 + ε / 2) • v = (δ_F + t1 • v) + (ε / 2) • v := by
-                rw [add_smul, add_assoc]
-              _ = δ_bound + (ε / 2) • v := rfl
-          rw [h_eq]
-          exact h_in_F
-        have h_t1_lt : t1 < t1 + ε / 2 := by nlinarith
-        have h_sup_ge : t1 + ε / 2 ≤ sSup S :=
-          le_csSup h_bdd_above h_t1_plus_eps_div2
-        have h_t1_eq_sup : t1 = sSup S := rfl
-        rw [h_t1_eq_sup] at h_sup_ge
-        nlinarith
+      have h_not_relint : δ_bound ∉ intrinsicInterior ℝ F :=
+        not_mem_intrinsicInterior_of_escapes_along_direction
+          F hF_convex δ_F hδ_F_in_F v hv_ne hv_affF_dir
+          S rfl hS_nonempty h_bdd_above
+          t1 rfl h_t1_nonneg h_t1_mem
+          t_out ht_out_pos ht_out
+
       have hδ_bound_frontier_F : δ_bound ∈ frontier F := by
         rw [frontier_eq_for_closed F hF_compact.isClosed]
         refine ⟨h_t1_mem, ?_⟩
         intro h_int
         apply h_not_relint
         exact (interior_subset_intrinsicInterior (𝕜 := ℝ) (s := F)) h_int
-        exact h_not_relint
+
       refine ⟨δ_bound, ⟨h_t1_mem, hδ_bound_in_Psr⟩, hδ_bound_frontier_F, h_not_relint⟩
     · -- δ_F is not in the relative interior → already on the boundary
       use δ_F
@@ -2708,6 +2741,8 @@ private lemma exists_boundary_point_in_face_rootspace {n : ℕ} (P : Polytope n)
         apply hδ_F_relint
         exact (interior_subset_intrinsicInterior (𝕜 := ℝ) (s := F)) h_int
       exact ⟨⟨hδ_F_in_F, hδ_F_root⟩, hδ_F_frontier_F, hδ_F_relint⟩
+
+
 
 
 private lemma descend_to_exposed_edge {n : ℕ} (P : Polytope n) (r : ℝ)
