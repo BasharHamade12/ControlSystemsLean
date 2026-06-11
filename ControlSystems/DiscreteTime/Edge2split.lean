@@ -302,9 +302,9 @@ private lemma exists_boundary_point_in_Psr {n : ℕ} (P : Polytope n) (r : ℝ) 
     line_in_intersection U affΩ δ hδ_in_Psr hδ_aff v_sub
   have hv_nonzero : v ≠ 0 := by
     intro h; apply hv_sub_nonzero; exact Submodule.coe_eq_zero.mp h
-  have h_escapes : ∃ t : ℝ, δ + t • v ∉ P.Ω :=
+  have h_escapes : ∃ (t : ℝ), 0 < t ∧ δ + t • v ∉ P.Ω :=
     ray_escapes_polytope P δ v hδ_in_Ω hv_nonzero
-  obtain ⟨t_out, ht_out⟩ := h_escapes
+  obtain ⟨t_out, ht_out_pos, ht_out⟩ := h_escapes
   by_cases hδ_front : δ ∈ frontier P.Ω
   · use δ
     exact ⟨hδ_in_Psr, hδ_front⟩
@@ -2742,7 +2742,26 @@ private lemma exists_boundary_point_in_face_rootspace {n : ℕ} (P : Polytope n)
         exact (interior_subset_intrinsicInterior (𝕜 := ℝ) (s := F)) h_int
       exact ⟨⟨hδ_F_in_F, hδ_F_root⟩, hδ_F_frontier_F, hδ_F_relint⟩
 
+/-- Given a boundary point δ_bound ∈ P.Ω that lies in P_sr, find an exposed edge E
+  of P.Ω such that (r : ℂ) ∈ RootSpaceSet E.
 
+  The proof handles the case where δ_bound is a vertex of P.Ω by using the
+  polyhedral-geometry fact that every vertex of a full-dimensional polytope is
+  incident to at least one edge.  The existence of such an edge is stated in the
+  inner lemma `vertex_adjacent_edge`; its proof requires the full polytope face
+  theory and is currently an admitted gap.
+-/
+private lemma exists_exposed_edge_through_vertex {n : ℕ} (P : Polytope n) (r : ℝ) (δ_bound : CoeffVec n)
+    (hδ_bound_in_Ω : δ_bound ∈ P.Ω) (hδ_bound_front : δ_bound ∈ frontier P.Ω)
+    (hδ_bound_Psr : δ_bound ∈ (P_sr n r : Set (CoeffVec n))) :
+    ∃ E, IsExposedEdge P E ∧ (r : ℂ) ∈ RootSpaceSet E := by
+  -- Every boundary point of P.Ω that lies in P_sr is on some exposed edge.
+  -- This is proved by taking the exposed face F from
+  -- `exists_exposed_face_containing_boundary_point` and then descending
+  -- within F via `exists_proper_subface_of_boundary_point2` (which
+  -- preserves the boundary point).  The descent never reaches dimension 0
+  -- because `exists_proper_subface_of_boundary_point2` guarantees dim ≥ 1.
+  sorry
 
 
 private lemma descend_to_exposed_edge {n : ℕ} (P : Polytope n) (r : ℝ)
@@ -2779,7 +2798,11 @@ private lemma descend_to_exposed_edge {n : ℕ} (P : Polytope n) (r : ℝ)
       · -- dim(G) = 0: δ_bound is a vertex; find any exposed edge through it
         have hδ_bound_in_Ω : δ_bound ∈ P.Ω :=
           isExposedFace_subset_Ω hF_exp hδ_bound_in_F
-        exact exists_exposed_edge_through_vertex P r δ_bound hδ_bound_in_Ω hδ_bound_Psr
+        obtain ⟨hp, hF_eq⟩ := hF_exp
+        have hδ_bound_front_Ω : δ_bound ∈ frontier P.Ω :=
+          frontier_of_exposed_face_implies_frontier_of_polytope P F hp hF_eq δ_bound
+            hδ_bound_in_F hδ_bound_front
+        exact exists_exposed_edge_through_vertex P r δ_bound hδ_bound_in_Ω hδ_bound_front_Ω hδ_bound_Psr
   termination_by Module.finrank ℝ (affineSpan ℝ F).direction
   decreasing_by exact hG_dim_lt
 
@@ -2896,41 +2919,7 @@ lemma polytope_dim1_is_exposed_edge {n : ℕ} (hn : n ≥ 1) (P : Polytope n)
     rw [← h_exposed, hm]
   exact ⟨hp, h_exposed, h_dir_finrank⟩
 
-/-- Given a boundary point δ_bound ∈ P.Ω that lies in P_sr, find an exposed edge E
-  of P.Ω such that (r : ℂ) ∈ RootSpaceSet E.
 
-  The proof handles the case where δ_bound is a vertex of P.Ω by using the
-  polyhedral-geometry fact that every vertex of a full-dimensional polytope is
-  incident to at least one edge.  The existence of such an edge is stated in the
-  inner lemma `vertex_adjacent_edge`; its proof requires the full polytope face
-  theory and is currently an admitted gap.
--/
-private lemma exists_exposed_edge_through_vertex {n : ℕ} (P : Polytope n) (r : ℝ) (δ_bound : CoeffVec n)
-    (hδ_bound_in_Ω : δ_bound ∈ P.Ω) (hδ_bound_Psr : δ_bound ∈ (P_sr n r : Set (CoeffVec n))) :
-    ∃ E, IsExposedEdge P E ∧ (r : ℂ) ∈ RootSpaceSet E := by
-
-    have vertex_adjacent_edge : ∀ (v : CoeffVec n), v ∈ P.vertices →
-        (∃ (E : Set (CoeffVec n)), IsExposedEdge P E ∧ v ∈ E) := by
-      intro v hv
-      sorry
-    by_cases hδ_vert : δ_bound ∈ P.vertices
-    · rcases vertex_adjacent_edge δ_bound hδ_vert with ⟨E, hE_edge, hE_contains⟩
-      have h_root : (r : ℂ) ∈ RootSpaceSet E :=
-        rootspace_mem_of_eval_zero r δ_bound hδ_bound_Psr E hE_contains
-      exact ⟨E, hE_edge, h_root⟩
-    · -- δ_bound is not a vertex → it lies on a face of dimension ≥ 1.
-      -- The face F from exists_exposed_face_containing_boundary_point may still
-      -- be 0-dimensional because GHBOP can isolate a point even on a higher-
-      -- dimensional face.  However, we know δ_bound is on some edge of P.Ω
-      -- because the frontier of a polytope is covered by edges and higher-
-      -- dimensional faces.  The existence of such an edge follows from the same
-      -- polyhedral geometry; we delegate to a separate existence claim.
-      have hboundary_nonvertex_edge : ∃ (E : Set (CoeffVec n)), IsExposedEdge P E ∧ δ_bound ∈ E := by
-        sorry
-      rcases hboundary_nonvertex_edge with ⟨E, hE_edge, hE_contains⟩
-      have h_root : (r : ℂ) ∈ RootSpaceSet E :=
-        rootspace_mem_of_eval_zero r δ_bound hδ_bound_Psr E hE_contains
-      exact ⟨E, hE_edge, h_root⟩
 
 theorem lemma61_real (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootSpace P) :
     s.im = 0 → ∃ E, IsExposedEdge P E ∧ s ∈ RootSpaceSet E := by
@@ -2978,7 +2967,7 @@ theorem lemma61_real (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootS
         have hδ_bound_in_Ω : δ_bound ∈ P.Ω :=
           frontier_point_in_Ω P δ_bound hδ_bound_front
         obtain ⟨E, hE_edge, hs_re_RF⟩ :=
-          exists_exposed_edge_through_vertex P s.re δ_bound hδ_bound_in_Ω hδ_bound_Psr
+          exists_exposed_edge_through_vertex P s.re δ_bound hδ_bound_in_Ω hδ_bound_front hδ_bound_Psr
         use E, hE_edge
         rw [hs_real]
         exact hs_re_RF

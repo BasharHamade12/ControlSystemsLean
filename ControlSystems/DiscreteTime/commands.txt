@@ -1,0 +1,1 @@
+mkdir -p ~/Desktop/txt_files && for f in *; do [ -f "$f" ] && cp "$f" ~/Desktop/txt_files/"$f.txt"; done

@@ -237,28 +237,28 @@ lemma Polytope.isBounded {n : ℕ} (P : Polytope n) : Bornology.IsBounded P.Ω :
   P.isCompact.isBounded
 
 lemma ray_escapes_polytope {n : ℕ} (P : Polytope n) (δ v : CoeffVec n)
-    (hp_in_Ω : δ ∈ P.Ω) (hv_nonzero : v ≠ 0) : ∃ t : ℝ, δ + t • v ∉ P.Ω := by
-  by_contra h_contra
-  push_neg at h_contra
+    (hp_in_Ω : δ ∈ P.Ω) (hv_nonzero : v ≠ 0) : ∃ (t : ℝ), 0 < t ∧ δ + t • v ∉ P.Ω := by
   rcases Metric.isBounded_iff.mp P.isBounded with ⟨C, hC⟩
   have hv_norm_pos : 0 < ‖v‖ := norm_pos_iff.mpr hv_nonzero
   let t := (|C| + 1) / ‖v‖
   have ht_pos : 0 < t := div_pos (by have : 0 ≤ |C| := abs_nonneg C; linarith) hv_norm_pos
-  have h_in := h_contra t
-  have h_dist : dist (δ + t • v) δ = t * ‖v‖ := by
-    rw [dist_eq_norm]
-    have h_sub : δ + t • v - δ = t • v := by abel
-    have ht_nonneg : 0 ≤ t := ht_pos.le
-    rw [h_sub, norm_smul, Real.norm_eq_abs t, abs_of_nonneg ht_nonneg]
-  have h_le : dist (δ + t • v) δ ≤ C := by
-    apply hC
-    · exact h_in
-    · exact hp_in_Ω
-  have h_C_lt : C < |C| + 1 := by have : C ≤ |C| := le_abs_self C; linarith
-  rw [h_dist] at h_le
-  have h_t_mul : t * ‖v‖ = |C| + 1 := div_mul_cancel₀ (|C| + 1) (ne_of_gt hv_norm_pos)
-  rw [h_t_mul] at h_le
-  linarith
+  by_cases h_contra : δ + t • v ∈ P.Ω
+  · exfalso
+    have h_dist : dist (δ + t • v) δ = t * ‖v‖ := by
+      rw [dist_eq_norm]
+      have h_sub : δ + t • v - δ = t • v := by abel
+      have ht_nonneg : 0 ≤ t := ht_pos.le
+      rw [h_sub, norm_smul, Real.norm_eq_abs t, abs_of_nonneg ht_nonneg]
+    have h_le : dist (δ + t • v) δ ≤ C := by
+      apply hC
+      · exact h_contra
+      · exact hp_in_Ω
+    have h_C_lt : C < |C| + 1 := by have : C ≤ |C| := le_abs_self C; linarith
+    rw [h_dist] at h_le
+    have h_t_mul : t * ‖v‖ = |C| + 1 := div_mul_cancel₀ (|C| + 1) (ne_of_gt hv_norm_pos)
+    rw [h_t_mul] at h_le
+    linarith
+  · exact ⟨t, ht_pos, h_contra⟩
 
 lemma affineSpan_inter {n : ℕ} (U : Submodule ℝ (CoeffVec n))
     (affΩ : AffineSubspace ℝ (CoeffVec n)) :
