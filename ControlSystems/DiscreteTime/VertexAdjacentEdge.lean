@@ -2,6 +2,7 @@ module
 
 public import ControlSystems.DiscreteTime.EdgeTheoremDefs
 public import Mathlib.Analysis.Convex.Intrinsic
+public import ControlSystems.DiscreteTime.Edge2split
 open Set
 open LinearMap
 open FiniteDimensional
@@ -11,9 +12,7 @@ open scoped Topology
 
 namespace CoeffBox
 
--- =============================================================================
--- Public replicas of lemmas that are private in Edge2.lean
--- =============================================================================
+/--lemma exists_proper_subface_of_boundary_point maybe will be here instead-/
 
 lemma P_sr_dimension_public {n : ℕ} (r : ℝ) :
     Module.finrank ℝ (P_sr n r) = n := by
@@ -482,7 +481,7 @@ lemma exists_facet_pierced_by_Psr_public {n : ℕ} (P : Polytope n) (F : Set (Co
               _ = c • g (p₁ - p₂) + g p₃ := by simp
               _ = c • (g p₁ - g p₂) + g p₃ := by simp
               _ = c • (g δ_bound - g δ_bound) + g δ_bound := by rw [h1, h2, h3]
-              _ = c • 0 + g δ_bound := by ring
+              _ = c • 0 + g δ_bound := by ring_nf
               _ = g δ_bound := by simp }
       have hG_sub_H : (G : Set (CoeffVec n)) ⊆ (H : Set (CoeffVec n)) := hg_const_on_G
       have h_spanG_sub_H : (affineSpan ℝ G : Set (CoeffVec n)) ⊆ (H : Set (CoeffVec n)) :=
@@ -518,13 +517,85 @@ lemma exists_facet_pierced_by_Psr_public {n : ℕ} (P : Polytope n) (F : Set (Co
           omega
 
     have h_dim_ge_1 : Module.finrank ℝ (affineSpan ℝ G).direction ≥ 1 := by
+      -- Show that g restricted to dir(F) is nonzero (since g v > 0 and v ∈ dir(F))
+      let g_V := g.domRestrict ((affineSpan ℝ F).direction)
+      have hv_in_dir_F : v ∈ (affineSpan ℝ F).direction := by
+        exact hv_in_aff_dir
+      have hv_nonzero : g_V ≠ 0 := by
+        intro hzero
+        have : g_V ⟨v, hv_in_dir_F⟩ = 0 := by
+          simpa [g_V, LinearMap.comp_apply, Submodule.subtype_apply] using
+            congrArg (fun φ => φ ⟨v, hv_in_dir_F⟩) hzero
+        -- Explicitly rewrite the hypothesis before using it
+        have h_gv_zero : g v = 0 := by
+          simpa [g_V, LinearMap.comp_apply, Submodule.subtype_apply] using this
+        linarith
+      -- Apply rank-nullity: dim(ker(g|_V)) = dim(V) - 1
+      have h_dim_ker : Module.finrank ℝ (LinearMap.ker g_V) =
+          Module.finrank ℝ ((affineSpan ℝ F).direction) - 1 := by
+          apply finrank_ker_eq_finrank_sub_one_public g_V
+          simp
+          grind
+
+      -- Show dir(G) ⊆ ker(g|_V) via the intersection isomorphism
+      have h_iso : Module.finrank ℝ (LinearMap.ker g_V) =
+          Module.finrank ℝ ↥((affineSpan ℝ F).direction ⊓ LinearMap.ker g) := by
+        let φ : LinearMap.ker g_V ≃ₗ[ℝ] ↥((affineSpan ℝ F).direction ⊓ LinearMap.ker g) := {
+          toFun := fun x => ⟨x.1.1, ⟨x.1.2, by
+            -- x.2 : g_V x.1 = 0
+            -- We need to show: g x.1.1 = 0
+            have h_ker : g_V x.1 = 0 := x.2
+            -- Expand g_V = g.domRestrict V_dir
+            dsimp [g_V] at h_ker
+            -- g.domRestrict V_dir applied to x.1 equals g applied to the coerced value
+            simpa [LinearMap.comp_apply, Submodule.subtype_apply] using h_ker⟩⟩
+          invFun := fun y => ⟨⟨y.1, y.2.1⟩, by
+            -- y.2.2 : g y.1 = 0
+            -- We need to show: g_V ⟨y.1, y.2.1⟩ = 0
+            change g.domRestrict ((affineSpan ℝ F).direction) ⟨y.1, y.2.1⟩ = 0
+            simpa [LinearMap.comp_apply, Submodule.subtype_apply] using y.2.2⟩
+          left_inv := fun x => by ext; simp
+          right_inv := fun y => by ext; simp
+          map_add' := fun x y => by ext; simp
+          map_smul' := fun a x => by ext; simp
+        }
+        rw [LinearEquiv.finrank_eq φ]
+
+
+      -- Combine: dim(G) ≤ dim(dir(F) ∩ ker g) = dim(F) - 1 ≥ 1
+      have h_dir_G_le_inter : (affineSpan ℝ G).direction ≤
+          (affineSpan ℝ F).direction ⊓ LinearMap.ker g := by
+        have h_dir_le_F : (affineSpan ℝ G).direction ≤ (affineSpan ℝ F).direction :=
+          AffineSubspace.direction_le (affineSpan_mono (k := ℝ) hG_sub_F)
+        exact le_inf h_dir_le_F h_dir_le_ker_g
+      have h1 : Module.finrank ℝ (affineSpan ℝ G).direction ≤ Module.finrank ℝ ↥((affineSpan ℝ F).direction ⊓ LinearMap.ker g) :=
+        Submodule.finrank_mono h_dir_G_le_inter
+      have h2 : Module.finrank ℝ ↥((affineSpan ℝ F).direction ⊓ LinearMap.ker g) = Module.finrank ℝ (LinearMap.ker g_V) := by
+        rw [← h_iso]
+      have h3 : Module.finrank ℝ (LinearMap.ker g_V) = Module.finrank ℝ ((affineSpan ℝ F).direction) - 1 := h_dim_ker
+      have h4 : Module.finrank ℝ (affineSpan ℝ G).direction ≤ Module.finrank ℝ ((affineSpan ℝ F).direction) - 1 := by
+        calc
+          Module.finrank ℝ (affineSpan ℝ G).direction ≤ Module.finrank ℝ ↥((affineSpan ℝ F).direction ⊓ LinearMap.ker g) := h1
+          _ = Module.finrank ℝ (LinearMap.ker g_V) := by rw [h2]
+          _ = Module.finrank ℝ ((affineSpan ℝ F).direction) - 1 := by rw [h3]
+      have h5 : Module.finrank ℝ ((affineSpan ℝ F).direction) - 1 ≥ 1 := by
+        have : Module.finrank ℝ ((affineSpan ℝ F).direction) ≥ 2 := h_dim_ge_2
+        omega
       sorry
+
 
     exact ⟨G, hG_exposed, h_root_G, h_dim_lt, h_dim_ge_1⟩
 
   · -- Case B: g v ≤ 0
     sorry
 
+
+lemma isExposedEdge_of_dim_1 {n : ℕ} {P : Polytope n} {F : Set (CoeffVec n)}
+    (hF_exposed : IsExposedFace P F)
+    (h_dim : Module.finrank ℝ (affineSpan ℝ F).direction = 1) : IsExposedEdge P F := by
+  obtain ⟨hp, hF_eq⟩ := hF_exposed
+  rw [hF_eq] at h_dim
+  exact ⟨hp, hF_eq, h_dim⟩
 /-- Lemma 6.1 (real root) following the book's descent.
   Uses `exists_facet_pierced_by_Psr_public` repeatedly to reduce dimension by at least 1
   each step, starting from `dim(P.Ω) = m ≥ 2` and stopping at dimension 1 (an edge). -/
