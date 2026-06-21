@@ -67,6 +67,10 @@ is non-zero and corresponds to index `n`.
 def InBox (B : CoeffBox n) (f : Polynomial ℝ) : Prop :=
   f.natDegree = n ∧  ∀ j : Fin (n + 1), B.l j ≤ coeff f j.val ∧ coeff f j.val ≤ B.u j
 
+/--
+The family of polynomials in the box `B`: all polynomials whose coefficients
+lie within the box and whose natural degree is exactly `n`.
+-/
 def FOIP (B : CoeffBox n) : Set (Polynomial ℝ) :=
   { f | InBox B f }
 
@@ -105,9 +109,17 @@ def ExtremePolys (B : CoeffBox n) : Set (Polynomial ℝ) :=
       f.natDegree = n
   }
 
+/--
+A real polynomial `f` is Schur stable if all its real roots lie strictly
+inside the unit disc (i.e., have absolute value < 1).
+-/
 def Schur_Stable (f : Polynomial ℝ) : Prop :=
   ∀ a : ℝ , f.IsRoot a → abs a < 1
 
+/--
+The product of two Schur-stable polynomials is itself Schur stable.
+This follows because any root of `f * g` is a root of `f` or a root of `g`.
+-/
 theorem Product_of_Schur_Stable (f : Polynomial ℝ) (g : Polynomial ℝ) :
   (Schur_Stable f) → (Schur_Stable g) → (Schur_Stable (f * g)) := by
   intros hf hg
@@ -120,22 +132,27 @@ theorem Product_of_Schur_Stable (f : Polynomial ℝ) (g : Polynomial ℝ) :
   · exact hf a hfa
   · exact hg a hga
 
+/--
+A coefficient vector of dimension `n`: a function from `Fin (n+1)` to ℝ,
+representing the coefficients `(α₀, …, αₙ)` of a degree-`n` polynomial.
+-/
 abbrev CoeffVec (n : ℕ) := Fin (n + 1) → ℝ
 
 /--
 A polytope Ω in coefficient space ℝ^{n+1}.
-It is defined as the convex hull of a finite set of vertices V.
-This matches the PDF: "the convex hull of a finite number of points".
+It is defined as the convex hull of a finite set of vertices V,
+and is assumed to have nonempty topological interior.
 -/
 structure Polytope (n : ℕ) where
   vertices : Finset (CoeffVec n)
   nonempty  : vertices.Nonempty
   interior_nonempty : (interior (convexHull ℝ (vertices : Set (CoeffVec n)))).Nonempty
 
-/-- The actual set Ω ⊆ ℝ^{n+1} as a convex hull -/
+/-- The actual set Ω ⊆ ℝ^{n+1} as the convex hull of the vertices. -/
 def Polytope.Ω (P : Polytope n) : Set (CoeffVec n) :=
   convexHull ℝ (P.vertices : Set (CoeffVec n))
 
+/-- The interior of the polytope is nonempty by construction. -/
 lemma Polytope.interior_Ω_nonempty (P : Polytope n) : (interior P.Ω).Nonempty :=
   P.interior_nonempty
 
@@ -147,19 +164,38 @@ open Polynomial
 noncomputable def polyOfVec {n : ℕ} (α : CoeffVec n) : Polynomial ℝ :=
   ∑ j : Fin (n + 1), Polynomial.monomial j.val (α j)
 
+/--
+The set of complex roots associated to a set `W` of coefficient vectors:
+`s ∈ ℂ` is in `RootSpaceSet W` if there exists `δ ∈ W` such that
+the polynomial `polyOfVec δ` (pulled back to ℂ) vanishes at `s`.
+-/
 def RootSpaceSet {n : ℕ}
   (W : Set (CoeffVec n)) : Set ℂ :=
   { s | ∃ δ ∈ W,
       ((polyOfVec δ).map (algebraMap ℝ ℂ)).IsRoot s }
 
+/--
+The root space of a polytope `P`: all complex numbers `s` such that
+some coefficient vector in `P.Ω` yields a polynomial vanishing at `s`.
+-/
 def RootSpace (P : Polytope n) : Set ℂ :=
   RootSpaceSet P.Ω
 
+/--
+The hyperplane `{x | f x = c}` defined by a nonzero linear functional `f`
+and a scalar `c`.
+-/
 def Hyperplane {n : ℕ}
     (f : CoeffVec n →ₗ[ℝ] ℝ)
     (c : ℝ) : Set (CoeffVec n) :=
   { x | f x = c }
 
+/--
+A supporting hyperplane of a polytope `P` is a nonzero linear functional `f`
+and a scalar `c` such that `f x ≤ c` for all `x ∈ P.Ω`, with equality
+achieved at some point of `P.Ω`. The hyperplane `H = {x | f x = c}`
+supports `P.Ω` from above.
+-/
 structure SupportingHyperplane (P : Polytope n) where
   f : CoeffVec n →ₗ[ℝ] ℝ
   c : ℝ
@@ -168,9 +204,17 @@ structure SupportingHyperplane (P : Polytope n) where
   touches : ∃ x ∈ P.Ω, f x = c
   H : Set (CoeffVec n) := Hyperplane f c
 
+/--
+The exposed face of `P` associated to a supporting hyperplane `hp`,
+defined as the intersection `P.Ω ∩ hp.H` (using the `H` field).
+-/
 def ExposedFace_ (P : Polytope n) (hp : SupportingHyperplane P) :=
   P.Ω ∩ hp.H
 
+/--
+The exposed face of `P` associated to a supporting hyperplane `hp`,
+defined directly as `{x | x ∈ P.Ω ∧ hp.f x = hp.c}`.
+-/
 def ExposedFace {n : ℕ} {P : Polytope n} (hp : SupportingHyperplane P) :
     Set (CoeffVec n) :=
   { x | x ∈ P.Ω ∧ hp.f x = hp.c }
@@ -185,9 +229,18 @@ def IsExposedEdge {n : ℕ} (P : Polytope n) (E : Set (CoeffVec n)) : Prop :=
 
 open FiniteDimensional
 
+/--
+Alternative predicate for an exposed edge: a supporting hyperplane `hp`
+whose exposed face has affine dimension exactly 1.
+-/
 def ExposedEdge {n : ℕ} {P : Polytope n} (hp : SupportingHyperplane P) : Prop :=
   Module.finrank ℝ (affineSpan ℝ (ExposedFace hp)).direction = 1
 
+/--
+The evaluation-at-`r` linear functional on coefficient vectors:
+`evalLinear r δ = polyOfVec δ ▸ r`. Evaluates the polynomial at the
+point `r ∈ ℝ`.
+-/
 noncomputable def evalLinear {n : ℕ} (r : ℝ) :
   CoeffVec n →ₗ[ℝ] ℝ :=
 {
@@ -207,21 +260,48 @@ noncomputable def evalLinear {n : ℕ} (r : ℝ) :
     simp [Polynomial.eval_monomial, mul_assoc, RingHom.id_apply]
 }
 
+/--
+The set of coefficient vectors `δ` for which `polyOfVec δ` vanishes at `r`,
+i.e., `evalLinear r δ = 0`.
+-/
 def P_sr' {n : ℕ} (r : ℝ) : Set (CoeffVec n) :=
   { δ | evalLinear r δ = 0 }
 
+/--
+The kernel of `evalLinear r`, presented as a submodule of `CoeffVec n`.
+This is the linear subspace of coefficient vectors whose associated polynomial
+has `r` as a root.
+-/
 noncomputable def P_sr (n : ℕ) (r : ℝ) : Submodule ℝ (CoeffVec n) :=
   (evalLinear r).ker
 
-/-- E is an exposed face of P if it is an exposed face of affine dimension 2 -/
+/-- `F` is an exposed face of `P` if there exists a supporting hyperplane `hp`
+such that `F` equals the exposed face of `hp`. -/
 def IsExposedFace {n : ℕ} (P : Polytope n) (F : Set (CoeffVec n)) : Prop :=
   ∃ hp : SupportingHyperplane P, F = ExposedFace hp
 
+/-- [Axiom of Polyhedral Geometry]
+Every vertex of a polytope is incident to at least one exposed edge.
+This is a standard result in polyhedral combinatorics (following from the
+face lattice structure / Krein-Milman theorem), but requires the full
+V-representation/H-representation face lattice API which is currently
+outside the scope of Mathlib's basic convex geometry. -/
+axiom vertex_incident_to_exposed_edge {n : ℕ} (P : Polytope n) (v : CoeffVec n)
+  (hv : v ∈ P.vertices) : ∃ (E : Set (CoeffVec n)), IsExposedEdge P E ∧ v ∈ E
+
+/--
+The ℝ-vector space `CoeffVec n` (functions `Fin (n+1) → ℝ`) has
+dimension `n+1`.
+-/
 lemma finrank_CoeffVec {n : ℕ} :
   Module.finrank ℝ (CoeffVec n) = n + 1 := by
   rw [Module.finrank_fintype_fun_eq_card]
   simp
 
+/--
+The evaluation linear functional `evalLinear r : CoeffVec n → ℝ` is
+surjective for any `r ∈ ℝ`.
+-/
 lemma evalLinear_surjective {n : ℕ} (r : ℝ) :
     Function.Surjective (evalLinear (n := n) r) := by
   intro y
@@ -229,13 +309,23 @@ lemma evalLinear_surjective {n : ℕ} (r : ℝ) :
   simp [evalLinear, polyOfVec]
   simp [Polynomial.eval_finset_sum, Polynomial.eval_monomial]
 
+/--
+Every polytope `P` is compact, because it is the convex hull of a finite set.
+-/
 lemma Polytope.isCompact {n : ℕ} (P : Polytope n) : IsCompact P.Ω := by
   have h_fin : (P.vertices : Set (CoeffVec n)).Finite := Finset.finite_toSet P.vertices
   exact Set.Finite.isCompact_convexHull h_fin
 
+/--
+Every polytope is bounded (since it is compact).
+-/
 lemma Polytope.isBounded {n : ℕ} (P : Polytope n) : Bornology.IsBounded P.Ω :=
   P.isCompact.isBounded
 
+/--
+Given a point `δ` inside a polytope `P` and a nonzero direction `v`,
+there exists a positive `t` such that the ray `δ + t•v` exits the polytope.
+-/
 lemma ray_escapes_polytope {n : ℕ} (P : Polytope n) (δ v : CoeffVec n)
     (hp_in_Ω : δ ∈ P.Ω) (hv_nonzero : v ≠ 0) : ∃ (t : ℝ), 0 < t ∧ δ + t • v ∉ P.Ω := by
   rcases Metric.isBounded_iff.mp P.isBounded with ⟨C, hC⟩
@@ -260,6 +350,11 @@ lemma ray_escapes_polytope {n : ℕ} (P : Polytope n) (δ v : CoeffVec n)
     linarith
   · exact ⟨t, ht_pos, h_contra⟩
 
+/--
+The affine span of the intersection of a submodule `U` with an affine
+subspace `affΩ` equals the intersection of `U` (as an affine subspace)
+with `affΩ`.
+-/
 lemma affineSpan_inter {n : ℕ} (U : Submodule ℝ (CoeffVec n))
     (affΩ : AffineSubspace ℝ (CoeffVec n)) :
     affineSpan ℝ (↑U ∩ ↑affΩ) = U.toAffineSubspace ⊓ affΩ := by
