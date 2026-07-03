@@ -1,3 +1,5 @@
 /.lake
 ControlSystems/DiscreteTime/*.md
 ControlSystems/DiscreteTime/*.txt
+chapter6.md
+plan_complex_case.md
