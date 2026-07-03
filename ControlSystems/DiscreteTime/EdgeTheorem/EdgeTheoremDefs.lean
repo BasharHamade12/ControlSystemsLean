@@ -275,6 +275,58 @@ has `r` as a root.
 noncomputable def P_sr (n : ℕ) (r : ℝ) : Submodule ℝ (CoeffVec n) :=
   (evalLinear r).ker
 
+/--
+The complex evaluation ℝ-linear functional on coefficient vectors:
+`evalAtComplex n s δ = (polyOfVec δ)(s)`, where `polyOfVec δ` is
+pulled back to ℂ via `algebraMap ℝ ℂ`.
+-/
+noncomputable def evalAtComplex {n : ℕ} (s : ℂ) : CoeffVec n →ₗ[ℝ] ℂ :=
+{
+  toFun := fun δ => ((polyOfVec δ).map (algebraMap ℝ ℂ)).eval s
+  map_add' := by
+    intros δ₁ δ₂
+    simp [polyOfVec, Polynomial.eval_add, map_add, Finset.sum_add_distrib]
+  map_smul' := by
+    intro a δ
+    have h_linear : polyOfVec (a • δ) = a • polyOfVec δ := by
+      ext i
+      simp [polyOfVec, Polynomial.coeff_smul,
+        Finset.smul_sum, smul_eq_mul, Polynomial.coeff_monomial]
+    calc
+      ((polyOfVec (a • δ)).map (algebraMap ℝ ℂ)).eval s
+          = ((a • polyOfVec δ).map (algebraMap ℝ ℂ)).eval s := by rw [h_linear]
+      _ = ((a : ℂ) • (polyOfVec δ).map (algebraMap ℝ ℂ)).eval s := by simp
+      _ = (a : ℂ) * (((polyOfVec δ).map (algebraMap ℝ ℂ)).eval s) := by simp
+      _ = a • (((polyOfVec δ).map (algebraMap ℝ ℂ)).eval s) := by simp
+}
+
+/--
+The kernel of `evalAtComplex n s`, i.e., the ℝ-subspace of coefficient vectors
+whose associated polynomial vanishes at `s ∈ ℂ`. For non-real `s`, this
+subspace has ℝ-dimension `n-1`.
+-/
+noncomputable def P_sc (n : ℕ) (s : ℂ) : Submodule ℝ (CoeffVec n) :=
+  (evalAtComplex (n := n) s).ker
+
+/--
+If `δ`'s polynomial vanishes at `s ∈ ℂ`, then `δ` lies in `P_sc n s`.
+-/
+lemma mem_P_sc_of_isRoot {n : ℕ} (s : ℂ) (δ : CoeffVec n)
+    (h : ((polyOfVec δ).map (algebraMap ℝ ℂ)).IsRoot s) :
+    δ ∈ (P_sc n s : Set (CoeffVec n)) := by
+  unfold P_sc
+  have hzero : ((polyOfVec δ).map (algebraMap ℝ ℂ)).eval s = 0 := h
+  simpa [evalAtComplex] using hzero
+
+/--
+If `δ ∈ F` and `(polyOfVec δ).map (algebraMap ℝ ℂ)` vanishes at `s`,
+then `s` belongs to the root space set of `F`.
+-/
+lemma rootspace_mem_of_isRoot {n : ℕ} (s : ℂ) (δ : CoeffVec n)
+    (h : ((polyOfVec δ).map (algebraMap ℝ ℂ)).IsRoot s)
+    (F : Set (CoeffVec n)) (hδ_in_F : δ ∈ F) : s ∈ RootSpaceSet F :=
+  ⟨δ, hδ_in_F, h⟩
+
 /-- `F` is an exposed face of `P` if there exists a supporting hyperplane `hp`
 such that `F` equals the exposed face of `hp`. -/
 def IsExposedFace {n : ℕ} (P : Polytope n) (F : Set (CoeffVec n)) : Prop :=

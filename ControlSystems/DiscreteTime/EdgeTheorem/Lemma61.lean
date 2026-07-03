@@ -147,10 +147,6 @@ The final exposed edge `E` satisfies `IsExposedEdge P E` and `s ∈ RootSpaceSet
 
 ## Complex Case (`lemma61_complex`)
 
-The complex case is **deferred** (body is `sorry`).  It will be proved after the
-real case is fully stable and will follow a similar strategy but without the
-dimensional descent to an edge (the complex root space lives on a face of
-arbitrary dimension).
 
 -/
 
@@ -330,17 +326,116 @@ theorem lemma61_real (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootS
           rw [← hs_real]
           exact hδ_root)) P.Ω hδ_in_Ω
 
-/-- Complex case of Lemma 6.1: If `s` has nonzero imaginary part, then there exists an exposed face `F` of `P` such that `s ∈ RootSpaceSet F`. (Proof deferred.) -/
-theorem lemma61_complex (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootSpace P) :
-    s.im ≠ 0 → ∃ F, IsExposedFace P F ∧ s ∈ RootSpaceSet F := by
+/-- Complex case of Lemma 6.1: If `s` has nonzero imaginary part and `P` satisfies Assumption 6.1
+  (all vertices have positive leading coefficient), then there exists an exposed face `F` of `P`
+  such that `s ∈ RootSpaceSet F`. -/
+theorem lemma61_complex (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootSpace P)
+    (hleading : ∀ v ∈ P.vertices, 0 < v (Fin.last n)) : s.im ≠ 0 → ∃ F, IsExposedFace P F ∧ s ∈ RootSpaceSet F := by
   intro hcomplex
-  -- to be done after the real case is totally done
-  sorry
+  by_cases hn2 : n ≥ 2
+  · unfold RootSpace RootSpaceSet at hs
+    obtain ⟨δ, hδ_in_Ω, hδ_root⟩ := hs
+    have hδ_in_Psc : δ ∈ (P_sc n s : Set (CoeffVec n)) :=
+      mem_P_sc_of_isRoot s δ hδ_root
+    let m := Module.finrank ℝ (affineSpan ℝ (P.Ω)).direction
+    have hm_ge_3 : m ≥ 3 := by
+      dsimp [m]
+      have h_span_top : affineSpan ℝ P.Ω = ⊤ :=
+        ((Convex.interior_nonempty_iff_affineSpan_eq_top (convex_convexHull ℝ _)).mp
+          (by simpa using P.interior_nonempty))
+      rw [h_span_top, AffineSubspace.direction_top, finrank_top, finrank_CoeffVec]
+      omega
+    let affΩ : AffineSubspace ℝ (CoeffVec n) := affineSpan ℝ (P.Ω)
+    have hdim_Psc : Module.finrank ℝ (P_sc n s) = n - 1 :=
+      P_sc_dimension hn s hcomplex
+    have hδ_aff : δ ∈ affΩ := subset_affineSpan ℝ P.Ω hδ_in_Ω
+    let dir' := (affineSpan ℝ ((P_sc n s : Set (CoeffVec n)) ∩ (affΩ : Set (CoeffVec n)))).direction
+    have hA_dim : Module.finrank ℝ (↥dir') ≥ 1 :=
+      intersection_affine_dim_ge_one_complex (P_sc n s) affΩ δ hδ_in_Psc hδ_aff
+        hdim_Psc hm_ge_3
+    obtain ⟨δ_bound, hδ_bound⟩ :=
+      exists_boundary_point_in_Psc P s δ hδ_in_Ω hδ_in_Psc affΩ hδ_aff hA_dim
+    have hδ_bound_front : δ_bound ∈ frontier P.Ω := hδ_bound.2
+    have hδ_bound_Psc : δ_bound ∈ (P_sc n s : Set (CoeffVec n)) := hδ_bound.1
+    have h_int_nonempty : (interior P.Ω).Nonempty := P.interior_nonempty
+    obtain ⟨F, hF_exposed, hδ_in_F, hs_in_RF⟩ :=
+      exists_exposed_face_containing_boundary_point_complex P s δ_bound
+        hδ_bound_front hδ_bound_Psc h_int_nonempty
+    let m_F := Module.finrank ℝ (affineSpan ℝ F).direction
+    by_cases hm_F_ge_3 : m_F ≥ 3
+    · exact descend_to_exposed_face hn P s hcomplex F hF_exposed hs_in_RF hm_F_ge_3
+    · exact ⟨F, hF_exposed, hs_in_RF⟩
+  · -- n = 1. By Assumption 6.1 (P.leading_pos), all vertices have positive leading
+    -- coefficient, thus so does every δ ∈ P.Ω. Hence (δ 1 : ℂ) ≠ 0, forcing s to be
+    -- real, contradicting hcomplex.
+    have hn1 : n = 1 := by omega
+    subst hn1
+    unfold RootSpace RootSpaceSet at hs
+    obtain ⟨δ, hδ_in_Ω, hδ_root⟩ := hs
+    have h_eval : ((polyOfVec δ).map (algebraMap ℝ ℂ)).eval s = (δ 0 : ℂ) + (δ 1 : ℂ) * s := by
+      simp [polyOfVec, Polynomial.eval_add, Polynomial.eval_C, Polynomial.eval_X,
+        Polynomial.eval_mul, Polynomial.map_add]
+    have h_eval_zero : ((polyOfVec δ).map (algebraMap ℝ ℂ)).eval s = 0 := hδ_root
+    rw [h_eval] at h_eval_zero
+    have h_sum : (δ 0 : ℂ) + (δ 1 : ℂ) * s = 0 := h_eval_zero
+    by_cases hδ1_ne_zero : (δ 1 : ℂ) ≠ 0
+    · have h_mul : (δ 1 : ℂ) * s = -(δ 0 : ℂ) := by
+        calc
+          (δ 1 : ℂ) * s = -(δ 0 : ℂ) + (δ 0 : ℂ) + (δ 1 : ℂ) * s := by ring
+          _ = -(δ 0 : ℂ) + ((δ 0 : ℂ) + (δ 1 : ℂ) * s) := by ring
+          _ = -(δ 0 : ℂ) + 0 := by rw [h_sum]
+          _ = -(δ 0 : ℂ) := by simp
+      have hs_eq : s = -((δ 0 : ℂ) / (δ 1 : ℂ)) := by
+        field_simp [hδ1_ne_zero]
+        calc
+          s * (δ 1 : ℂ) = (δ 1 : ℂ) * s := mul_comm _ _
+          _ = -(δ 0 : ℂ) := h_mul
+      have hs_real : s.im = 0 := by
+        rw [hs_eq]
+        simp
+      exact absurd hs_real hcomplex
+    · -- δ 1 = 0. Show this contradicts hleading.
+      have h_δ1_pos : 0 < δ 1 := by
+        have h_mem_conv : δ ∈ convexHull ℝ (P.vertices : Set (CoeffVec 1)) := hδ_in_Ω
+        have h_vertices_pos : (P.vertices : Set (CoeffVec 1)) ⊆ {x | 0 < x 1} := by
+          intro v hv
+          have h := hleading v hv
+          simpa [Fin.last] using h
+        have h_convex : Convex ℝ {x : CoeffVec 1 | 0 < x 1} := by
+          intro x hx y hy a b ha hb hab
+          have hx1 : 0 < x 1 := hx
+          have hy1 : 0 < y 1 := hy
+          have ha_nonneg : 0 ≤ a := ha
+          have hb_nonneg : 0 ≤ b := hb
+          have hcalc : (a • x + b • y) 1 = a * (x 1) + b * (y 1) := by simp
+          have hpos : 0 < a * (x 1) + b * (y 1) := by
+            by_cases ha0 : a = 0
+            · subst ha0
+              have hb1 : b = 1 := by linarith
+              subst hb1
+              simpa
+            · have ha_pos : 0 < a := by
+                by_contra! h
+                have ha0' : a = 0 := by nlinarith
+                exact ha0 ha0'
+              have ha_x1_pos : 0 < a * (x 1) := mul_pos ha_pos hx1
+              have hb_y1_nonneg : 0 ≤ b * (y 1) := mul_nonneg hb_nonneg (by linarith)
+              nlinarith
+          simpa [hcalc]
+        have h_subset : convexHull ℝ (P.vertices : Set (CoeffVec 1)) ⊆ {x | 0 < x 1} :=
+          convexHull_min h_vertices_pos h_convex
+        exact h_subset h_mem_conv
+      have h_δ1_ne_zero' : (δ 1 : ℂ) ≠ 0 := by exact_mod_cast h_δ1_pos.ne.symm
+      exact absurd h_δ1_ne_zero' hδ1_ne_zero
 
-/-- Lemma 6.1: For a polytope `P` and a root `s` of `P`, either `s` is real (in which case there exists an exposed edge with `s` in its root space set) or `s` is complex (in which case there exists an exposed face with `s` in its root space set). -/
-theorem lemma61 (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootSpace P) :
+/-- Lemma 6.1: For a polytope `P` satisfying Assumption 6.1 (all vertices have positive leading
+  coefficient) and a root `s` of `P`, either `s` is real (in which case there exists an exposed edge
+  with `s` in its root space set) or `s` is complex (in which case there exists an exposed face with
+  `s` in its root space set). -/
+theorem lemma61 (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootSpace P)
+    (hleading : ∀ v ∈ P.vertices, 0 < v (Fin.last n)) :
     (s.im = 0 → ∃ E, IsExposedEdge P E ∧ s ∈ RootSpaceSet E) ∧
     (s.im ≠ 0 → ∃ F, IsExposedFace P F ∧ s ∈ RootSpaceSet F) :=
-  ⟨lemma61_real hn P s hs, lemma61_complex hn P s hs⟩
+  ⟨lemma61_real hn P s hs, lemma61_complex hn P s hs hleading⟩
 
 end CoeffBox

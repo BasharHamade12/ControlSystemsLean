@@ -707,4 +707,50 @@ private lemma direction_sub_inf_ker_gΩ {n : ℕ} {P : Polytope n}
     direction_sub_ker_gΩ hp g_Ω g_c δ_bound G hδ_in_G hG_sub_ExF h_const
   exact le_inf h_dir_le_F_dir h_dir_le_ker
 
+/-- For a non-real `s ∈ ℂ` and a boundary point `δ_bound` of `P.Ω` in `P_sc n s`, there exists an exposed face `F` of `P` containing `δ_bound` and with `s ∈ RootSpaceSet F`. -/
+lemma exists_exposed_face_containing_boundary_point_complex {n : ℕ} (P : Polytope n)
+    (s : ℂ) (δ_bound : CoeffVec n)
+    (hδ_bound_front : δ_bound ∈ frontier P.Ω)
+    (hδ_bound_Psc : δ_bound ∈ (P_sc n s : Set (CoeffVec n)))
+    (h_int_nonempty : (interior P.Ω).Nonempty) :
+    ∃ F : Set (CoeffVec n), IsExposedFace P F ∧ δ_bound ∈ F ∧ s ∈ RootSpaceSet F := by
+  have hδ_bound_in_Ω : δ_bound ∈ P.Ω := frontier_point_in_Ω P δ_bound hδ_bound_front
+  have hδ_bound_not_int : δ_bound ∉ interior P.Ω :=
+    frontier_point_not_interior P δ_bound hδ_bound_front
+  have h_convex : Convex ℝ P.Ω := convex_convexHull ℝ _
+  have h_int_convex : Convex ℝ (interior P.Ω) := h_convex.interior
+  have h_int_open : IsOpen (interior P.Ω) := isOpen_interior
+  obtain ⟨f, hf_strict⟩ :=
+    geometric_hahn_banach_open_point h_int_convex h_int_open hδ_bound_not_int
+  have hf_ne : f ≠ 0 := supporting_func_nonzero P f δ_bound hf_strict h_int_nonempty
+  let c : ℝ := f δ_bound
+  let f_lin : CoeffVec n →ₗ[ℝ] ℝ := f.toLinearMap
+  have hf_lin_ne : f_lin ≠ 0 := by
+    intro heq
+    apply hf_ne
+    ext x
+    have : f_lin x = 0 := by
+      rw [heq]
+      simp
+    exact this
+  have hc_upper : ∀ x ∈ P.Ω, f_lin x ≤ c :=
+    supporting_hyperplane_upper_bound P f c hf_strict h_int_nonempty
+  let hp : SupportingHyperplane P := {
+    f           := f_lin
+    c           := c
+    nonzero     := hf_lin_ne
+    upper_bound := hc_upper
+    touches     := ⟨δ_bound, hδ_bound_in_Ω, rfl⟩
+  }
+  have hδ_in_face : δ_bound ∈ ExposedFace hp := by
+    unfold ExposedFace
+    simp only [Set.mem_setOf_eq]
+    exact ⟨hδ_bound_in_Ω, rfl⟩
+  have h_isRoot : ((polyOfVec δ_bound).map (algebraMap ℝ ℂ)).IsRoot s := by
+    have hzero : evalAtComplex s δ_bound = 0 := hδ_bound_Psc
+    simpa [evalAtComplex] using hzero
+  have hs_in_rootspace : s ∈ RootSpaceSet (ExposedFace hp) :=
+    rootspace_mem_of_isRoot s δ_bound h_isRoot (ExposedFace hp) hδ_in_face
+  exact ⟨ExposedFace hp, ⟨hp, rfl⟩, hδ_in_face, hs_in_rootspace⟩
+
 end CoeffBox

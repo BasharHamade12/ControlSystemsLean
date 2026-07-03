@@ -1,5 +1,6 @@
 module
 
+public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 public import ControlSystems.DiscreteTime.EdgeTheorem.EdgeTheoremDefs
 public import ControlSystems.DiscreteTime.EdgeTheorem.BasicLemmas
 
@@ -25,6 +26,117 @@ lemma P_sr_dimension {n : ℕ} (r : ℝ) :
     rw [LinearMap.range_eq_top.mpr hsurj]
     simp only [finrank_top, Module.finrank_self]
   grind
+
+/-- The complex evaluation map `evalAtComplex n s : CoeffVec n →ₗ[ℝ] ℂ` is surjective
+when `s` is non-real and `n ≥ 1`.  Proof: the constant polynomial `a` and the linear
+polynomial `b·s` already span ℂ over ℝ because `1` and `s` are ℝ-linearly independent. -/
+lemma evalAtComplex_surjective {n : ℕ} (hn : n ≥ 1) (s : ℂ) (hs : s.im ≠ 0) :
+    Function.Surjective (evalAtComplex (n := n) s) := by
+  intro z
+  let b := z.im / s.im
+  let a := z.re - b * s.re
+  let δ : CoeffVec n := fun j =>
+    if h0 : j.val = 0 then a
+    else if h1 : j.val = 1 then b
+    else 0
+  use δ
+  have h0pos : 0 < n + 1 := by omega
+  have h1pos : 1 < n + 1 := by omega
+  have h_unique_0 : (Finset.univ.filter fun (j : Fin (n+1)) => j.val = 0) = {⟨0, h0pos⟩} := by
+    ext j; constructor
+    · intro hj
+      have hj' : j.val = 0 := by simpa [Finset.mem_filter, Finset.mem_univ] using hj
+      exact Finset.mem_singleton.mpr (Fin.ext hj')
+    · intro hj
+      have hj_eq : j = ⟨0, h0pos⟩ := Finset.mem_singleton.mp hj
+      simp [hj_eq, Finset.mem_filter, Finset.mem_univ]
+  have h_unique_1 : (Finset.univ.filter fun (j : Fin (n+1)) => j.val = 1) = {⟨1, h1pos⟩} := by
+    ext j; constructor
+    · intro hj
+      have hj' : j.val = 1 := by simpa [Finset.mem_filter, Finset.mem_univ] using hj
+      exact Finset.mem_singleton.mpr (Fin.ext hj')
+    · intro hj
+      have hj_eq : j = ⟨1, h1pos⟩ := Finset.mem_singleton.mp hj
+      simp [hj_eq, Finset.mem_filter, Finset.mem_univ]
+  have h_sum0 : ∑ (j : Fin (n+1)), (if j.val = 0 then Polynomial.monomial j.val a else 0) = Polynomial.monomial 0 a := by
+    rw [← Finset.sum_filter, h_unique_0]; simp
+  have h_sum1 : ∑ (j : Fin (n+1)), (if j.val = 1 then Polynomial.monomial j.val b else 0) = Polynomial.monomial 1 b := by
+    rw [← Finset.sum_filter, h_unique_1]; simp
+  have h_δ_split : δ = (fun (j : Fin (n+1)) => if j.val = 0 then a else 0) +
+    (fun (j : Fin (n+1)) => if j.val = 1 then b else 0) := by
+    ext j
+    dsimp [δ]
+    by_cases h0 : j.val = 0
+    · simp [h0]
+    · by_cases h1 : j.val = 1
+      · simp [h0, h1]
+      · simp [h0, h1]
+  have h_poly : polyOfVec δ = Polynomial.C a + Polynomial.C b * Polynomial.X := by
+    calc
+      polyOfVec δ = ∑ j : Fin (n+1), Polynomial.monomial j.val (δ j) := rfl
+      _ = ∑ j : Fin (n+1), Polynomial.monomial j.val (((fun (j : Fin (n+1)) => if j.val = 0 then a else 0) +
+        (fun (j : Fin (n+1)) => if j.val = 1 then b else 0)) j) := by
+        rw [h_δ_split]
+      _ = ∑ j : Fin (n+1), Polynomial.monomial j.val ((if j.val = 0 then a else 0) + (if j.val = 1 then b else 0)) := rfl
+      _ = ∑ j : Fin (n+1), (Polynomial.monomial j.val (if j.val = 0 then a else 0) +
+        Polynomial.monomial j.val (if j.val = 1 then b else 0)) := by
+        refine Finset.sum_congr rfl fun j hj => ?_
+        simp
+      _ = (∑ (j : Fin (n+1)), Polynomial.monomial j.val (if j.val = 0 then a else 0)) +
+          (∑ (j : Fin (n+1)), Polynomial.monomial j.val (if j.val = 1 then b else 0)) := by
+        simp [Finset.sum_add_distrib]
+      _ = (∑ (j : Fin (n+1)), (if j.val = 0 then Polynomial.monomial j.val a else 0)) +
+          (∑ (j : Fin (n+1)), (if j.val = 1 then Polynomial.monomial j.val b else 0)) := by
+        refine congrArg₂ (· + ·) ?_ ?_
+        · refine Finset.sum_congr rfl fun j hj => ?_
+          by_cases h0 : j.val = 0
+          · simp [h0]
+          · simp [h0]
+        · refine Finset.sum_congr rfl fun j hj => ?_
+          by_cases h1 : j.val = 1
+          · simp [h1]
+          · simp [h1]
+      _ = Polynomial.monomial 0 a + Polynomial.monomial 1 b := by rw [h_sum0, h_sum1]
+      _ = Polynomial.C a + Polynomial.C b * Polynomial.X := by
+        simp [Polynomial.C_mul_X_eq_monomial]
+  calc
+    ((polyOfVec δ).map (algebraMap ℝ ℂ)).eval s
+        = ((Polynomial.C a + Polynomial.C b * Polynomial.X).map (algebraMap ℝ ℂ)).eval s := by
+          rw [h_poly]
+    _ = ((Polynomial.C (a : ℂ) + Polynomial.C (b : ℂ) * Polynomial.X).eval s) := by simp
+    _ = (a : ℂ) + (b : ℂ) * s := by simp
+    _ = ((z.re : ℂ) - ((z.im / s.im : ℝ) : ℂ) * (s.re : ℂ)) + ((z.im / s.im : ℝ) : ℂ) * s := by
+      dsimp [a, b]; push_cast; ring
+    _ = (z.re : ℂ) + ((z.im / s.im : ℝ) : ℂ) * (s - (s.re : ℂ)) := by ring
+    _ = (z.re : ℂ) + ((z.im / s.im : ℝ) : ℂ) * ((s.im : ℂ) * Complex.I) := by
+      have h_eq : s - (s.re : ℂ) = (s.im : ℂ) * Complex.I := by
+        calc
+          s - (s.re : ℂ) = ((s.re : ℂ) + (s.im : ℂ) * Complex.I) - (s.re : ℂ) := by
+            rw [Complex.re_add_im s]
+          _ = (s.im : ℂ) * Complex.I := by ring
+      rw [h_eq]
+    _ = (z.re : ℂ) + (z.im : ℂ) * Complex.I := by
+      have h_mul : ((z.im / s.im : ℝ) : ℂ) * (s.im : ℂ) = (z.im : ℂ) := by
+        push_cast
+        field_simp [hs]
+      calc
+        (z.re : ℂ) + ((z.im / s.im : ℝ) : ℂ) * ((s.im : ℂ) * Complex.I)
+            = (z.re : ℂ) + (((z.im / s.im : ℝ) : ℂ) * (s.im : ℂ)) * Complex.I := by ring
+        _ = (z.re : ℂ) + (z.im : ℂ) * Complex.I := by rw [h_mul]
+    _ = z := by simp
+
+/-- The submodule `P_sc n s` has ℝ-dimension `n-1` when `s` is non-real and `n ≥ 1`. -/
+lemma P_sc_dimension {n : ℕ} (hn : n ≥ 1) (s : ℂ) (hs : s.im ≠ 0) :
+    Module.finrank ℝ (P_sc n s) = n - 1 := by
+  unfold P_sc
+  have h := LinearMap.finrank_range_add_finrank_ker (evalAtComplex (n := n) s)
+  rw [finrank_CoeffVec] at h
+  have hrank : Module.finrank ℝ (evalAtComplex (n := n) s).range = 2 := by
+    have hsurj : Function.Surjective (evalAtComplex (n := n) s) :=
+      evalAtComplex_surjective hn s hs
+    rw [LinearMap.range_eq_top.mpr hsurj]
+    simpa using Complex.finrank_real_complex
+  omega
 
 /-- If `U` has dimension `n` and `W` has dimension at least 2, then `U ⊓ W` has dimension at least 1. -/
 private lemma finrank_inf_ge_one {n : ℕ} (U W : Submodule ℝ (CoeffVec n))
@@ -268,5 +380,78 @@ lemma exists_boundary_point_in_Psr {n : ℕ} (P : Polytope n) (r : ℝ) (δ : Co
       rw [h_eq]
       exact hmem_Psr
     exact ⟨δ_bound, this, h_front⟩
+
+/-- Given a point `δ` in `P.Ω ∩ P_sc n s` and an affine subspace `affΩ` containing `δ` whose intersection with `P_sc` has direction dimension at least 1, there exists a boundary point of `P.Ω` also in `P_sc n s`. -/
+lemma exists_boundary_point_in_Psc {n : ℕ} (P : Polytope n) (s : ℂ) (δ : CoeffVec n)
+    (hδ_in_Ω : δ ∈ P.Ω) (hδ_in_Psc : δ ∈ (P_sc n s : Set (CoeffVec n)))
+    (affΩ : AffineSubspace ℝ (CoeffVec n)) (hδ_aff : δ ∈ affΩ)
+    (hA_dim : Module.finrank ℝ ↥(affineSpan ℝ ((P_sc n s : Set (CoeffVec n)) ∩
+      (affΩ : Set (CoeffVec n)))).direction ≥ 1) :
+    ∃ δ_bound, δ_bound ∈ (P_sc n s : Set (CoeffVec n)) ∩ frontier P.Ω := by
+  have h_dim_pos : 0 <
+      Module.finrank ℝ ↥(affineSpan ℝ ((P_sc n s : Set (CoeffVec n)) ∩
+      (affΩ : Set (CoeffVec n)))).direction := by
+    omega
+  let U : Submodule ℝ (CoeffVec n) := P_sc n s
+  haveI : Nontrivial ↥(U ⊓ affΩ.direction) :=
+    intersection_nontrivial U affΩ δ hδ_in_Psc hδ_aff h_dim_pos
+  obtain ⟨v_sub, hv_sub_nonzero⟩ := exists_ne (0 : ↑(U ⊓ affΩ.direction))
+  let v : CoeffVec n := v_sub.val
+  have h_line_in_intersection : ∀ (t : ℝ), δ + t • v ∈ (P_sc n s : Set (CoeffVec n)) ∩
+      (affΩ : Set (CoeffVec n)) :=
+    line_in_intersection U affΩ δ hδ_in_Psc hδ_aff v_sub
+  have hv_nonzero : v ≠ 0 := by
+    intro h; apply hv_sub_nonzero; exact Submodule.coe_eq_zero.mp h
+  have h_escapes : ∃ (t : ℝ), 0 < t ∧ δ + t • v ∉ P.Ω :=
+    ray_escapes_polytope P δ v hδ_in_Ω hv_nonzero
+  obtain ⟨t_out, ht_out_pos, ht_out⟩ := h_escapes
+  by_cases hδ_front : δ ∈ frontier P.Ω
+  · use δ
+    exact ⟨hδ_in_Psc, hδ_front⟩
+  · obtain ⟨δ_bound, h_seg, h_front⟩ :=
+      segment_boundary_intersection P δ hδ_in_Ω hδ_front v hv_nonzero t_out ht_out
+    rw [segment_eq_image] at h_seg
+    obtain ⟨c, hc_in_Icc, hc_eq⟩ := h_seg
+    have h_rewrite : (1 - c) • δ + c • (δ + t_out • v) = δ + (c * t_out) • v :=
+      segment_point_rewrite δ v c t_out
+    have h_mem := h_line_in_intersection (c * t_out)
+    rcases h_mem with ⟨hmem_Psc, hmem_aff⟩
+    have : δ_bound ∈ (P_sc n s : Set (CoeffVec n)) := by
+      have h_eq : δ_bound = δ + (c * t_out) • v := by
+        calc δ_bound = (1 - c) • δ + c • (δ + t_out • v) := by rw [←hc_eq]
+          _ = δ + (c * t_out) • v := by rw [h_rewrite]
+      rw [h_eq]
+      exact hmem_Psc
+    exact ⟨δ_bound, this, h_front⟩
+
+/-- If `U` has dimension `n-1` and `W` has dimension at least 3, then `U ⊓ W` has dimension at least 1. -/
+private lemma finrank_inf_ge_one' {n : ℕ} (U W : Submodule ℝ (CoeffVec n))
+    (hU : Module.finrank ℝ U = n - 1) (hW : Module.finrank ℝ W ≥ 3) :
+    Module.finrank ℝ ↥(U ⊓ W) ≥ 1 := by
+  have h_le_ambient : (U ⊔ W) ≤ ⊤ := by simp
+  have h_sum_le : Module.finrank ℝ ↥(U ⊔ W) ≤ n + 1 := by
+    calc Module.finrank ℝ ↥(U ⊔ W)
+      ≤ Module.finrank ℝ (⊤ : Submodule ℝ (CoeffVec n)) := Submodule.finrank_mono h_le_ambient
+      _ = n + 1 := by rw [finrank_top, finrank_CoeffVec]
+  have hformula : Module.finrank ℝ ↥(U ⊔ W) + Module.finrank ℝ ↥(U ⊓ W) =
+    Module.finrank ℝ U + Module.finrank ℝ W :=
+    Submodule.finrank_sup_add_finrank_inf_eq U W
+  omega
+
+/-- Variant of `intersection_affine_dim_ge_one` for the complex root subspace:
+  `dim(U) = n-1` and `dim(affΩ.direction) ≥ 3` ensure intersection dimension ≥ 1. -/
+lemma intersection_affine_dim_ge_one_complex {n : ℕ} (U : Submodule ℝ (CoeffVec n))
+    (affΩ : AffineSubspace ℝ (CoeffVec n))
+    (δ : CoeffVec n) (hδU : δ ∈ U) (hδΩ : δ ∈ affΩ)
+    (hU_dim : Module.finrank ℝ U = n - 1) (haff_dim : Module.finrank ℝ affΩ.direction ≥ 3) :
+    Module.finrank ℝ ↥(affineSpan ℝ ((U : Set (CoeffVec n)) ∩ (affΩ : Set (CoeffVec n)))).direction
+      ≥ 1 := by
+  let Aint : AffineSubspace ℝ (CoeffVec n) := U.toAffineSubspace ⊓ affΩ
+  have hA_dir : Aint.direction = U ⊓ affΩ.direction :=
+    intersection_direction_eq U affΩ δ hδU hδΩ
+  have hA_eq : affineSpan ℝ ((U : Set (CoeffVec n)) ∩ (affΩ : Set (CoeffVec n))) = Aint := by
+    rw [affineSpan_inter U affΩ]
+  rw [hA_eq, hA_dir]
+  exact finrank_inf_ge_one' U affΩ.direction hU_dim haff_dim
 
 end CoeffBox
