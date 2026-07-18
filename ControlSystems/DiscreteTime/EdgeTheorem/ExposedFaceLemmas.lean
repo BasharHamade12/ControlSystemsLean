@@ -12,6 +12,7 @@ open Affine
 open FiniteDimensional
 open LinearMap
 open Set
+open scoped BigOperators
 
 namespace CoeffBox
 
@@ -752,5 +753,157 @@ lemma exists_exposed_face_containing_boundary_point_complex {n : ℕ} (P : Polyt
   have hs_in_rootspace : s ∈ RootSpaceSet (ExposedFace hp) :=
     rootspace_mem_of_isRoot s δ_bound h_isRoot (ExposedFace hp) hδ_in_face
   exact ⟨ExposedFace hp, ⟨hp, rfl⟩, hδ_in_face, hs_in_rootspace⟩
+
+/-- An exposed face of a polytope is itself a polytope (as a set):
+its `IsPolytopeSet`. The vertices are those vertices of `P` that lie on the
+supporting hyperplane. -/
+theorem isExposedFace_isPolytopeSet {n : ℕ} (P : Polytope n) {F : Set (CoeffVec n)}
+    (hF : IsExposedFace P F) : IsPolytopeSet F := by
+  classical
+  let hp := Classical.choose hF
+  have hF_eq : F = ExposedFace hp := Classical.choose_spec hF
+  let V_F := P.vertices.filter (λ v => hp.f v = hp.c)
+  -- helper: any point of P.Ω with hp.f x = hp.c is a convex combination of V_F
+  have mem_conv_VF_of_mem_F (x : CoeffVec n) (hx : x ∈ ExposedFace hp) :
+      x ∈ convexHull ℝ (V_F : Set (CoeffVec n)) := by
+    have hx_in_Ω : x ∈ P.Ω := hx.1
+    have hx_f : hp.f x = hp.c := hx.2
+    have hx_conv : x ∈ convexHull ℝ (P.vertices : Set (CoeffVec n)) := by
+      unfold Polytope.Ω at hx_in_Ω
+      exact hx_in_Ω
+    rw [Finset.convexHull_eq] at hx_conv
+    rcases hx_conv with ⟨w, hw_nonneg, hw_sum, hx_cm⟩
+    have hx_sum : ∑ v ∈ P.vertices, w v • v = x := by
+      have h_sum_nonzero : ∑ v ∈ P.vertices, w v ≠ 0 := by
+        rw [hw_sum]; norm_num
+      calc
+        ∑ v ∈ P.vertices, w v • v = (∑ v ∈ P.vertices, w v) • (P.vertices.centerMass w id) := by
+          simp [Finset.centerMass, h_sum_nonzero]
+        _ = 1 • x := by
+          simp [hw_sum, hx_cm]
+        _ = x := by simp
+    have h_sum_eq : hp.c = ∑ v ∈ P.vertices, w v • hp.f v := by
+      calc
+        hp.c = hp.f x := Eq.symm hx_f
+        _ = hp.f (∑ v ∈ P.vertices, w v • v) := by rw [hx_sum]
+        _ = ∑ v ∈ P.vertices, w v • hp.f v := by
+          simp [map_sum]
+    have h_pos_vertex (v : CoeffVec n) (hv : v ∈ P.vertices) (hw_pos : w v > 0) : v ∈ (V_F : Set (CoeffVec n)) := by
+      have hv_in_Ω : v ∈ P.Ω := by
+        unfold Polytope.Ω
+        exact subset_convexHull ℝ (P.vertices : Set (CoeffVec n)) hv
+      have hv_le_c : hp.f v ≤ hp.c := hp.upper_bound v hv_in_Ω
+      have hv_eq_c : hp.f v = hp.c := by
+        by_contra! hlt
+        have hlt' : hp.f v < hp.c := lt_of_le_of_ne hv_le_c hlt
+        have h_lt_sum : ∑ v ∈ P.vertices, w v • hp.f v < ∑ v ∈ P.vertices, w v • hp.c := by
+          refine Finset.sum_lt_sum (λ u hu => ?_) ⟨v, hv, ?_⟩
+          · have hu_le_c : hp.f u ≤ hp.c := hp.upper_bound u (by
+              unfold Polytope.Ω
+              exact subset_convexHull ℝ (P.vertices : Set (CoeffVec n)) hu)
+            have h_nonneg_wu : 0 ≤ w u := hw_nonneg u hu
+            have : w u • hp.f u ≤ w u • hp.c := by
+              have h_mul : w u * hp.f u ≤ w u * hp.c := by nlinarith
+              simpa [smul_eq_mul] using h_mul
+            exact this
+          · have hpos_mul_lt : w v • hp.f v < w v • hp.c := by
+              have h_mul : w v * hp.f v < w v * hp.c := by nlinarith
+              simpa [smul_eq_mul] using h_mul
+            exact hpos_mul_lt
+        have h_sum_c : ∑ v ∈ P.vertices, w v • hp.c = hp.c := by
+          calc
+            ∑ v ∈ P.vertices, w v • hp.c = (∑ v ∈ P.vertices, w v) * hp.c := by
+              simp [Finset.sum_mul]
+            _ = 1 * hp.c := by rw [hw_sum]
+            _ = hp.c := by norm_num
+        rw [h_sum_c] at h_lt_sum
+        rw [h_sum_eq] at h_lt_sum
+        linarith
+      refine Finset.mem_coe.mpr (Finset.mem_filter.mpr ⟨hv, hv_eq_c⟩)
+    -- restrict to the support of w (vertices with positive weight)
+    let V_support := P.vertices.filter (λ v => w v > 0)
+    have hV_support_sum : ∑ v ∈ V_support, w v = 1 := by
+      calc
+        ∑ v ∈ V_support, w v = ∑ v ∈ P.vertices.filter (λ v => w v > 0), w v := rfl
+        _ = ∑ v ∈ P.vertices, (if w v > 0 then w v else 0) := by simp [Finset.sum_filter]
+        _ = ∑ v ∈ P.vertices, w v := by
+          refine Finset.sum_congr rfl (λ v hv => ?_)
+          by_cases h_pos : w v > 0
+          · simp [h_pos]
+          · have hw_v_zero : w v = 0 := by linarith [hw_nonneg v hv, h_pos]
+            simp [hw_v_zero]
+        _ = 1 := hw_sum
+    have hx_sum_support : ∑ v ∈ V_support, w v • v = x := by
+      calc
+        ∑ v ∈ V_support, w v • v = ∑ v ∈ P.vertices.filter (λ v => w v > 0), w v • v := rfl
+        _ = ∑ v ∈ P.vertices, (if w v > 0 then w v • v else 0) := by simp [Finset.sum_filter]
+        _ = ∑ v ∈ P.vertices, w v • v := by
+          refine Finset.sum_congr rfl (λ v hv => ?_)
+          by_cases h_pos : w v > 0
+          · simp [h_pos]
+          · have hw_v_zero : w v = 0 := by linarith [hw_nonneg v hv, h_pos]
+            simp [hw_v_zero]
+        _ = x := hx_sum
+    have hV_support_mem_VF (v : CoeffVec n) (hv : v ∈ V_support) : v ∈ (V_F : Set (CoeffVec n)) := by
+      have hv_vertices : v ∈ P.vertices := Finset.mem_of_mem_filter v hv
+      have hw_pos : w v > 0 := (Finset.mem_filter.mp hv).2
+      exact h_pos_vertex v hv_vertices hw_pos
+    -- x is a convex combination of V_support points
+    have hx_in_convexHull_V_support : x ∈ convexHull ℝ (V_support : Set (CoeffVec n)) := by
+      rw [Finset.convexHull_eq]
+      refine ⟨λ v => w v, λ v hv => hw_nonneg v (Finset.mem_of_mem_filter v hv), hV_support_sum, ?_⟩
+      calc
+        V_support.centerMass w (λ v => v) = ((∑ v ∈ V_support, w v)⁻¹ • (∑ v ∈ V_support, w v • v)) := rfl
+        _ = (1 : ℝ)⁻¹ • x := by rw [hV_support_sum, hx_sum_support]
+        _ = x := by simp
+    have hV_support_sub_VF : V_support ⊆ V_F := by
+      intro v hv
+      have hv_vertices : v ∈ P.vertices := Finset.mem_of_mem_filter v hv
+      have hw_pos : w v > 0 := (Finset.mem_filter.mp hv).2
+      exact h_pos_vertex v hv_vertices hw_pos
+    -- V_support ⊆ V_F implies convexHull V_support ⊆ convexHull V_F
+    have hx_in_convexHull_VF : x ∈ convexHull ℝ (V_F : Set (CoeffVec n)) :=
+      convexHull_mono hV_support_sub_VF hx_in_convexHull_V_support
+    exact hx_in_convexHull_VF
+  have h_nonempty : V_F.Nonempty := by
+    obtain ⟨x, hx_Ω, hx_eq⟩ := hp.touches
+    have hx_in_F : x ∈ ExposedFace hp := ⟨hx_Ω, hx_eq⟩
+    have hx_conv_VF : x ∈ convexHull ℝ (V_F : Set (CoeffVec n)) := mem_conv_VF_of_mem_F x hx_in_F
+    rw [Finset.convexHull_eq] at hx_conv_VF
+    rcases hx_conv_VF with ⟨w, hw_nonneg, hw_sum, hx_cm⟩
+    have h_weight_pos : ∃ v ∈ V_F, w v > 0 := by
+      by_contra! h
+      have h_all_zero : ∀ v ∈ V_F, w v = 0 := λ v hv => by
+        have h_nonpos : w v ≤ 0 := h v hv
+        exact le_antisymm h_nonpos (hw_nonneg v hv)
+      have h_sum_zero : ∑ v ∈ V_F, w v = 0 := Finset.sum_eq_zero h_all_zero
+      rw [h_sum_zero] at hw_sum
+      linarith
+    rcases h_weight_pos with ⟨v, hv_VF, hw_pos⟩
+    exact ⟨v, hv_VF⟩
+  have h_conv : convexHull ℝ (V_F : Set (CoeffVec n)) = F := by
+    rw [hF_eq]
+    apply Set.Subset.antisymm
+    · -- convexHull ℝ V_F ⊆ ExposedFace hp
+      have hV_F_sub_F : (V_F : Set (CoeffVec n)) ⊆ ExposedFace hp := by
+        intro v hv
+        rw [Finset.mem_coe, Finset.mem_filter] at hv
+        rcases hv with ⟨hv_vert, hv_eq⟩
+        have hv_in_Ω : v ∈ P.Ω := by
+          unfold Polytope.Ω
+          exact subset_convexHull ℝ (P.vertices : Set (CoeffVec n))
+            (Finset.mem_coe.mpr hv_vert)
+        exact ⟨hv_in_Ω, hv_eq⟩
+      have h_convex_ExF : Convex ℝ (ExposedFace hp) :=
+        isExposedFace_convex P ⟨hp, rfl⟩
+      calc
+        convexHull ℝ (V_F : Set (CoeffVec n)) ⊆ convexHull ℝ (ExposedFace hp) :=
+          convexHull_mono hV_F_sub_F
+        _ = ExposedFace hp := h_convex_ExF.convexHull_eq
+    · -- ExposedFace hp ⊆ convexHull ℝ V_F
+      intro x hx
+      exact mem_conv_VF_of_mem_F x hx
+  exact ⟨V_F, h_nonempty, h_conv⟩
+
 
 end CoeffBox

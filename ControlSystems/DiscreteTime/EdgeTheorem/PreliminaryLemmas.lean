@@ -139,7 +139,7 @@ lemma P_sc_dimension {n : ℕ} (hn : n ≥ 1) (s : ℂ) (hs : s.im ≠ 0) :
   omega
 
 /-- If `U` has dimension `n` and `W` has dimension at least 2, then `U ⊓ W` has dimension at least 1. -/
-private lemma finrank_inf_ge_one {n : ℕ} (U W : Submodule ℝ (CoeffVec n))
+lemma finrank_inf_ge_one {n : ℕ} (U W : Submodule ℝ (CoeffVec n))
     (hU : Module.finrank ℝ U = n)
     (hW : Module.finrank ℝ W ≥ 2) :
     Module.finrank ℝ ↥(U ⊓ W) ≥ 1 := by

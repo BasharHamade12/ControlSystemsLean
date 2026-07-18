@@ -420,4 +420,13 @@ lemma affineSpan_inter {n : ℕ} (U : Submodule ℝ (CoeffVec n))
   · intro ⟨h1, h2⟩
     apply subset_affineSpan; simp only [Set.mem_inter_iff, SetLike.mem_coe]; exact ⟨h1, h2⟩
 
+/--
+A set `F` is a polytope (in the sense of being the convex hull of a finite
+nonempty set). Unlike `Polytope`, this predicate does NOT require nonempty
+topological interior in the full ambient space, so it applies to faces of
+any dimension.
+-/
+def IsPolytopeSet {n : ℕ} (F : Set (CoeffVec n)) : Prop :=
+  ∃ (V : Finset (CoeffVec n)), V.Nonempty ∧ convexHull ℝ (V : Set (CoeffVec n)) = F
+
 end CoeffBox
