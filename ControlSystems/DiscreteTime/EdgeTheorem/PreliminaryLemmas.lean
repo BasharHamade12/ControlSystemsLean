@@ -3,6 +3,7 @@ module
 public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 public import ControlSystems.DiscreteTime.EdgeTheorem.EdgeTheoremDefs
 public import ControlSystems.DiscreteTime.EdgeTheorem.BasicLemmas
+public import ControlSystems.DiscreteTime.EdgeTheorem.SubfaceConstruction
 
 
 @[expose] public section
@@ -16,11 +17,11 @@ namespace CoeffBox
 
 /-- The submodule `P_sr n r` has dimension `n` in the space of coefficient vectors. -/
 lemma P_sr_dimension {n : ℕ} (r : ℝ) :
-  Module.finrank ℝ (P_sr n r) = n := by
+  dim (P_sr n r) = n := by
   unfold P_sr
   have h := LinearMap.finrank_range_add_finrank_ker (evalLinear (n := n) r)
   rw [finrank_CoeffVec] at h
-  have hrank : Module.finrank ℝ (evalLinear (n := n) r).range = 1 := by
+  have hrank : dim (evalLinear (n := n) r).range = 1 := by
     have hsurj : Function.Surjective (evalLinear (n := n) r) :=
       evalLinear_surjective r
     rw [LinearMap.range_eq_top.mpr hsurj]
@@ -127,29 +128,33 @@ lemma evalAtComplex_surjective {n : ℕ} (hn : n ≥ 1) (s : ℂ) (hs : s.im ≠
 
 /-- The submodule `P_sc n s` has ℝ-dimension `n-1` when `s` is non-real and `n ≥ 1`. -/
 lemma P_sc_dimension {n : ℕ} (hn : n ≥ 1) (s : ℂ) (hs : s.im ≠ 0) :
-    Module.finrank ℝ (P_sc n s) = n - 1 := by
+    dim (P_sc n s) = n - 1 := by
   unfold P_sc
   have h := LinearMap.finrank_range_add_finrank_ker (evalAtComplex (n := n) s)
   rw [finrank_CoeffVec] at h
-  have hrank : Module.finrank ℝ (evalAtComplex (n := n) s).range = 2 := by
+  have hrank : dim (evalAtComplex (n := n) s).range = 2 := by
     have hsurj : Function.Surjective (evalAtComplex (n := n) s) :=
       evalAtComplex_surjective hn s hs
     rw [LinearMap.range_eq_top.mpr hsurj]
     simpa using Complex.finrank_real_complex
+  have h' : dim (evalAtComplex (n := n) s).range +
+      dim (evalAtComplex (n := n) s).ker = n + 1 := h
   omega
 
 /-- If `U` has dimension `n` and `W` has dimension at least 2, then `U ⊓ W` has dimension at least 1. -/
 lemma finrank_inf_ge_one {n : ℕ} (U W : Submodule ℝ (CoeffVec n))
-    (hU : Module.finrank ℝ U = n)
-    (hW : Module.finrank ℝ W ≥ 2) :
-    Module.finrank ℝ ↥(U ⊓ W) ≥ 1 := by
+    (hU : dim U = n)
+    (hW : dim W ≥ 2) :
+    dim (U ⊓ W) ≥ 1 := by
   have h_le_ambient : (U ⊔ W) ≤ ⊤ := by simp
-  have h_sum_le : Module.finrank ℝ ↥(U ⊔ W) ≤ n + 1 := by
-    calc Module.finrank ℝ ↥(U ⊔ W)
-      ≤ Module.finrank ℝ (⊤ : Submodule ℝ (CoeffVec n)) := Submodule.finrank_mono h_le_ambient
-      _ = n + 1 := by rw [finrank_top, finrank_CoeffVec]
-  have hformula : Module.finrank ℝ ↥(U ⊔ W) + Module.finrank ℝ ↥(U ⊓ W) =
-    Module.finrank ℝ U + Module.finrank ℝ W :=
+  have h_sum_le : dim (U ⊔ W) ≤ n + 1 := by
+    calc dim (U ⊔ W)
+      ≤ dim (⊤ : Submodule ℝ (CoeffVec n)) := Submodule.finrank_mono h_le_ambient
+      _ = n + 1 := by
+        show Module.finrank ℝ (⊤ : Submodule ℝ (CoeffVec n)) = n + 1
+        rw [finrank_top, finrank_CoeffVec]
+  have hformula : dim (U ⊔ W) + dim (U ⊓ W) =
+    dim U + dim W :=
     Submodule.finrank_sup_add_finrank_inf_eq U W
   omega
 
@@ -189,7 +194,7 @@ private lemma direction_inf {n : ℕ} (U : Submodule ℝ (CoeffVec n)) (P_Ω : S
     · simp only [vadd_eq_add, vsub_eq_sub, add_sub_cancel_right]
 
 /-- The direction of `U.toAffineSubspace ⊓ affΩ` equals `U ⊓ affΩ.direction` when `δ` lies in both. -/
-private lemma intersection_direction_eq {n : ℕ} (U : Submodule ℝ (CoeffVec n))
+lemma intersection_direction_eq {n : ℕ} (U : Submodule ℝ (CoeffVec n))
     (affΩ : AffineSubspace ℝ (CoeffVec n))
     (δ : CoeffVec n) (hδU : δ ∈ U) (hδΩ : δ ∈ affΩ) :
     (U.toAffineSubspace ⊓ affΩ).direction = U ⊓ affΩ.direction := by
@@ -205,9 +210,9 @@ private lemma intersection_direction_eq {n : ℕ} (U : Submodule ℝ (CoeffVec n
 lemma intersection_affine_dim_ge_one {n : ℕ} (U : Submodule ℝ (CoeffVec n))
     (affΩ : AffineSubspace ℝ (CoeffVec n))
     (δ : CoeffVec n) (hδU : δ ∈ U) (hδΩ : δ ∈ affΩ)
-    (hU_dim : Module.finrank ℝ U = n) (haff_dim : Module.finrank ℝ affΩ.direction ≥ 2) :
-    Module.finrank ℝ ↥(affineSpan ℝ ((U : Set (CoeffVec n)) ∩ (affΩ : Set (CoeffVec n)))).direction
-      ≥ 1 := by
+    (hU_dim : dim U = n) (haff_dim : dim affΩ.direction ≥ 2) :
+    dim (meetDir n U affΩ) ≥ 1 := by
+  unfold meetDir
   let Aint : AffineSubspace ℝ (CoeffVec n) := U.toAffineSubspace ⊓ affΩ
   have hA_dir : Aint.direction = U ⊓ affΩ.direction :=
     intersection_direction_eq U affΩ δ hδU hδΩ
@@ -293,8 +298,8 @@ lemma segment_boundary_intersection {n : ℕ} (P : Polytope n) (δ : CoeffVec n)
 private lemma intersection_nontrivial {n : ℕ} (U : Submodule ℝ (CoeffVec n))
     (affΩ : AffineSubspace ℝ (CoeffVec n)) (δ : CoeffVec n)
     (hδ_in_Psr : δ ∈ (U : Set (CoeffVec n))) (hδ_aff : δ ∈ affΩ)
-    (h_dim_pos : 0 < Module.finrank ℝ (↥(affineSpan ℝ
-      ((U : Set (CoeffVec n)) ∩ (affΩ : Set (CoeffVec n)))).direction)) :
+    (h_dim_pos : 0 < dim (affineSpan ℝ
+      ((U : Set (CoeffVec n)) ∩ (affΩ : Set (CoeffVec n)))).direction) :
     Nontrivial ↥(U ⊓ affΩ.direction) := by
   have hA_eq : affineSpan ℝ ((U : Set (CoeffVec n)) ∩ (affΩ : Set (CoeffVec n))) =
     U.toAffineSubspace ⊓ affΩ := by
@@ -302,10 +307,10 @@ private lemma intersection_nontrivial {n : ℕ} (U : Submodule ℝ (CoeffVec n))
   have hA_dir : (U.toAffineSubspace ⊓ affΩ).direction = U ⊓ affΩ.direction :=
     intersection_direction_eq U affΩ δ hδ_in_Psr hδ_aff
   let dir := (affineSpan ℝ ((U : Set (CoeffVec n)) ∩ (affΩ : Set (CoeffVec n)))).direction
-  have h_finrank : Module.finrank ℝ (↥dir) = Module.finrank ℝ ↥(U ⊓ affΩ.direction) := by
+  have h_finrank : dim dir = dim (U ⊓ affΩ.direction) := by
     dsimp [dir]
     rw [hA_eq, hA_dir]
-  have h_dim_pos' : 0 < Module.finrank ℝ (↥dir) :=
+  have h_dim_pos' : 0 < dim dir :=
     h_dim_pos
   rw [h_finrank] at h_dim_pos'
   exact Module.nontrivial_of_finrank_pos h_dim_pos'
@@ -340,14 +345,11 @@ private lemma segment_point_rewrite2 (δ v : CoeffVec n) (c t_out : ℝ) :
 
 /-- Given a point `δ` in `P.Ω ∩ P_sr n r` and an affine subspace `affΩ` containing `δ` whose intersection with `P_sr` has direction dimension at least 1, there exists a boundary point of `P.Ω` also in `P_sr n r`. -/
 lemma exists_boundary_point_in_Psr {n : ℕ} (P : Polytope n) (r : ℝ) (δ : CoeffVec n)
-    (hδ_in_Ω : δ ∈ P.Ω) (hδ_in_Psr : δ ∈ (P_sr n r : Set (CoeffVec n)))
+    (hδ_in_Ω : δ ∈ P.Ω) (hδ_in_Psr : δ ∈ PsrSet n r)
     (affΩ : AffineSubspace ℝ (CoeffVec n)) (hδ_aff : δ ∈ affΩ)
-    (hA_dim : Module.finrank ℝ ↥(affineSpan ℝ ((P_sr n r : Set (CoeffVec n)) ∩
-      (affΩ : Set (CoeffVec n)))).direction ≥ 1) :
-    ∃ δ_bound, δ_bound ∈ (P_sr n r : Set (CoeffVec n)) ∩ frontier P.Ω := by
-  have h_dim_pos : 0 <
-      Module.finrank ℝ ↥(affineSpan ℝ ((P_sr n r : Set (CoeffVec n)) ∩
-      (affΩ : Set (CoeffVec n)))).direction := by
+    (hA_dim : dim (meetDir n (P_sr n r) affΩ) ≥ 1) :
+    ∃ δ_bound, δ_bound ∈ PsrSet n r ∩ frontier P.Ω := by
+  have h_dim_pos : 0 < dim (meetDir n (P_sr n r) affΩ) := by
     omega
   let U : Submodule ℝ (CoeffVec n) := P_sr n r
   haveI : Nontrivial ↥(U ⊓ affΩ.direction) :=
@@ -383,14 +385,11 @@ lemma exists_boundary_point_in_Psr {n : ℕ} (P : Polytope n) (r : ℝ) (δ : Co
 
 /-- Given a point `δ` in `P.Ω ∩ P_sc n s` and an affine subspace `affΩ` containing `δ` whose intersection with `P_sc` has direction dimension at least 1, there exists a boundary point of `P.Ω` also in `P_sc n s`. -/
 lemma exists_boundary_point_in_Psc {n : ℕ} (P : Polytope n) (s : ℂ) (δ : CoeffVec n)
-    (hδ_in_Ω : δ ∈ P.Ω) (hδ_in_Psc : δ ∈ (P_sc n s : Set (CoeffVec n)))
+    (hδ_in_Ω : δ ∈ P.Ω) (hδ_in_Psc : δ ∈ PscSet n s)
     (affΩ : AffineSubspace ℝ (CoeffVec n)) (hδ_aff : δ ∈ affΩ)
-    (hA_dim : Module.finrank ℝ ↥(affineSpan ℝ ((P_sc n s : Set (CoeffVec n)) ∩
-      (affΩ : Set (CoeffVec n)))).direction ≥ 1) :
-    ∃ δ_bound, δ_bound ∈ (P_sc n s : Set (CoeffVec n)) ∩ frontier P.Ω := by
-  have h_dim_pos : 0 <
-      Module.finrank ℝ ↥(affineSpan ℝ ((P_sc n s : Set (CoeffVec n)) ∩
-      (affΩ : Set (CoeffVec n)))).direction := by
+    (hA_dim : dim (meetDir n (P_sc n s) affΩ) ≥ 1) :
+    ∃ δ_bound, δ_bound ∈ PscSet n s ∩ frontier P.Ω := by
+  have h_dim_pos : 0 < dim (meetDir n (P_sc n s) affΩ) := by
     omega
   let U : Submodule ℝ (CoeffVec n) := P_sc n s
   haveI : Nontrivial ↥(U ⊓ affΩ.direction) :=
@@ -426,15 +425,17 @@ lemma exists_boundary_point_in_Psc {n : ℕ} (P : Polytope n) (s : ℂ) (δ : Co
 
 /-- If `U` has dimension `n-1` and `W` has dimension at least 3, then `U ⊓ W` has dimension at least 1. -/
 private lemma finrank_inf_ge_one' {n : ℕ} (U W : Submodule ℝ (CoeffVec n))
-    (hU : Module.finrank ℝ U = n - 1) (hW : Module.finrank ℝ W ≥ 3) :
-    Module.finrank ℝ ↥(U ⊓ W) ≥ 1 := by
+    (hU : dim U = n - 1) (hW : dim W ≥ 3) :
+    dim (U ⊓ W) ≥ 1 := by
   have h_le_ambient : (U ⊔ W) ≤ ⊤ := by simp
-  have h_sum_le : Module.finrank ℝ ↥(U ⊔ W) ≤ n + 1 := by
-    calc Module.finrank ℝ ↥(U ⊔ W)
-      ≤ Module.finrank ℝ (⊤ : Submodule ℝ (CoeffVec n)) := Submodule.finrank_mono h_le_ambient
-      _ = n + 1 := by rw [finrank_top, finrank_CoeffVec]
-  have hformula : Module.finrank ℝ ↥(U ⊔ W) + Module.finrank ℝ ↥(U ⊓ W) =
-    Module.finrank ℝ U + Module.finrank ℝ W :=
+  have h_sum_le : dim (U ⊔ W) ≤ n + 1 := by
+    calc dim (U ⊔ W)
+      ≤ dim (⊤ : Submodule ℝ (CoeffVec n)) := Submodule.finrank_mono h_le_ambient
+      _ = n + 1 := by
+        show Module.finrank ℝ (⊤ : Submodule ℝ (CoeffVec n)) = n + 1
+        rw [finrank_top, finrank_CoeffVec]
+  have hformula : dim (U ⊔ W) + dim (U ⊓ W) =
+    dim U + dim W :=
     Submodule.finrank_sup_add_finrank_inf_eq U W
   omega
 
@@ -443,8 +444,8 @@ private lemma finrank_inf_ge_one' {n : ℕ} (U W : Submodule ℝ (CoeffVec n))
 lemma intersection_affine_dim_ge_one_complex {n : ℕ} (U : Submodule ℝ (CoeffVec n))
     (affΩ : AffineSubspace ℝ (CoeffVec n))
     (δ : CoeffVec n) (hδU : δ ∈ U) (hδΩ : δ ∈ affΩ)
-    (hU_dim : Module.finrank ℝ U = n - 1) (haff_dim : Module.finrank ℝ affΩ.direction ≥ 3) :
-    Module.finrank ℝ ↥(affineSpan ℝ ((U : Set (CoeffVec n)) ∩ (affΩ : Set (CoeffVec n)))).direction
+    (hU_dim : dim U = n - 1) (haff_dim : dim affΩ.direction ≥ 3) :
+    dim (affineSpan ℝ ((U : Set (CoeffVec n)) ∩ (affΩ : Set (CoeffVec n)))).direction
       ≥ 1 := by
   let Aint : AffineSubspace ℝ (CoeffVec n) := U.toAffineSubspace ⊓ affΩ
   have hA_dir : Aint.direction = U ⊓ affΩ.direction :=
@@ -453,5 +454,121 @@ lemma intersection_affine_dim_ge_one_complex {n : ℕ} (U : Submodule ℝ (Coeff
     rw [affineSpan_inter U affΩ]
   rw [hA_eq, hA_dir]
   exact finrank_inf_ge_one' U affΩ.direction hU_dim haff_dim
+
+/-- The relative boundary of a set `F` (with respect to its affine hull).
+For a convex set, this is `F \ intrinsicInterior ℝ F`.  This is the single
+definition; `Lemma62.lean` and `EdgeDescent.lean` use it from here. -/
+def relativeBoundary (F : Set (CoeffVec n)) : Set (CoeffVec n) :=
+  F \ intrinsicInterior ℝ F
+
+/-- If `F` is a compact convex set in `CoeffVec n` whose affine span has
+dimension at least 2 and which contains a point `x`, then `F` has a point
+on its relative boundary, i.e. `(relativeBoundary F).Nonempty`.
+
+Proof: pick a nonzero direction `v` in the affine span of `F`, follow the
+ray `x + t • v` until it exits the bounded set `F`, then take the *supremum*
+of `t`-values that stay inside `F`.  The endpoint `x + t₁ • v` lies in `F`
+but is not in the relative interior of `F`, so it belongs to
+`relativeBoundary F`. -/
+lemma nonempty_relativeBoundary_of_dim_ge_2 {n : ℕ} (F : Set (CoeffVec n))
+    (hF_compact : IsCompact F) (hF_convex : Convex ℝ F)
+    (x : CoeffVec n) (hx : x ∈ F)
+    (hF_dim_ge_2 : dim (affineSpan ℝ F).direction ≥ 2) :
+    (relativeBoundary F).Nonempty := by
+  -- The affine span direction is nontrivial (dimension ≥ 2 ≥ 1)
+  have h_dir_pos : 0 < dim (affineSpan ℝ F).direction := by
+    have h1 : (0 : ℕ) < 1 := by decide
+    have h12 : (1 : ℕ) ≤ dim (affineSpan ℝ F).direction :=
+      le_trans (by decide) hF_dim_ge_2
+    exact h1.trans_le h12
+  haveI : Nontrivial ↥(affineSpan ℝ F).direction :=
+    Module.nontrivial_of_finrank_pos h_dir_pos
+  -- Pick a nonzero direction in the affine span
+  obtain ⟨v_sub, hv_sub_ne⟩ := exists_ne (0 : ↥(affineSpan ℝ F).direction)
+  let v : CoeffVec n := v_sub.val
+  have hv_ne : v ≠ 0 := by
+    intro h; apply hv_sub_ne; exact Submodule.coe_eq_zero.mp h
+  have hv_affF_dir : v ∈ (affineSpan ℝ F).direction := v_sub.property
+  have hv_norm_pos : 0 < ‖v‖ := norm_pos_iff.mpr hv_ne
+  -- Construct an escape time `t_out` from the diameter bound of F.
+  rcases Metric.isBounded_iff.mp hF_compact.isBounded with ⟨C, hC⟩
+  let t_out : ℝ := (|C| + 1) / ‖v‖
+  have ht_out_pos : 0 < t_out := div_pos (by positivity) hv_norm_pos
+  -- Show that t_out is an escape time for the ray from x: if x + t_out • v ∈ F,
+  -- then dist(x, x + t_out • v) ≤ C but also = t_out * ‖v‖ = |C| + 1 > C.
+  have ht_out : x + t_out • v ∉ F := by
+    intro h_in_F
+    have h_dist : dist (x + t_out • v) x = t_out * ‖v‖ := by
+      rw [dist_eq_norm]
+      have h_sub : x + t_out • v - x = t_out • v := by abel
+      have ht_nonneg : 0 ≤ t_out := ht_out_pos.le
+      rw [h_sub, norm_smul, Real.norm_eq_abs t_out, abs_of_nonneg ht_nonneg]
+    have h_le : dist (x + t_out • v) x ≤ C := hC h_in_F hx
+    have h_C_lt : C < |C| + 1 := by
+      have hC_abs : C ≤ |C| := le_abs_self C
+      linarith
+    have h_t_mul : t_out * ‖v‖ = |C| + 1 := by
+      dsimp [t_out]
+      field_simp [hv_norm_pos]
+    rw [h_dist, h_t_mul] at h_le
+    linarith
+  -- Define the set of t ≥ 0 for which the ray stays in F
+  let S : Set ℝ := {t | 0 ≤ t ∧ x + t • v ∈ F}
+  have hS_nonempty : S.Nonempty := ⟨0, by simp [S, hx]⟩
+  have hS_closed : IsClosed S := by
+    have h_cont : Continuous (fun (t : ℝ) => x + t • v) := by continuity
+    have h_preimage_closed : IsClosed {t | x + t • v ∈ F} :=
+      hF_compact.isClosed.preimage h_cont
+    have h_nonneg_closed : IsClosed {t : ℝ | 0 ≤ t} := isClosed_Ici
+    have hS_eq : S = {t | x + t • v ∈ F} ∩ {t : ℝ | 0 ≤ t} := by
+      ext t; constructor
+      · rintro ⟨ht_nonneg, ht_mem⟩; exact ⟨ht_mem, ht_nonneg⟩
+      · rintro ⟨ht_mem, ht_nonneg⟩; exact ⟨ht_nonneg, ht_mem⟩
+    rw [hS_eq]
+    exact h_preimage_closed.inter h_nonneg_closed
+  -- S is bounded above by t_out
+  have h_bdd_above : BddAbove S := by
+    refine ⟨t_out, ?_⟩
+    rintro t ⟨ht_nonneg, ht_mem⟩
+    by_contra! h_gt
+    have ha_nonneg : 0 ≤ t_out / t := div_nonneg (by linarith) (by linarith)
+    have hdiv : t_out / t ≤ 1 := (div_le_one (by linarith)).mpr (by linarith)
+    have hb_nonneg : 0 ≤ 1 - t_out / t := by linarith
+    have hsum : (t_out / t : ℝ) + (1 - t_out / t) = 1 := by ring
+    have hstar : StarConvex ℝ (x + t • v) F := hF_convex ht_mem
+    have h_conv : ((t_out / t : ℝ) • (x + t • v) + (1 - t_out / t) • x) = x + t_out • v := by
+      calc
+        ((t_out / t : ℝ) • (x + t • v) + (1 - t_out / t) • x)
+            = (t_out / t) • x + (t_out / t) • (t • v) + (1 - t_out / t) • x := by rw [smul_add]
+        _ = ((t_out / t) • x + (1 - t_out / t) • x) + (t_out / t) • (t • v) := by abel
+        _ = ((t_out / t + (1 - t_out / t)) • x) + ((t_out / t) * t) • v := by
+          simp [smul_smul]
+        _ = (1 • x) + (t_out • v) := by
+          have h_t_ne_zero : t ≠ 0 := by linarith
+          have h_sum : t_out / t + (1 - t_out / t) = 1 := by ring
+          have h_mul : (t_out / t) * t = t_out := by field_simp [h_t_ne_zero]
+          simp [h_sum, h_mul]
+        _ = x + t_out • v := by simp
+    have h_mem_conv : (t_out / t : ℝ) • (x + t • v) + (1 - t_out / t) • x ∈ F :=
+      hstar hx ha_nonneg hb_nonneg hsum
+    have h_mem : x + t_out • v ∈ F := by
+      rw [← h_conv]
+      exact h_mem_conv
+    exact ht_out h_mem
+  -- Take the supremum
+  let t1 := sSup S
+  have h_max : t1 ∈ S := hS_closed.csSup_mem hS_nonempty h_bdd_above
+  rcases h_max with ⟨h_t1_nonneg, h_t1_mem⟩
+  let δ_bound : CoeffVec n := x + t1 • v
+  have hδ_bound_in_F : δ_bound ∈ F := h_t1_mem
+  -- δ_bound is not in the relative interior
+  have h_not_relint : δ_bound ∉ intrinsicInterior ℝ F :=
+    not_mem_intrinsicInterior_of_escapes_along_direction
+      F hF_convex x hx v hv_ne hv_affF_dir
+      S rfl hS_nonempty h_bdd_above
+      t1 rfl h_t1_nonneg h_t1_mem
+      t_out ht_out_pos ht_out
+  -- Therefore δ_bound ∈ relativeBoundary F
+  exact ⟨δ_bound, ⟨hδ_bound_in_F, h_not_relint⟩⟩
 
 end CoeffBox

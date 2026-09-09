@@ -308,6 +308,19 @@ subspace has ℝ-dimension `n-1`.
 noncomputable def P_sc (n : ℕ) (s : ℂ) : Submodule ℝ (CoeffVec n) :=
   (evalAtComplex (n := n) s).ker
 
+/-- Shorthand for the carrier of `P_sr n r` as a set: the coefficient
+vectors of real polynomials vanishing at the real point `r`.  Kept as a
+reducible abbreviation so that it is interchangeable with the coercion
+`(P_sr n r : Set (CoeffVec n))` in older statements. -/
+abbrev PsrSet (n : ℕ) (r : ℝ) : Set (CoeffVec n) :=
+  (P_sr n r : Set (CoeffVec n))
+
+/-- Shorthand for the carrier of `P_sc n s` as a set: the coefficient
+vectors of real polynomials vanishing at the (possibly non-real) point
+`s`.  Reducible abbreviation, interchangeable with the coercion. -/
+abbrev PscSet (n : ℕ) (s : ℂ) : Set (CoeffVec n) :=
+  (P_sc n s : Set (CoeffVec n))
+
 /--
 If `δ`'s polynomial vanishes at `s ∈ ℂ`, then `δ` lies in `P_sc n s`.
 -/
@@ -419,6 +432,28 @@ lemma affineSpan_inter {n : ℕ} (U : Submodule ℝ (CoeffVec n))
     · apply affineSpan_le.mpr (Set.inter_subset_left); rw [Set.inter_comm]; exact hx
   · intro ⟨h1, h2⟩
     apply subset_affineSpan; simp only [Set.mem_inter_iff, SetLike.mem_coe]; exact ⟨h1, h2⟩
+
+/--
+Shorthand for the *direction of the affine span of the intersection* of a
+submodule `U` (as a set) with an affine subspace `affΩ` — the quantity that
+appears in the `h_inter_dim` hypotheses throughout the Edge Theorem files.
+`U meet affΩ` as an affine subspace, so `meetDir U affΩ = (U ⊓ affΩ.direction)`
+whenever `U ∩ affΩ` is nonempty (see `intersection_direction_eq`).
+-/
+abbrev meetDir (n : ℕ) (U : Submodule ℝ (CoeffVec n))
+    (affΩ : AffineSubspace ℝ (CoeffVec n)) : Submodule ℝ (CoeffVec n) :=
+  (affineSpan ℝ ((U : Set (CoeffVec n)) ∩ (affΩ : Set (CoeffVec n)))).direction
+
+/--
+Shorthand for the *dimension* of a real subspace, the `dim` of the
+mathematical exposition: `dim U = Module.finrank ℝ U`.  It composes with
+`meetDir` and `.direction`, e.g. `dim (meetDir n U affΩ)` renders
+`dim dir(aff(U ∩ affΩ))` and `dim (affineSpan ℝ F).direction` renders
+`dim dir(aff F)`.
+-/
+noncomputable abbrev dim {M : Type*} [AddCommGroup M] [Module ℝ M]
+    (U : Submodule ℝ M) : ℕ :=
+  Module.finrank ℝ U
 
 /--
 A set `F` is a polytope (in the sense of being the convex hull of a finite

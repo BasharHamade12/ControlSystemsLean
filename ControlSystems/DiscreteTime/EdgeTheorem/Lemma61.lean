@@ -281,7 +281,7 @@ theorem lemma61_real (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootS
     let affΩ : AffineSubspace ℝ (CoeffVec n) := affineSpan ℝ (P.Ω)
     have hdim_Psr : Module.finrank ℝ U = n := P_sr_dimension s.re
     have hδ_aff : δ ∈ affΩ := subset_affineSpan ℝ P.Ω hδ_in_Ω
-    let dir' := (affineSpan ℝ ((U : Set (CoeffVec n)) ∩ (affΩ : Set (CoeffVec n)))).direction
+    let dir' := meetDir n U affΩ
     have hA_dim : Module.finrank ℝ (↥dir') ≥ 1 :=
       intersection_affine_dim_ge_one U affΩ δ hδ_in_Psr hδ_aff hdim_Psr hm
     have h_boundary_root : ∃ δ_bound, δ_bound ∈ (P_sr n s.re : Set (CoeffVec n)) ∩ frontier P.Ω :=
@@ -349,7 +349,7 @@ theorem lemma61_complex (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ Ro
     have hdim_Psc : Module.finrank ℝ (P_sc n s) = n - 1 :=
       P_sc_dimension hn s hcomplex
     have hδ_aff : δ ∈ affΩ := subset_affineSpan ℝ P.Ω hδ_in_Ω
-    let dir' := (affineSpan ℝ ((P_sc n s : Set (CoeffVec n)) ∩ (affΩ : Set (CoeffVec n)))).direction
+    let dir' := meetDir n (P_sc n s) affΩ
     have hA_dim : Module.finrank ℝ (↥dir') ≥ 1 :=
       intersection_affine_dim_ge_one_complex (P_sc n s) affΩ δ hδ_in_Psc hδ_aff
         hdim_Psc hm_ge_3

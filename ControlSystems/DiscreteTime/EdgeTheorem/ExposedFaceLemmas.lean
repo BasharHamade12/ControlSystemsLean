@@ -77,7 +77,7 @@ private lemma eval_root_comm {n : ℕ} (r : ℝ) (δ : CoeffVec n) :
 
 /-- If `δ_bound ∈ P_sr n r` and `δ_bound ∈ F`, then `(r : ℂ)` is in the root space set of `F`. -/
 lemma rootspace_mem_of_eval_zero {n : ℕ} (r : ℝ) (δ_bound : CoeffVec n)
-    (hδ_bound_Psr : δ_bound ∈ (P_sr n r : Set (CoeffVec n)))
+    (hδ_bound_Psr : δ_bound ∈ PsrSet n r)
     (F : Set (CoeffVec n)) (hδ_in_F : δ_bound ∈ F) : (r : ℂ) ∈ RootSpaceSet F := by
   unfold RootSpaceSet
   simp only [Set.mem_setOf_eq]
@@ -92,9 +92,8 @@ lemma rootspace_mem_of_eval_zero {n : ℕ} (r : ℝ) (δ_bound : CoeffVec n)
 /-- If `(r : ℂ)` is a root of the complexified polynomial of `δ`, then `δ ∈ P_sr n r`. -/
 lemma mem_P_sr_of_isRoot {n : ℕ} (r : ℝ) (δ : CoeffVec n)
     (h : ((polyOfVec δ).map (algebraMap ℝ ℂ)).IsRoot (r : ℂ)) :
-    δ ∈ (P_sr n r : Set (CoeffVec n)) := by
-  unfold P_sr
-  change evalLinear r δ = 0
+    δ ∈ PsrSet n r := by
+  show evalLinear r δ = 0
   unfold Polynomial.IsRoot at h
   rw [Polynomial.eval_map, Polynomial.eval₂_eq_eval_map, eval_root_comm r δ] at h
   exact_mod_cast (map_eq_zero (algebraMap ℝ ℂ)).mp h
@@ -103,7 +102,7 @@ lemma mem_P_sr_of_isRoot {n : ℕ} (r : ℝ) (δ : CoeffVec n)
 lemma exists_exposed_face_containing_boundary_point {n : ℕ} (P : Polytope n)
     (r : ℝ) (δ_bound : CoeffVec n)
     (hδ_bound_front : δ_bound ∈ frontier P.Ω)
-    (hδ_bound_Psr : δ_bound ∈ (P_sr n r : Set (CoeffVec n)))
+    (hδ_bound_Psr : δ_bound ∈ PsrSet n r)
     (h_int_nonempty : (interior P.Ω).Nonempty) :
     ∃ F : Set (CoeffVec n), IsExposedFace P F ∧ δ_bound ∈ F ∧ (r : ℂ) ∈ RootSpaceSet F := by
   have hδ_bound_in_Ω : δ_bound ∈ P.Ω := frontier_point_in_Ω P δ_bound hδ_bound_front
@@ -712,7 +711,7 @@ private lemma direction_sub_inf_ker_gΩ {n : ℕ} {P : Polytope n}
 lemma exists_exposed_face_containing_boundary_point_complex {n : ℕ} (P : Polytope n)
     (s : ℂ) (δ_bound : CoeffVec n)
     (hδ_bound_front : δ_bound ∈ frontier P.Ω)
-    (hδ_bound_Psc : δ_bound ∈ (P_sc n s : Set (CoeffVec n)))
+    (hδ_bound_Psc : δ_bound ∈ PscSet n s)
     (h_int_nonempty : (interior P.Ω).Nonempty) :
     ∃ F : Set (CoeffVec n), IsExposedFace P F ∧ δ_bound ∈ F ∧ s ∈ RootSpaceSet F := by
   have hδ_bound_in_Ω : δ_bound ∈ P.Ω := frontier_point_in_Ω P δ_bound hδ_bound_front

@@ -6,6 +6,13 @@ plan_complex_case.md
 
 # Ignore all .md files in the project
 *.md
+!README.md
 
 # Ignore all .txt files in the project
 *.txt
+
+# LaTeX directory
+latex/
+
+# Images
+image.png

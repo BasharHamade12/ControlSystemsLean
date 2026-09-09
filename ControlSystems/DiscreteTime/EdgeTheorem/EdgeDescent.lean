@@ -36,12 +36,14 @@ Unlike the earlier version, this guarantees δ_bound is NOT in intrinsicInterior
 -/
 private lemma exists_boundary_point_in_face_rootspace {n : ℕ} (P : Polytope n) (r : ℝ)
     (δ_F : CoeffVec n) (F : Set (CoeffVec n)) (hF_exposed : IsExposedFace P F)
-    (hδ_F_in_F : δ_F ∈ F) (hδ_F_root : δ_F ∈ (P_sr n r : Set (CoeffVec n)))
-    (h_inter_dim : Module.finrank ℝ ↥(affineSpan ℝ
-      (((P_sr n r : Set (CoeffVec n)) ∩ (affineSpan ℝ F : Set (CoeffVec n))))).direction ≥ 1) :
-    ∃ δ_bound, δ_bound ∈ F ∩ (P_sr n r : Set (CoeffVec n))
+    (hδ_F_in_F : δ_F ∈ F) (hδ_F_root : δ_F ∈ PsrSet n r)
+    (h_inter_dim : Module.finrank ℝ (meetDir n (P_sr n r) (affineSpan ℝ F)) ≥ 1) :
+    ∃ δ_bound, δ_bound ∈ F ∩ PsrSet n r
     ∧ δ_bound ∈ frontier F ∧ δ_bound ∉ intrinsicInterior ℝ F := by
   let affF := affineSpan ℝ F
+  have h_inter_dim' : Module.finrank ℝ ↥(affineSpan ℝ
+      ((PsrSet n r : Set (CoeffVec n)) ∩ (affF : Set (CoeffVec n)))).direction ≥ 1 :=
+    h_inter_dim
   let hF_compact := isExposedFace_isCompact P hF_exposed
   let hF_subset := isExposedFace_subset_Ω hF_exposed
   let hF_convex : Convex ℝ F := isExposedFace_convex P hF_exposed
@@ -50,7 +52,7 @@ private lemma exists_boundary_point_in_face_rootspace {n : ℕ} (P : Polytope n)
   have hδ_F_inter : δ_F ∈ F ∩ (P_sr n r : Set (CoeffVec n)) := Set.mem_inter hδ_F_in_F hδ_F_in_Psr
   let L := affineSpan ℝ (↑(P_sr n r) ∩ (affF : Set (CoeffVec n)))
   have h_dir_nontrivial : Nontrivial L.direction :=
-    direction_nontrivial_from_dim_ge_1 h_inter_dim
+    direction_nontrivial_from_dim_ge_1 h_inter_dim'
   obtain ⟨v_sub, hv_sub_ne⟩ := exists_ne (0 : ↥L.direction)
   let v : CoeffVec n := v_sub.val
   have hv_ne : v ≠ 0 := by
@@ -318,12 +320,14 @@ private lemma exists_boundary_point_in_face_rootspace {n : ℕ} (P : Polytope n)
   finds a point on the relative boundary of `F` that also lies in `P_sc n s`. -/
 private lemma exists_boundary_point_in_face_rootspace_complex {n : ℕ} (P : Polytope n) (s : ℂ)
     (δ_F : CoeffVec n) (F : Set (CoeffVec n)) (hF_exposed : IsExposedFace P F)
-    (hδ_F_in_F : δ_F ∈ F) (hδ_F_root : δ_F ∈ (P_sc n s : Set (CoeffVec n)))
-    (h_inter_dim : Module.finrank ℝ ↥(affineSpan ℝ
-      (((P_sc n s : Set (CoeffVec n)) ∩ (affineSpan ℝ F : Set (CoeffVec n))))).direction ≥ 1) :
-    ∃ δ_bound, δ_bound ∈ F ∩ (P_sc n s : Set (CoeffVec n))
+    (hδ_F_in_F : δ_F ∈ F) (hδ_F_root : δ_F ∈ PscSet n s)
+    (h_inter_dim : Module.finrank ℝ (meetDir n (P_sc n s) (affineSpan ℝ F)) ≥ 1) :
+    ∃ δ_bound, δ_bound ∈ F ∩ PscSet n s
     ∧ δ_bound ∈ frontier F ∧ δ_bound ∉ intrinsicInterior ℝ F := by
   let affF := affineSpan ℝ F
+  have h_inter_dim' : Module.finrank ℝ ↥(affineSpan ℝ
+      ((PscSet n s : Set (CoeffVec n)) ∩ (affF : Set (CoeffVec n)))).direction ≥ 1 :=
+    h_inter_dim
   let hF_compact := isExposedFace_isCompact P hF_exposed
   let hF_subset := isExposedFace_subset_Ω hF_exposed
   let hF_convex : Convex ℝ F := isExposedFace_convex P hF_exposed
@@ -332,7 +336,7 @@ private lemma exists_boundary_point_in_face_rootspace_complex {n : ℕ} (P : Pol
   have hδ_F_inter : δ_F ∈ F ∩ (P_sc n s : Set (CoeffVec n)) := Set.mem_inter hδ_F_in_F hδ_F_in_Psc
   let L := affineSpan ℝ (↑(P_sc n s) ∩ (affF : Set (CoeffVec n)))
   have h_dir_nontrivial : Nontrivial L.direction :=
-    direction_nontrivial_from_dim_ge_1 h_inter_dim
+    direction_nontrivial_from_dim_ge_1 h_inter_dim'
   obtain ⟨v_sub, hv_sub_ne⟩ := exists_ne (0 : ↥L.direction)
   let v : CoeffVec n := v_sub.val
   have hv_ne : v ≠ 0 := by
@@ -685,10 +689,8 @@ lemma descend_to_exposed_edge {n : ℕ} (P : Polytope n) (r : ℝ)
     obtain ⟨δ_F, hδ_F_in_F, hδ_F_root⟩ :
       ∃ δ ∈ F, ((polyOfVec δ).map (algebraMap ℝ ℂ)).IsRoot (r : ℂ) := hs_F
     let affF := affineSpan ℝ F
-    have hδ_F_Psr : δ_F ∈ (P_sr n r : Set (CoeffVec n)) := mem_P_sr_of_isRoot r δ_F hδ_F_root
-    let dir := (affineSpan ℝ (((P_sr n r : Set (CoeffVec n)) ∩
-      (affF : Set (CoeffVec n))))).direction
-    have h_inter_dim : Module.finrank ℝ (↥dir) ≥ 1 :=
+    have hδ_F_Psr : δ_F ∈ PsrSet n r := mem_P_sr_of_isRoot r δ_F hδ_F_root
+    have h_inter_dim : Module.finrank ℝ (meetDir n (P_sr n r) affF) ≥ 1 :=
       intersection_affine_dim_ge_one (P_sr n r) affF δ_F hδ_F_Psr
         (subset_affineSpan ℝ F hδ_F_in_F) (P_sr_dimension r) hm_F_ge_2
     obtain ⟨δ_bound, hδ_bound_inter, hδ_bound_front, hδ_bound_not_relint⟩ :=
@@ -728,13 +730,11 @@ lemma descend_to_exposed_face {n : ℕ} (hn : n ≥ 1) (P : Polytope n) (s : ℂ
   obtain ⟨δ_F, hδ_F_in_F, hδ_F_root⟩ : ∃ δ ∈ F, ((polyOfVec δ).map (algebraMap ℝ ℂ)).IsRoot s :=
     hs_F
   let affF := affineSpan ℝ F
-  have hδ_F_Psc : δ_F ∈ (P_sc n s : Set (CoeffVec n)) :=
+  have hδ_F_Psc : δ_F ∈ PscSet n s :=
     mem_P_sc_of_isRoot s δ_F hδ_F_root
-  let dir := (affineSpan ℝ (((P_sc n s : Set (CoeffVec n)) ∩
-    (affF : Set (CoeffVec n))))).direction
   have hdim_Psc : Module.finrank ℝ (P_sc n s) = n - 1 :=
     P_sc_dimension hn s hcomplex
-  have h_inter_dim : Module.finrank ℝ (↥dir) ≥ 1 :=
+  have h_inter_dim : Module.finrank ℝ (meetDir n (P_sc n s) affF) ≥ 1 :=
     intersection_affine_dim_ge_one_complex (P_sc n s) affF δ_F hδ_F_Psc
       (subset_affineSpan ℝ F hδ_F_in_F) hdim_Psc hF_dim_ge_3
   obtain ⟨δ_bound, hδ_bound_inter, hδ_bound_front, hδ_bound_not_relint⟩ :=

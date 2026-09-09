@@ -7,6 +7,9 @@ public import ControlSystems.DiscreteTime.EdgeTheorem.ExposedFaceLemmas
 public import ControlSystems.DiscreteTime.EdgeTheorem.SubfaceConstruction
 public import ControlSystems.DiscreteTime.EdgeTheorem.EdgeDescent
 public import ControlSystems.DiscreteTime.EdgeTheorem.Lemma61
+public import Mathlib.LinearAlgebra.Basis.Basic
+public import Mathlib.LinearAlgebra.Basis.Defs
+public import Mathlib.LinearAlgebra.Dimension.Free
 
 @[expose] public section
 
@@ -14,16 +17,6 @@ open Polynomial Affine FiniteDimensional LinearMap Set Complex
 open Filter Topology
 
 namespace CoeffBox
-
-/--
-The relative boundary of a set `F` (with respect to its affine hull).
-For a convex set, this is `F \ intrinsicInterior ℝ F`.
-
-Notation: `relativeBoundary F` can be used via `relativeBoundary F`.
--/
-def relativeBoundary (F : Set (CoeffVec n)) : Set (CoeffVec n) :=
-  F \ intrinsicInterior ℝ F
-
 
 /-- If `W` is compact, then `RootSpaceSet W` is closed in ℂ.
 Proof: `evalAtComplex s δ = ((polyOfVec δ).map (algebraMap ℝ ℂ)).eval s` is jointly continuous
@@ -55,7 +48,6 @@ lemma rootSpaceSet_isClosed_of_isCompact {n : ℕ} {W : Set (CoeffVec n)} (hW : 
         · refine (continuous_algebraMap ℝ ℂ).comp ?_
           refine ((continuous_apply j).comp continuous_subtype_val).comp continuous_fst
         · exact continuous_snd.pow (j.val : ℕ)
-      -- rewrite using h_eq
       have h_rewrite : (fun (p : (Subtype W) × ℂ) => ((polyOfVec p.1.val).map (algebraMap ℝ ℂ)).eval p.2) =
         (fun (p : (Subtype W) × ℂ) => ∑ j : Fin (n+1), (algebraMap ℝ ℂ : ℝ → ℂ) (p.1.val j) * (p.2 ^ (j.val : ℕ))) := by
         ext p; exact h_eq p.1.val p.2
@@ -112,9 +104,9 @@ lemma ray_escapes_compact_convex {n : ℕ} {F : Set (CoeffVec n)} (hF_compact : 
     If `s*` is a real point on the frontier of `RootSpaceSet F` (where `F` is an
     exposed face of dimension 2), then `s*` is a root of a coefficient vector
     on the relative boundary of `F`. -/
-theorem lemma62_real_case {n : ℕ} (hn : n ≥ 1) (P : Polytope n)
+theorem lemma62_real_case {n : ℕ}  (P : Polytope n)
     (F : Set (CoeffVec n)) (hF_exp : IsExposedFace P F)
-    (hF_dim_2 : Module.finrank ℝ (affineSpan ℝ F).direction = 2)
+    (hF_dim_2 : dim (affineSpan ℝ F).direction = 2)
     (s_star : ℂ) (hs_star_front : s_star ∈ frontier (RootSpaceSet F)) (hreal : s_star.im = 0) :
     s_star ∈ RootSpaceSet (relativeBoundary F) := by
   have hF_compact : IsCompact F := isExposedFace_isCompact P hF_exp
@@ -130,18 +122,18 @@ theorem lemma62_real_case {n : ℕ} (hn : n ≥ 1) (P : Polytope n)
         _ = RootSpaceSet F := h_root_closed.closure_eq
     exact h_sub hs_star_front
   rcases hs_star_in_RF with ⟨δ_star, hδ_star_in_F, hδ_star_root⟩
-  have hδ_star_in_Psr : δ_star ∈ (P_sr n s_star.re : Set (CoeffVec n)) :=
+  have hδ_star_in_Psr : δ_star ∈ PsrSet n s_star.re :=
     mem_P_sr_of_isRoot s_star.re δ_star (by
       rw [h_s_star_eq] at hδ_star_root
       exact hδ_star_root)
   by_cases hδ_star_relint : δ_star ∈ intrinsicInterior ℝ F
   · let U : Submodule ℝ (CoeffVec n) := P_sr n s_star.re
     let V : Submodule ℝ (CoeffVec n) := (affineSpan ℝ F).direction
-    have hU_dim : Module.finrank ℝ U = n := P_sr_dimension s_star.re
-    have hV_dim_ge_2 : Module.finrank ℝ V ≥ 2 := by rw [hF_dim_2]
-    have h_inter_dim_ge_1 : Module.finrank ℝ (↥(U ⊓ V)) ≥ 1 :=
+    have hU_dim : dim U = n := P_sr_dimension s_star.re
+    have hV_dim_ge_2 : dim V ≥ 2 := by rw [hF_dim_2]
+    have h_inter_dim_ge_1 : dim (U ⊓ V) ≥ 1 :=
       finrank_inf_ge_one U V hU_dim hV_dim_ge_2
-    have h_inter_finrank_pos : 0 < Module.finrank ℝ (↥(U ⊓ V)) := by omega
+    have h_inter_finrank_pos : 0 < dim (U ⊓ V) := by omega
     have h_inter_nontrivial : Nontrivial ↥(U ⊓ V) :=
       Module.nontrivial_of_finrank_pos h_inter_finrank_pos
     obtain ⟨v_sub, hv_sub_ne⟩ := exists_ne (0 : ↥(U ⊓ V))
@@ -233,35 +225,198 @@ theorem lemma62_real_case {n : ℕ} (hn : n ≥ 1) (P : Polytope n)
     rw [h_s_star_eq]
     exact h_r_in_RF
 
+/-! ### Complex-case building blocks -/
+
+/-- Positive dimension of the linear intersection
+`P_sc n s ⊓ (affineSpan ℝ F).direction` transfers to positive dimension of
+the direction of `affineSpan ℝ (↑(P_sc n s) ∩ ↑(affineSpan ℝ F))`. -/
+private lemma h_inter_dim_of_meet {n : ℕ} (F : Set (CoeffVec n)) (s : ℂ)
+    (δ : CoeffVec n) (hδU : δ ∈ PscSet n s) (hδF : δ ∈ F)
+    (h : dim (P_sc n s ⊓ (affineSpan ℝ F).direction) ≥ 1) :
+    dim (meetDir n (P_sc n s) (affineSpan ℝ F)) ≥ 1 := by
+  unfold meetDir
+  have hδA : δ ∈ affineSpan ℝ F := subset_affineSpan ℝ F hδF
+  have hA : affineSpan ℝ (PscSet n s ∩ (affineSpan ℝ F : Set (CoeffVec n))) =
+      (P_sc n s).toAffineSubspace ⊓ affineSpan ℝ F := by
+    rw [affineSpan_inter (P_sc n s) (affineSpan ℝ F)]
+  have hD : ((P_sc n s).toAffineSubspace ⊓ affineSpan ℝ F).direction =
+      P_sc n s ⊓ (affineSpan ℝ F).direction :=
+    intersection_direction_eq (P_sc n s) (affineSpan ℝ F) δ hδU hδA
+  rw [hA, hD]
+  exact h
+
+/-- Evaluation at a complex point expanded as a finite power sum in the point. -/
+lemma evalAtComplex_eq_sum (δ : CoeffVec n) (s : ℂ) :
+    evalAtComplex (n := n) s δ =
+      ∑ j : Fin (n + 1), (algebraMap ℝ ℂ) (δ j) * (s ^ (j.val : ℕ)) := by
+  have h : ((polyOfVec δ).map (algebraMap ℝ ℂ)).eval s =
+      ∑ j : Fin (n + 1), (algebraMap ℝ ℂ) (δ j) * (s ^ (j.val : ℕ)) := by
+    calc
+      ((polyOfVec δ).map (algebraMap ℝ ℂ)).eval s = (polyOfVec δ).eval₂ (algebraMap ℝ ℂ) s := by
+        rw [Polynomial.eval_map]
+      _ = (∑ j : Fin (n+1), Polynomial.monomial j.val (δ j)).eval₂ (algebraMap ℝ ℂ) s := rfl
+      _ = ∑ j : Fin (n+1), ((Polynomial.monomial j.val (δ j)).eval₂ (algebraMap ℝ ℂ) s) := by
+        simp [Polynomial.eval₂_finset_sum]
+      _ = ∑ j : Fin (n+1), (algebraMap ℝ ℂ : ℝ → ℂ) (δ j) * (s ^ (j.val : ℕ)) := by
+        simp [Polynomial.eval₂_monomial]
+  simpa [evalAtComplex] using h
+
+/-- For fixed `δ`, the map `s ↦ evalAtComplex s δ` is continuous. -/
+lemma continuous_evalAtComplex (δ : CoeffVec n) :
+    Continuous fun s : ℂ => evalAtComplex (n := n) s δ := by
+  have h_fun : (fun s : ℂ => evalAtComplex (n := n) s δ) =
+      (fun s : ℂ => ∑ j : Fin (n + 1), (algebraMap ℝ ℂ) (δ j) * s ^ (j.val : ℕ)) :=
+    funext fun s => evalAtComplex_eq_sum δ s
+  rw [h_fun]
+  refine continuous_finset_sum _ (fun j _ => ?_)
+  exact continuous_const.mul ((continuous_id).pow (j.val : ℕ))
+
+/-- Sequential form of `continuous_evalAtComplex`. -/
+lemma tendsto_evalAtComplex {α : Type*} [TopologicalSpace α] {l : Filter α}
+    {s : α → ℂ} {s₀ : ℂ} (hs : Tendsto s l (𝓝 s₀)) (δ : CoeffVec n) :
+    Tendsto (fun x => evalAtComplex (n := n) (s x) δ) l
+      (𝓝 (evalAtComplex (n := n) s₀ δ)) :=
+  ((continuous_evalAtComplex (n := n) δ).tendsto s₀).comp hs
+
+/-! ### Affine parametrization of the face -/
+
+/-- A basis of the direction of `affineSpan ℝ F` indexed by `Fin 2`, from
+`hF_dim_2` via `Module.finBasisOfFinrankEq`. -/
+noncomputable def faceDirBasis {n : ℕ} (F : Set (CoeffVec n))
+    (hF_dim_2 : dim (affineSpan ℝ F).direction = 2) :
+    Module.Basis (Fin 2) ℝ (affineSpan ℝ F).direction :=
+  Module.finBasisOfFinrankEq ℝ _ hF_dim_2
+
+/-- The two basis vectors as ambient coefficient vectors. -/
+noncomputable def faceCols {n : ℕ} (F : Set (CoeffVec n))
+    (hF_dim_2 : dim (affineSpan ℝ F).direction = 2) :
+    Fin 2 → CoeffVec n :=
+  fun i => ((faceDirBasis F hF_dim_2 i : (affineSpan ℝ F).direction).val)
+
+/-- Each basis vector lies in the direction. -/
+lemma faceCols_mem_dir {n : ℕ} (F : Set (CoeffVec n))
+    (hF_dim_2 : dim (affineSpan ℝ F).direction = 2)
+    (i : Fin 2) : faceCols F hF_dim_2 i ∈ (affineSpan ℝ F).direction :=
+  (faceDirBasis F hF_dim_2 i).property
+
+/-- The two basis vectors span the whole direction. -/
+lemma faceCols_span_eq {n : ℕ} (F : Set (CoeffVec n))
+    (hF_dim_2 : dim (affineSpan ℝ F).direction = 2) :
+    Submodule.span ℝ (Set.range (faceCols F hF_dim_2)) =
+      (affineSpan ℝ F).direction := by
+  have hspan : Submodule.span ℝ
+      (Set.range (faceDirBasis F hF_dim_2)) = ⊤ :=
+    Module.Basis.span_eq (faceDirBasis F hF_dim_2)
+  have himg : (affineSpan ℝ F).direction.subtype ''
+      (Set.range (faceDirBasis F hF_dim_2)) =
+      Set.range (faceCols F hF_dim_2) := by
+    rw [← Set.range_comp]
+    rfl
+  have hmap_top : Submodule.map (affineSpan ℝ F).direction.subtype ⊤ =
+      (affineSpan ℝ F).direction := by
+    ext v
+    simp only [Submodule.mem_map, Submodule.mem_top, true_and]
+    constructor
+    · rintro ⟨w, _, rfl⟩
+      exact w.property
+    · intro hv
+      exact ⟨⟨v, hv⟩, rfl⟩
+  have hmap := congrArg (Submodule.map (affineSpan ℝ F).direction.subtype) hspan
+  rw [Submodule.map_span, himg, hmap_top] at hmap
+  exact hmap
+
+/-- Every direction vector is a combination `λ₀•V₀ + λ₁•V₁`. -/
+lemma dir_eq_faceCols_combo {n : ℕ} (F : Set (CoeffVec n))
+    (hF_dim_2 : dim (affineSpan ℝ F).direction = 2)
+    (v : (affineSpan ℝ F).direction) :
+    ∃ lam : Fin 2 → ℝ, (v : CoeffVec n) =
+      lam 0 • faceCols F hF_dim_2 0 + lam 1 • faceCols F hF_dim_2 1 := by
+  let b : Module.Basis (Fin 2) ℝ (affineSpan ℝ F).direction :=
+    faceDirBasis F hF_dim_2
+  have hrepr : ∑ i, b.repr v i • b i = v := Module.Basis.sum_repr b v
+  have h2 : (∑ i, b.repr v i • b i) =
+      b.repr v 0 • b 0 + b.repr v 1 • b 1 := Fin.sum_univ_two _
+  rw [h2] at hrepr
+  refine ⟨b.repr v, ?_⟩
+  have hcongr : ((b.repr v 0 • b 0 + b.repr v 1 • b 1 : (affineSpan ℝ F).direction)
+      : CoeffVec n) =
+      b.repr v 0 • faceCols F hF_dim_2 0 + b.repr v 1 • faceCols F hF_dim_2 1 := by
+    simp [faceCols, b, Submodule.coe_add]
+  have hcast : (v : CoeffVec n) =
+      ((b.repr v 0 • b 0 + b.repr v 1 • b 1 : (affineSpan ℝ F).direction)
+        : CoeffVec n) := by
+    have h := congrArg (⇑((affineSpan ℝ F).direction.subtype)) hrepr.symm
+    simpa using h
+  calc (v : CoeffVec n)
+      = (((b.repr v 0 • b 0 + b.repr v 1 • b 1 : (affineSpan ℝ F).direction))
+        : CoeffVec n) := hcast
+    _ = b.repr v 0 • faceCols F hF_dim_2 0 + b.repr v 1 • faceCols F hF_dim_2 1 :=
+        hcongr
+
+/-- Membership in `aff(F)`: relative to a base point `δ_star ∈ aff(F)`,
+every `x ∈ aff(F)` is `δ_star + λ₀•V₀ + λ₁•V₁`. -/
+lemma mem_affineSpan_iff_faceCols {n : ℕ} (F : Set (CoeffVec n))
+    (hF_dim_2 : dim (affineSpan ℝ F).direction = 2)
+    (δ_star : CoeffVec n) (hδ : δ_star ∈ affineSpan ℝ F) (x : CoeffVec n) :
+    x ∈ affineSpan ℝ F ↔
+      ∃ lam : Fin 2 → ℝ, x =
+        δ_star + (lam 0 • faceCols F hF_dim_2 0 + lam 1 • faceCols F hF_dim_2 1) := by
+  constructor
+  · intro hx
+    have hdir : (x -ᵥ δ_star : CoeffVec n) ∈ (affineSpan ℝ F).direction := by
+      have h := (AffineSubspace.vsub_right_mem_direction_iff_mem hδ x).mpr hx
+      simpa [vsub_eq_sub] using h
+    obtain ⟨lam, hlam⟩ := dir_eq_faceCols_combo F hF_dim_2 ⟨_, hdir⟩
+    refine ⟨lam, ?_⟩
+    have hsub : (x - δ_star : CoeffVec n) =
+        lam 0 • faceCols F hF_dim_2 0 + lam 1 • faceCols F hF_dim_2 1 := by
+      simpa [vsub_eq_sub] using hlam
+    calc x = δ_star + (x - δ_star) := by abel
+      _ = δ_star + (lam 0 • faceCols F hF_dim_2 0 +
+          lam 1 • faceCols F hF_dim_2 1) := by rw [hsub]
+  · rintro ⟨lam, rfl⟩
+    have hcombo : lam 0 • faceCols F hF_dim_2 0 +
+        lam 1 • faceCols F hF_dim_2 1 ∈ (affineSpan ℝ F).direction := by
+      apply Submodule.add_mem _ (Submodule.smul_mem _ _ (faceCols_mem_dir F hF_dim_2 0))
+      exact Submodule.smul_mem _ _ (faceCols_mem_dir F hF_dim_2 1)
+    have := AffineSubspace.vadd_mem_of_mem_direction hcombo hδ
+    simpa [vadd_eq_add, add_comm] using this
+
+/-- Translates `δ_star + Vλ` stay in `aff(F)`. -/
+lemma add_faceCols_mem_affineSpan {n : ℕ} (F : Set (CoeffVec n))
+    (hF_dim_2 : dim (affineSpan ℝ F).direction = 2)
+    (δ_star : CoeffVec n) (hδ : δ_star ∈ affineSpan ℝ F)
+    (lam : Fin 2 → ℝ) :
+    δ_star + (lam 0 • faceCols F hF_dim_2 0 + lam 1 • faceCols F hF_dim_2 1) ∈
+      affineSpan ℝ F :=
+  (mem_affineSpan_iff_faceCols F hF_dim_2 δ_star hδ _).mpr ⟨lam, rfl⟩
+
 /-- Complex case of Lemma 6.2:
     If `s*` is a non-real point on the frontier of `RootSpaceSet F` (where `F` is an
     exposed face of dimension 2), then `s*` is a root of a coefficient vector
     on the relative boundary of `F`. -/
 theorem lemma62_complex_case {n : ℕ} (hn : n ≥ 1) (P : Polytope n)
     (F : Set (CoeffVec n)) (hF_exp : IsExposedFace P F)
-    (hF_dim_2 : Module.finrank ℝ (affineSpan ℝ F).direction = 2)
+    (hF_dim_2 : dim (affineSpan ℝ F).direction = 2)
     (s_star : ℂ) (hs_star_front : s_star ∈ frontier (RootSpaceSet F)) (hcomplex : s_star.im ≠ 0) :
     s_star ∈ RootSpaceSet (relativeBoundary F) := by
   have h_polytope : IsPolytopeSet F := isExposedFace_isPolytopeSet P hF_exp
   sorry
 
 /--
-**Lemma 6.2:** Let `F` be an exposed face of a polytope `P` (satisfying Assumption 6.1)
-with `dim(aff(F)) = 2`. Then the relative boundary of the root space set of `F` is
-contained in the root space set of the relative boundary of `F`:
+**Lemma 6.2:** for an exposed face `F` of a polytope `P` with
+`dim(aff(F)) = 2`, the boundary of the root locus of `F` is contained in the
+root locus of the relative boundary of `F`:
 
 ∂ R(F) ⊆ R(relativeBoundary F)
-
-where `∂ X` on the left is the topological frontier in ℂ, and `relativeBoundary F` on the right is
-the relative boundary `F \ intrinsicInterior ℝ F`.
 -/
 theorem lemma62 {n : ℕ} (hn : n ≥ 1) (P : Polytope n)
     (F : Set (CoeffVec n)) (hF_exp : IsExposedFace P F)
-    (hF_dim_2 : Module.finrank ℝ (affineSpan ℝ F).direction = 2) :
+    (hF_dim_2 : dim (affineSpan ℝ F).direction = 2) :
     frontier (RootSpaceSet F) ⊆ RootSpaceSet (relativeBoundary F) := by
   intro s_star hs_star_front
   by_cases hreal : s_star.im = 0
-  · exact lemma62_real_case hn P F hF_exp hF_dim_2 s_star hs_star_front hreal
+  · exact lemma62_real_case  P F hF_exp hF_dim_2 s_star hs_star_front hreal
   · exact lemma62_complex_case hn P F hF_exp hF_dim_2 s_star hs_star_front hreal
 
 end CoeffBox
