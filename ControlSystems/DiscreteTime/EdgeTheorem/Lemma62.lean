@@ -278,9 +278,7 @@ lemma tendsto_evalAtComplex {α : Type*} [TopologicalSpace α] {l : Filter α}
       (𝓝 (evalAtComplex (n := n) s₀ δ)) :=
   ((continuous_evalAtComplex (n := n) δ).tendsto s₀).comp hs
 
-/-! ### Affine parametrization of the face -/
-
-/-- A basis of the direction of `affineSpan ℝ F` indexed by `Fin 2`, from
+/-! ### Affine parametrization of the face -//-- A basis of the direction of `affineSpan ℝ F` indexed by `Fin 2`, from
 `hF_dim_2` via `Module.finBasisOfFinrankEq`. -/
 noncomputable def faceDirBasis {n : ℕ} (F : Set (CoeffVec n))
     (hF_dim_2 : dim (affineSpan ℝ F).direction = 2) :
@@ -391,6 +389,196 @@ lemma add_faceCols_mem_affineSpan {n : ℕ} (F : Set (CoeffVec n))
       affineSpan ℝ F :=
   (mem_affineSpan_iff_faceCols F hF_dim_2 δ_star hδ _).mpr ⟨lam, rfl⟩
 
+/-! ### The `W` matrix
+
+For non-real `s`, every polynomial vanishing at `s` is divisible by the real
+quadratic `s² + αs + β` with `α = -2 Re s`, `β = |s|²`. In coefficient space,
+multiplication by `s² + αs + β` is the `(n+1)×(n-1)` Toeplitz matrix `W`:
+column `j` has `β` at row `j`, `α` at row `j+1`, `1` at row `j+2`. -/
+
+/-- `α = -2 Re s`, the linear coefficient of the quadratic factor. -/
+def quadAlpha (s : ℂ) : ℝ := -2 * s.re
+
+/-- `β = |s|²`, the constant coefficient of the quadratic factor. -/
+def quadBeta (s : ℂ) : ℝ := Complex.normSq s
+
+/-- The quadratic factor `s² + αs + β` vanishes at `s`. -/
+lemma quadFactor_vanishes (s : ℂ) :
+    s ^ 2 + (algebraMap ℝ ℂ) (quadAlpha s) * s
+      + (algebraMap ℝ ℂ) (quadBeta s) = 0 := by
+  have hs : s = (algebraMap ℝ ℂ) s.re + (algebraMap ℝ ℂ) s.im * Complex.I :=
+    (Complex.re_add_im s).symm
+  have hns : (algebraMap ℝ ℂ) (quadBeta s) =
+      (algebraMap ℝ ℂ) s.re * (algebraMap ℝ ℂ) s.re +
+      (algebraMap ℝ ℂ) s.im * (algebraMap ℝ ℂ) s.im := by
+    simp only [quadBeta, Complex.normSq_apply, map_add, map_mul]
+  have hα : (algebraMap ℝ ℂ) (quadAlpha s) =
+      -2 * (algebraMap ℝ ℂ) s.re := by
+    simp [quadAlpha]
+  rw [hns, hα, hs]
+  have key : (((algebraMap ℝ ℂ) s.re + (algebraMap ℝ ℂ) s.im * Complex.I) ^ 2
+      + (-2 * (algebraMap ℝ ℂ) s.re)
+        * ((algebraMap ℝ ℂ) s.re + (algebraMap ℝ ℂ) s.im * Complex.I)
+      + ((algebraMap ℝ ℂ) s.re * (algebraMap ℝ ℂ) s.re +
+        (algebraMap ℝ ℂ) s.im * (algebraMap ℝ ℂ) s.im))
+      = ((algebraMap ℝ ℂ) s.im * (algebraMap ℝ ℂ) s.im)
+        * (Complex.I * Complex.I + 1) := by
+    ring
+  rw [Complex.I_mul_I] at key
+  simpa using key
+
+/-- Column `j` of `W`: `β` at row `j`, `α` at row `j+1`, `1` at row `j+2`. -/
+def Wcol {n : ℕ} (α β : ℝ) (j : Fin (n - 1)) : CoeffVec n :=
+  fun i => (if i.val = j.val then β else 0) +
+    (if i.val = j.val + 1 then α else 0) + (if i.val = j.val + 2 then 1 else 0)
+
+/-- `W` applied to `μ`: the coefficient vector of `(s²+αs+β)·(∑ μⱼsʲ)`. -/
+def Wmul {n : ℕ} (α β : ℝ) (μ : Fin (n - 1) → ℝ) : CoeffVec n :=
+  ∑ j, μ j • Wcol (n := n) α β j
+
+/-- Summing an indicator over `Fin (n+1)` picks out the indicated value. -/
+private lemma sum_ite_val_eq {n c : ℕ} (hc : c < n + 1) (g : Fin (n + 1) → ℂ) :
+    (∑ i : Fin (n + 1), (if i.val = c then g i else 0)) = g ⟨c, hc⟩ := by
+  rw [Finset.sum_eq_single ⟨c, hc⟩]
+  · exact if_pos rfl
+  · intro b _ hb
+    have hne : b.val ≠ c := fun h => hb (Fin.ext h)
+    simp [hne]
+  · intro h
+    exact absurd (Finset.mem_univ _) h
+
+/-- Summing a scaled indicator against powers of `s`. -/
+private lemma sum_ite_val_mul {n c : ℕ} (hc : c < n + 1) (k s : ℂ) :
+    (∑ i : Fin (n + 1), (if i.val = c then k else 0) * s ^ (i.val : ℕ))
+      = k * s ^ c := by
+  have hpt : ∀ i : Fin (n + 1),
+      ((if i.val = c then k else 0) * s ^ (i.val : ℕ)) =
+        (if i.val = c then k * s ^ c else 0) := by
+    intro i
+    by_cases h : i.val = c <;> simp [h]
+  simp_rw [hpt]
+  have hsum := sum_ite_val_eq hc (fun _ : Fin (n + 1) => k * s ^ c)
+  simpa using hsum
+
+/-- Evaluation of a `W` column factors through the quadratic factor. -/
+lemma evalAtComplex_Wcol {n : ℕ} (s : ℂ) (α β : ℝ) (j : Fin (n - 1)) :
+    evalAtComplex (n := n) s (Wcol (n := n) α β j) =
+      (s ^ j.val) * (s ^ 2 + (algebraMap ℝ ℂ) α * s
+        + (algebraMap ℝ ℂ) β) := by
+  have hj0 : j.val < n + 1 := by have := j.isLt; omega
+  have hj1 : j.val + 1 < n + 1 := by have := j.isLt; omega
+  have hj2 : j.val + 2 < n + 1 := by have := j.isLt; omega
+  rw [evalAtComplex_eq_sum]
+  have step1 : (∑ i : Fin (n + 1),
+        (algebraMap ℝ ℂ) (Wcol (n := n) α β j i) * s ^ (i.val : ℕ))
+      = (∑ i : Fin (n + 1),
+          ((if i.val = j.val then (algebraMap ℝ ℂ) β else 0)
+            * s ^ (i.val : ℕ)))
+        + (∑ i : Fin (n + 1),
+          ((if i.val = j.val + 1 then (algebraMap ℝ ℂ) α else 0)
+            * s ^ (i.val : ℕ)))
+        + (∑ i : Fin (n + 1),
+          ((if i.val = j.val + 2 then 1 else 0) * s ^ (i.val : ℕ))) := by
+    rw [← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
+    apply Finset.sum_congr rfl
+    intro i _
+    have e0 : (algebraMap ℝ ℂ) (if i.val = j.val then β else 0) =
+        if i.val = j.val then (algebraMap ℝ ℂ) β else 0 := by
+      by_cases h : i.val = j.val <;> simp [h]
+    have e1 : (algebraMap ℝ ℂ) (if i.val = j.val + 1 then α else 0) =
+        if i.val = j.val + 1 then (algebraMap ℝ ℂ) α else 0 := by
+      by_cases h : i.val = j.val + 1 <;> simp [h]
+    have e2 : (algebraMap ℝ ℂ) (if i.val = j.val + 2 then 1 else 0) =
+        if i.val = j.val + 2 then 1 else 0 := by
+      by_cases h : i.val = j.val + 2 <;> simp [h]
+    simp only [Wcol, map_add, e0, e1, e2, add_mul]
+  rw [step1, sum_ite_val_mul hj0, sum_ite_val_mul hj1, sum_ite_val_mul hj2]
+  ring
+
+/-- Every `δ* + Wμ` vanishes at `s*`: the reverse direction of the
+`𝒫_{s*} = δ* + range W` characterization. -/
+lemma Wmul_mem_Psc {n : ℕ} (s_star : ℂ) (δ_star : CoeffVec n)
+    (h_star : δ_star ∈ P_sc n s_star) (μ : Fin (n - 1) → ℝ) :
+    δ_star + Wmul (quadAlpha s_star) (quadBeta s_star) μ
+      ∈ P_sc n s_star := by
+  have h0 : evalAtComplex (n := n) s_star δ_star = 0 := by
+    unfold P_sc at h_star
+    exact LinearMap.mem_ker.mp h_star
+  have hW : evalAtComplex (n := n) s_star
+      (Wmul (quadAlpha s_star) (quadBeta s_star) μ) = 0 := by
+    unfold Wmul
+    rw [map_sum]
+    apply Finset.sum_eq_zero
+    intro j _
+    rw [map_smul, evalAtComplex_Wcol, Algebra.smul_def,
+      quadFactor_vanishes s_star]
+    simp
+  unfold P_sc
+  rw [LinearMap.mem_ker, map_add, h0, hW, add_zero]
+
+/-! ### Case B, B1: the approximating sequence (6.11) -/
+
+/-- Continuity of `quadAlpha` in the point. -/
+lemma continuous_quadAlpha : Continuous (quadAlpha : ℂ → ℝ) := by
+  unfold quadAlpha
+  exact continuous_const.mul Complex.continuous_re
+
+/-- Continuity of `quadBeta` in the point. -/
+lemma continuous_quadBeta : Continuous (quadBeta : ℂ → ℝ) := by
+  have h : (quadBeta : ℂ → ℝ) = fun s => s.re * s.re + s.im * s.im := by
+    funext s
+    simp [quadBeta, Complex.normSq_apply]
+  rw [h]
+  exact Complex.continuous_re.mul Complex.continuous_re
+    |>.add (Complex.continuous_im.mul Complex.continuous_im)
+
+/-- From `s* ∈ R(F)` and `s* ∈ closure((R(F))ᶜ)` extract a sequence
+`s_seq` with `s_seq k ∉ R(F)`, `s_seq k ≠ s*`, converging to `s*`
+(textbook (6.11) setup, radii `1/(k+1)`). -/
+lemma exists_seq_notin_RootSpaceSet_tendsto {n : ℕ} {F : Set (CoeffVec n)}
+    {s_star : ℂ} (hs_in : s_star ∈ RootSpaceSet F)
+    (h : s_star ∈ closure (RootSpaceSet F)ᶜ) :
+    ∃ s_seq : ℕ → ℂ, (∀ k, s_seq k ∉ RootSpaceSet F) ∧
+      (∀ k, s_seq k ≠ s_star) ∧ Tendsto s_seq atTop (𝓝 s_star) := by
+  have h1 : ∀ k : ℕ, ∃ y, y ∉ RootSpaceSet F ∧ dist s_star y < 1 / (k + 1) := by
+    intro k
+    have hpos : (0:ℝ) < 1 / (k + 1) := by positivity
+    obtain ⟨y, hy, hdy⟩ := Metric.mem_closure_iff.mp h _ hpos
+    exact ⟨y, hy, hdy⟩
+  choose s_seq hs_out hdist using h1
+  refine ⟨s_seq, hs_out, ?_, ?_⟩
+  · intro k hEq
+    exact hs_out k (by rw [hEq]; exact hs_in)
+  · rw [Metric.tendsto_atTop]
+    intro ε hε
+    obtain ⟨N, hN⟩ :=
+      Metric.tendsto_atTop.mp (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)) ε hε
+    refine ⟨N, fun k hk => ?_⟩
+    have hmono : 1 / (k + 1) ≤ 1 / ((N:ℝ) + 1) :=
+      (one_div_le_one_div (by positivity) (by positivity)).mpr (by
+        have h1 : ((N:ℕ) + 1 : ℕ) ≤ (k + 1 : ℕ) := Nat.succ_le_succ hk
+        exact_mod_cast h1)
+    have h1N : 1 / ((N:ℝ) + 1) < ε := by
+      have hN0 := hN N (le_refl N)
+      rw [dist_zero_right, Real.norm_eq_abs,
+        abs_of_pos (show (0:ℝ) < 1 / (N + 1) by positivity)] at hN0
+      exact hN0
+    have hd : dist s_star (s_seq k) < 1 / (k + 1) := hdist k
+    rw [dist_comm]
+    linarith
+
+/-- (6.11): `α_k = -2 Re s_k → α = -2 Re s*` along any convergent sequence. -/
+lemma tendsto_quadAlpha {α : Type*} [TopologicalSpace α] {l : Filter α}
+    {s : α → ℂ} {s₀ : ℂ} (hs : Tendsto s l (𝓝 s₀)) :
+    Tendsto (fun x => quadAlpha (s x)) l (𝓝 (quadAlpha s₀)) :=
+  (continuous_quadAlpha.tendsto s₀).comp hs
+
+/-- (6.11): `β_k = |s_k|² → β = |s*|²` along any convergent sequence. -/
+lemma tendsto_quadBeta {α : Type*} [TopologicalSpace α] {l : Filter α}
+    {s : α → ℂ} {s₀ : ℂ} (hs : Tendsto s l (𝓝 s₀)) :
+    Tendsto (fun x => quadBeta (s x)) l (𝓝 (quadBeta s₀)) :=
+  (continuous_quadBeta.tendsto s₀).comp hs
+
 /-- Complex case of Lemma 6.2:
     If `s*` is a non-real point on the frontier of `RootSpaceSet F` (where `F` is an
     exposed face of dimension 2), then `s*` is a root of a coefficient vector
@@ -400,8 +588,42 @@ theorem lemma62_complex_case {n : ℕ} (hn : n ≥ 1) (P : Polytope n)
     (hF_dim_2 : dim (affineSpan ℝ F).direction = 2)
     (s_star : ℂ) (hs_star_front : s_star ∈ frontier (RootSpaceSet F)) (hcomplex : s_star.im ≠ 0) :
     s_star ∈ RootSpaceSet (relativeBoundary F) := by
-  have h_polytope : IsPolytopeSet F := isExposedFace_isPolytopeSet P hF_exp
-  sorry
+  have hF_compact : IsCompact F := isExposedFace_isCompact P hF_exp
+  have h_root_closed : IsClosed (RootSpaceSet F) :=
+    rootSpaceSet_isClosed_of_isCompact hF_compact
+  have hs_star_in_RF : s_star ∈ RootSpaceSet F := by
+    have h_sub : frontier (RootSpaceSet F) ⊆ RootSpaceSet F := by
+      calc
+        frontier (RootSpaceSet F) ⊆ closure (RootSpaceSet F) := frontier_subset_closure
+        _ = RootSpaceSet F := h_root_closed.closure_eq
+    exact h_sub hs_star_front
+  rcases hs_star_in_RF with ⟨δ_star, hδ_star_in_F, hδ_star_root⟩
+  have hδ_star_Psc : δ_star ∈ PscSet n s_star :=
+    mem_P_sc_of_isRoot s_star δ_star hδ_star_root
+  by_cases hA : dim (P_sc n s_star ⊓ (affineSpan ℝ F).direction) ≥ 1
+  · obtain ⟨δ_hat, ⟨hδ_hat_F, hδ_hat_Psc⟩, _, hδ_hat_notrelint⟩ :=
+      exists_boundary_point_in_face_rootspace_complex P s_star δ_star F hF_exp
+        hδ_star_in_F hδ_star_Psc
+        (h_inter_dim_of_meet F s_star δ_star hδ_star_Psc hδ_star_in_F hA)
+    have hk : evalAtComplex (n := n) s_star δ_hat = 0 := by
+      have h := hδ_hat_Psc
+      simp only [PscSet, P_sc, LinearMap.mem_ker] at h
+      exact h
+    have hroot : ((polyOfVec δ_hat).map (algebraMap ℝ ℂ)).IsRoot s_star := by
+      rw [Polynomial.IsRoot]
+      have h_eval : ((polyOfVec δ_hat).map (algebraMap ℝ ℂ)).eval s_star
+          = evalAtComplex (n := n) s_star δ_hat := rfl
+      rw [h_eval, hk]
+    exact rootspace_mem_of_isRoot s_star δ_hat hroot (relativeBoundary F)
+      ⟨hδ_hat_F, hδ_hat_notrelint⟩
+  · -- Case B
+    have hc : s_star ∈ closure (RootSpaceSet F)ᶜ := by
+      rw [frontier_eq_closure_inter_closure] at hs_star_front
+      exact hs_star_front.2
+    obtain ⟨s_seq, hs_out, _hs_ne, hs_tendsto⟩ :=
+      exists_seq_notin_RootSpaceSet_tendsto
+        (rootspace_mem_of_isRoot s_star δ_star hδ_star_root F hδ_star_in_F) hc
+    sorry
 
 /--
 **Lemma 6.2:** for an exposed face `F` of a polytope `P` with
