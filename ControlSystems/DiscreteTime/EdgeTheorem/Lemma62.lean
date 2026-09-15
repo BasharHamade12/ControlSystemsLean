@@ -10,6 +10,7 @@ public import ControlSystems.DiscreteTime.EdgeTheorem.Lemma61
 public import Mathlib.LinearAlgebra.Basis.Basic
 public import Mathlib.LinearAlgebra.Basis.Defs
 public import Mathlib.LinearAlgebra.Dimension.Free
+public import Mathlib.Analysis.Complex.Polynomial.Basic
 
 @[expose] public section
 
@@ -579,6 +580,590 @@ lemma tendsto_quadBeta {α : Type*} [TopologicalSpace α] {l : Filter α}
     Tendsto (fun x => quadBeta (s x)) l (𝓝 (quadBeta s₀)) :=
   (continuous_quadBeta.tendsto s₀).comp hs
 
+/-! ### Case B, B2–B3 (entry): the running matrix `Wₖ` and `Wₖ → W` -/
+
+/-- `W` at running parameters `(α_k, β_k)`: the book's `Wₙ`. -/
+def Wk {n : ℕ} (s_seq : ℕ → ℂ) (k : ℕ) (μ : Fin (n - 1) → ℝ) : CoeffVec n :=
+  Wmul (quadAlpha (s_seq k)) (quadBeta (s_seq k)) μ
+
+/-- A `W` column as a fixed real combination of the parameters: the
+indicators depend only on the fixed indices `i, j`. -/
+lemma Wcol_eq_const_mul {n : ℕ} (α β : ℝ) (j : Fin (n - 1)) (i : Fin (n + 1)) :
+    Wcol (n := n) α β j i =
+      (if i.val = j.val then (1:ℝ) else 0) * β +
+      (if i.val = j.val + 1 then (1:ℝ) else 0) * α +
+      (if i.val = j.val + 2 then (1:ℝ) else 0) := by
+  unfold Wcol
+  by_cases h0 : i.val = j.val <;> by_cases h1 : i.val = j.val + 1
+    <;> by_cases h2 : i.val = j.val + 2 <;> simp [h0, h1, h2]
+
+/-- Entrywise convergence `Wmul α_k β_k μ → Wmul α β μ` from convergence
+of the parameters (textbook (6.14), matrix part). -/
+lemma tendsto_Wmul {n : ℕ} {α : Type*} [TopologicalSpace α] {l : Filter α}
+    (μ : Fin (n - 1) → ℝ) {α' : α → ℝ} {α₀ : ℝ} (hα : Tendsto α' l (𝓝 α₀))
+    {β' : α → ℝ} {β₀ : ℝ} (hβ : Tendsto β' l (𝓝 β₀)) :
+    Tendsto (fun x => Wmul (α' x) (β' x) μ) l (𝓝 (Wmul α₀ β₀ μ)) := by
+  have hcoord : ∀ (a b : ℝ) (i : Fin (n + 1)),
+      (Wmul a b μ) i = ∑ j, μ j * (Wcol (n := n) a b j i) := by
+    intro a b i
+    unfold Wmul
+    simp only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
+  rw [tendsto_pi_nhds]
+  intro i
+  simp_rw [hcoord]
+  apply tendsto_finset_sum
+  intro j _
+  simp_rw [Wcol_eq_const_mul]
+  have h1 : Tendsto (fun x => (if i.val = j.val then (1:ℝ) else 0) * β' x) l
+      (𝓝 ((if i.val = j.val then (1:ℝ) else 0) * β₀)) :=
+    tendsto_const_nhds.mul hβ
+  have h2 : Tendsto (fun x => (if i.val = j.val + 1 then (1:ℝ) else 0) * α' x) l
+      (𝓝 ((if i.val = j.val + 1 then (1:ℝ) else 0) * α₀)) :=
+    tendsto_const_nhds.mul hα
+  have h3 : Tendsto (fun _ => (if i.val = j.val + 2 then (1:ℝ) else 0)) l
+      (𝓝 (if i.val = j.val + 2 then (1:ℝ) else 0)) :=
+    tendsto_const_nhds
+  exact tendsto_const_nhds.mul ((h1.add h2).add h3)
+
+/-- `Wₖ μ → W μ` along the approximating sequence (B1 + entrywise). -/
+lemma tendsto_Wk {n : ℕ} (s_seq : ℕ → ℂ) (μ : Fin (n - 1) → ℝ) {s_star : ℂ}
+    (hs : Tendsto s_seq atTop (𝓝 s_star)) :
+    Tendsto (fun k => Wk s_seq k μ) atTop
+      (𝓝 (Wmul (quadAlpha s_star) (quadBeta s_star) μ)) :=
+  tendsto_Wmul μ (tendsto_quadAlpha hs) (tendsto_quadBeta hs)
+
+/-! ### Case B, B2b: quotient polynomial, νₖ, and membership in P_sc n sₖ
+
+From textbook (6.12)–(6.13): since `δ* ∈ P_sc n s*` and `s*` is non-real,
+`polyOfVec δ*` is divisible by the real quadratic `X² − C(2 Re s*) X + C(|s*|²)`.  The quotient
+`d(x)` has degree ≤ n−2 and its coefficients form the two columns of `D`.
+The offset `νₖ = (αₖ−α)·D₀ + (βₖ−β)·D₁` satisfies `δ*+νₖ ∈ P_sc n sₖ`. -/
+
+/-- `aeval s (polyOfVec δ) = evalAtComplex s δ`. -/
+lemma aeval_eq_evalAtComplex {n : ℕ} (s : ℂ) (δ : CoeffVec n) :
+    aeval s (polyOfVec δ) = evalAtComplex s δ := by
+  rw [aeval_def, evalAtComplex, eval₂_eq_eval_map]; rfl
+
+/-- The quadratic factor divides `polyOfVec δ*` when `δ*` vanishes at non-real `s*`.
+    Uses Mathlib form `X² − C(2 Re s) X + C(|s|²)`. -/
+lemma quadratic_dvd_polyOfVec {n : ℕ} (s_star : ℂ) (δ_star : CoeffVec n)
+    (h0 : evalAtComplex s_star δ_star = 0) (hcomplex : s_star.im ≠ 0) :
+    X ^ 2 - C (2 * s_star.re) * X + C (‖s_star‖ ^ 2) ∣ polyOfVec δ_star := by
+  have h0' : aeval s_star (polyOfVec δ_star) = 0 := by
+    rw [aeval_eq_evalAtComplex]; exact h0
+  exact Polynomial.quadratic_dvd_of_aeval_eq_zero_im_ne_zero _ h0' hcomplex
+
+/-- The quotient polynomial from dividing `polyOfVec δ*` by the quadratic factor. -/
+noncomputable def quotientPoly {n : ℕ} (s_star : ℂ) (δ_star : CoeffVec n)
+    (h0 : evalAtComplex s_star δ_star = 0) (hcomplex : s_star.im ≠ 0) : ℝ[X] :=
+  Classical.choose (quadratic_dvd_polyOfVec s_star δ_star h0 hcomplex)
+
+/-- The division identity: `(X² − C(2Re s*) X + C(|s*|²)) · d = polyOfVec δ*`. -/
+lemma quotientPoly_spec {n : ℕ} (s_star : ℂ) (δ_star : CoeffVec n)
+    (h0 : evalAtComplex s_star δ_star = 0) (hcomplex : s_star.im ≠ 0) :
+    (X ^ 2 - C (2 * s_star.re) * X + C (‖s_star‖ ^ 2)) *
+      quotientPoly s_star δ_star h0 hcomplex = polyOfVec δ_star :=
+  (Classical.choose_spec (quadratic_dvd_polyOfVec s_star δ_star h0 hcomplex)).symm
+
+/-- natDegree of `polyOfVec δ` is at most `n`. -/
+lemma polyOfVec_natDegree_le {n : ℕ} (δ : CoeffVec n) :
+    (polyOfVec δ).natDegree ≤ n := by
+  unfold polyOfVec
+  apply le_trans (Polynomial.natDegree_sum_le _ _)
+  apply Finset.sup_le
+  intro i _
+  exact le_trans (Polynomial.natDegree_monomial_le (δ i)) (Nat.le_of_lt_succ i.isLt)
+
+/-- The quadratic factor `X² − C(2 Re s) X + C(|s|²)` has natDegree 2. -/
+private lemma quadratic_natDegree {s : ℂ} :
+    (X ^ 2 - C (2 * s.re) * X + C ((‖s‖ : ℝ) ^ 2) : ℝ[X]).natDegree = 2 := by
+  have hq2 : (X ^ 2 : ℝ[X]).degree = 2 := Polynomial.degree_X_pow 2
+  have hc1 : ((C (2 * s.re) * X) : ℝ[X]).degree ≤ 1 := Polynomial.degree_C_mul_X_le _
+  have hc0 : ((C ((‖s‖ : ℝ) ^ 2) : ℝ[X])).degree ≤ 0 := Polynomial.degree_C_le
+  have hsub : ((X ^ 2 - C (2 * s.re) * X : ℝ[X])).degree = 2 := by
+    rw [Polynomial.degree_sub_eq_left_of_degree_lt (p := X ^ 2)]
+    · exact hq2
+    · refine lt_of_le_of_lt hc1 ?_
+      rw [hq2]; exact WithBot.coe_lt_coe.2 (by norm_num : (1:ℕ) < 2)
+  have hdeg : (X ^ 2 - C (2 * s.re) * X + C ((‖s‖ : ℝ) ^ 2) : ℝ[X]).degree = 2 := by
+    rw [Polynomial.degree_add_eq_left_of_degree_lt (p := X ^ 2 - C (2 * s.re) * X)]
+    · exact hsub
+    · refine lt_of_le_of_lt hc0 ?_
+      rw [hsub]; exact WithBot.coe_lt_coe.2 (by norm_num : (0:ℕ) < 2)
+  exact Polynomial.natDegree_eq_of_degree_eq_some hdeg
+
+/-- The quotient has natDegree ≤ n − 2 (when n ≥ 2). -/
+lemma quotientPoly_natDegree_le {n : ℕ} (hn : n ≥ 2) (s_star : ℂ) (δ_star : CoeffVec n)
+    (h0 : evalAtComplex s_star δ_star = 0) (hcomplex : s_star.im ≠ 0) :
+    (quotientPoly s_star δ_star h0 hcomplex).natDegree ≤ n - 2 := by
+  have hQ2 : (X ^ 2 - C (2 * s_star.re) * X + C ((‖s_star‖ : ℝ) ^ 2) : ℝ[X]).natDegree = 2 :=
+    quadratic_natDegree
+  have hQne : (X ^ 2 - C (2 * s_star.re) * X + C ((‖s_star‖ : ℝ) ^ 2) : ℝ[X]) ≠ 0 := by
+    intro h; rw [h, Polynomial.natDegree_zero] at hQ2; norm_num at hQ2
+  by_cases hqz : quotientPoly s_star δ_star h0 hcomplex = 0
+  · rw [hqz, Polynomial.natDegree_zero]; omega
+  · have h2 := polyOfVec_natDegree_le δ_star
+    rw [← quotientPoly_spec s_star δ_star h0 hcomplex] at h2
+    rw [Polynomial.natDegree_mul hQne hqz, hQ2] at h2
+    omega
+
+/-- Convert polynomial to coefficient vector (zero-padded to length n+1). -/
+noncomputable def polyToVec {n : ℕ} (p : ℝ[X]) : CoeffVec n :=
+  fun i => p.coeff i.val
+
+/-- Evaluation of `polyToVec` equals the polynomial evaluation. -/
+lemma evalAtComplex_polyToVec {n : ℕ} (p : ℝ[X]) (s : ℂ) (hp : p.natDegree ≤ n) :
+    evalAtComplex (n := n) s (polyToVec p) = (p.map (algebraMap ℝ ℂ)).eval s := by
+  classical
+  have key : polyOfVec (n := n) (polyToVec (n := n) p) = p := by
+    ext m
+    rw [polyOfVec, Polynomial.finset_sum_coeff]
+    simp only [polyToVec]
+    have hsum : (∑ x : Fin (n + 1), (Polynomial.monomial x.val (p.coeff x.val)).coeff m)
+        = (∑ x : Fin (n + 1), if x.val = m then p.coeff x.val else 0) := by
+      apply Finset.sum_congr rfl
+      intro x _
+      rw [Polynomial.coeff_monomial]
+    rw [hsum]
+    by_cases hmn : m ≤ n
+    · have h1 : (∑ x : Fin (n + 1), if x.val = m then p.coeff x.val else 0)
+          = ∑ x ∈ Finset.filter (fun x : Fin (n + 1) => x.val = m) Finset.univ, p.coeff x.val := by
+        rw [Finset.sum_filter]
+      rw [h1]
+      have hflt : Finset.filter (fun x : Fin (n + 1) => x.val = m) Finset.univ =
+          {(⟨m, by omega⟩ : Fin (n + 1))} := by
+        ext x
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton,
+          Fin.ext_iff]
+      rw [hflt, Finset.sum_singleton]
+    · have hc : p.coeff m = 0 :=
+        Polynomial.coeff_eq_zero_of_natDegree_lt (by have h := hp; omega)
+      rw [hc,
+        show (∑ x : Fin (n + 1), if x.val = m then p.coeff x.val else 0) = 0 from
+          Finset.sum_eq_zero (fun x _ => by
+            have hlt : x.val < n + 1 := x.isLt
+            have hx : ¬(x.val = m) := by
+              intro hc2
+              have h2 := hmn
+              omega
+            simp [hx])]
+  show ((polyOfVec (n := n) (polyToVec (n := n) p)).map (algebraMap ℝ ℂ)).eval s = _
+  rw [key]
+
+/-- `evalAtComplex s (polyToVec (X * q)) = s * evalAtComplex s (polyToVec q)`. -/
+lemma evalAtComplex_polyToVec_X_mul {n : ℕ} (hn1 : 1 ≤ n) (q : ℝ[X]) (s : ℂ)
+    (hq_le : q.natDegree ≤ n - 2) :
+    evalAtComplex (n := n) s (polyToVec (X * q)) =
+      s * evalAtComplex (n := n) s (polyToVec q) := by
+  have hq : q.natDegree ≤ n := by omega
+  have hXq : (X * q).natDegree ≤ n := by
+    calc (X * q).natDegree ≤ X.natDegree + q.natDegree := Polynomial.natDegree_mul_le
+      _ ≤ 1 + (n - 2) := Nat.add_le_add Polynomial.natDegree_X_le hq_le
+      _ ≤ n := by omega
+  rw [evalAtComplex_polyToVec _ _ hXq, evalAtComplex_polyToVec _ _ hq]
+  rw [Polynomial.map_mul, Polynomial.map_X, Polynomial.eval_mul, Polynomial.eval_X]
+
+/-- The offset νₖ: linear in (αₖ−α, βₖ−β) with columns from d and X·d.
+    Textbook (6.12)–(6.13). -/
+noncomputable def nuk {n : ℕ} (s_seq : ℕ → ℂ) (s_star : ℂ) (δ_star : CoeffVec n)
+    (h0 : evalAtComplex s_star δ_star = 0) (hcomplex : s_star.im ≠ 0) (k : ℕ) :
+    CoeffVec n :=
+  let q := quotientPoly s_star δ_star h0 hcomplex
+  let α := quadAlpha s_star
+  let β := quadBeta s_star
+  let αk := quadAlpha (s_seq k)
+  let βk := quadBeta (s_seq k)
+  (αk - α) • polyToVec (X * q) + (βk - β) • polyToVec q
+
+/-- `δ* + νₖ ∈ P_sc n sₖ`. Core identity: the quadratic factor vanishes at `sₖ`,
+so the offset cancels the residual evaluation. -/
+lemma delta_plus_nuk_mem_Psc {n : ℕ} (hn1 : n ≥ 1) (s_seq : ℕ → ℂ) (s_star : ℂ)
+    (δ_star : CoeffVec n) (h0 : evalAtComplex s_star δ_star = 0)
+    (hcomplex : s_star.im ≠ 0) (k : ℕ) :
+    δ_star + nuk s_seq s_star δ_star h0 hcomplex k ∈ P_sc n (s_seq k) := by
+  set sk := s_seq k with hsk
+  set q := quotientPoly s_star δ_star h0 hcomplex with hqdef
+  have hq_le : q.natDegree ≤ n - 2 := by
+    by_cases hn2 : n ≥ 2
+    · simpa [hqdef] using quotientPoly_natDegree_le hn2 s_star δ_star h0 hcomplex
+    · have hn1' : n = 1 := by omega
+      subst hn1'
+      by_cases hqz : q = 0
+      · rw [hqz, Polynomial.natDegree_zero]
+      · exfalso
+        have hQ2 : (X ^ 2 - C (2 * s_star.re) * X + C ((‖s_star‖ : ℝ) ^ 2) : ℝ[X]).natDegree =
+            2 := quadratic_natDegree
+        have hQne : (X ^ 2 - C (2 * s_star.re) * X + C ((‖s_star‖ : ℝ) ^ 2) : ℝ[X]) ≠ 0 := by
+          intro h; rw [h, Polynomial.natDegree_zero] at hQ2; norm_num at hQ2
+        have h2 := polyOfVec_natDegree_le δ_star
+        have hsp := quotientPoly_spec s_star δ_star h0 hcomplex
+        rw [← hqdef] at hsp
+        rw [← hsp] at h2
+        rw [Polynomial.natDegree_mul hQne hqz, quadratic_natDegree] at h2
+        omega
+  -- First term: evalAtComplex sₖ δ* via the factorization Q·q = polyOfVec δ*.
+  have hb1 : evalAtComplex (n := n) sk δ_star =
+      (sk ^ 2 + (algebraMap ℝ ℂ) (quadAlpha s_star) * sk
+          + (algebraMap ℝ ℂ) (quadBeta s_star)) * ((q.map (algebraMap ℝ ℂ)).eval sk) := by
+    have hsp := quotientPoly_spec s_star δ_star h0 hcomplex
+    rw [← hqdef] at hsp
+    show ((polyOfVec (n := n) δ_star).map (algebraMap ℝ ℂ)).eval sk = _
+    rw [← hsp, Polynomial.map_mul, Polynomial.eval_mul]
+    have key :
+        (((X ^ 2 : ℝ[X]) - C (2 * s_star.re) * X + C (‖s_star‖ ^ 2)).map
+            (algebraMap ℝ ℂ)).eval sk
+          = sk ^ 2 + (algebraMap ℝ ℂ) (quadAlpha s_star) * sk
+            + (algebraMap ℝ ℂ) (quadBeta s_star) := by
+      simp only [Polynomial.map_add, Polynomial.map_sub, Polynomial.map_mul, Polynomial.map_pow,
+        Polynomial.map_X, Polynomial.map_C, Polynomial.eval_add,
+        Polynomial.eval_sub, Polynomial.eval_mul, Polynomial.eval_pow, Polynomial.eval_X,
+        Polynomial.eval_C, quadAlpha, quadBeta,
+        Complex.normSq_eq_norm_sq]
+      push_cast
+      ring
+    rw [key]
+  -- Second term: evalAtComplex sₖ νₖ from the two polyToVec evaluations.
+  have hb2 : evalAtComplex (n := n) sk (nuk s_seq s_star δ_star h0 hcomplex k) =
+      ((algebraMap ℝ ℂ) (quadAlpha sk) - (algebraMap ℝ ℂ) (quadAlpha s_star)) * sk *
+          ((q.map (algebraMap ℝ ℂ)).eval sk) +
+        ((algebraMap ℝ ℂ) (quadBeta sk) - (algebraMap ℝ ℂ) (quadBeta s_star)) *
+          ((q.map (algebraMap ℝ ℂ)).eval sk) := by
+    show evalAtComplex (n := n) sk (((quadAlpha sk - quadAlpha s_star : ℝ) •
+        polyToVec (n := n) (X * q) + (quadBeta sk - quadBeta s_star : ℝ) •
+        polyToVec (n := n) q)) = _
+    have hqn : q.natDegree ≤ n := by omega
+    rw [map_add, LinearMap.map_smul, LinearMap.map_smul,
+      evalAtComplex_polyToVec_X_mul hn1 q sk hq_le,
+      evalAtComplex_polyToVec q sk hqn]
+    simp only [Algebra.smul_def, map_sub]
+    ring
+  -- Assemble: the sum factors as (sₖ² + αₖ sₖ + βₖ)·q(sₖ) = 0.
+  unfold P_sc
+  rw [LinearMap.mem_ker, map_add, hb1, hb2]
+  have heuristics : (sk ^ 2
+        + (algebraMap ℝ ℂ) (quadAlpha s_star) * sk
+        + (algebraMap ℝ ℂ) (quadBeta s_star)) * ((q.map (algebraMap ℝ ℂ)).eval sk) +
+      (((algebraMap ℝ ℂ) (quadAlpha sk) - (algebraMap ℝ ℂ) (quadAlpha s_star)) * sk *
+          ((q.map (algebraMap ℝ ℂ)).eval sk) +
+        ((algebraMap ℝ ℂ) (quadBeta sk) - (algebraMap ℝ ℂ) (quadBeta s_star)) *
+          ((q.map (algebraMap ℝ ℂ)).eval sk))
+      = (sk ^ 2 + (algebraMap ℝ ℂ) (quadAlpha sk) * sk
+          + (algebraMap ℝ ℂ) (quadBeta sk)) * ((q.map (algebraMap ℝ ℂ)).eval sk) := by
+    ring
+  rw [heuristics, quadFactor_vanishes sk, zero_mul]
+
+/-- νₖ → 0 along the approximating sequence (textbook (6.14), offset part). -/
+lemma tendsto_nuk {n : ℕ} (s_seq : ℕ → ℂ) (s_star : ℂ) (δ_star : CoeffVec n)
+    (h0 : evalAtComplex s_star δ_star = 0) (hcomplex : s_star.im ≠ 0)
+    (hs : Tendsto s_seq atTop (𝓝 s_star)) :
+    Tendsto (fun k => nuk s_seq s_star δ_star h0 hcomplex k) atTop (𝓝 0) := by
+  rw [tendsto_pi_nhds]; intro i
+  simp only [nuk, Pi.smul_apply, smul_eq_mul, Pi.add_apply, Pi.zero_apply]
+  have hα : Tendsto (fun k => quadAlpha (s_seq k) - quadAlpha s_star) atTop (𝓝 0) := by
+    have h1 : Tendsto (fun k => quadAlpha (s_seq k)) atTop (𝓝 (quadAlpha s_star)) :=
+      tendsto_quadAlpha hs
+    have h2 : Tendsto (fun _ : ℕ => quadAlpha s_star) atTop (𝓝 (quadAlpha s_star)) :=
+      tendsto_const_nhds
+    have h3 := Filter.Tendsto.sub h1 h2
+    simp only [sub_self] at h3; exact h3
+  have hβ : Tendsto (fun k => quadBeta (s_seq k) - quadBeta s_star) atTop (𝓝 0) := by
+    have h1 : Tendsto (fun k => quadBeta (s_seq k)) atTop (𝓝 (quadBeta s_star)) :=
+      tendsto_quadBeta hs
+    have h2 : Tendsto (fun _ : ℕ => quadBeta s_star) atTop (𝓝 (quadBeta s_star)) :=
+      tendsto_const_nhds
+    have h3 := Filter.Tendsto.sub h1 h2
+    simp only [sub_self] at h3; exact h3
+  have hc1 : Tendsto (fun _ : ℕ => polyToVec (X * quotientPoly s_star δ_star h0 hcomplex) i)
+      atTop (𝓝 (polyToVec (X * quotientPoly s_star δ_star h0 hcomplex) i)) :=
+    tendsto_const_nhds
+  have hc2 : Tendsto (fun _ : ℕ => polyToVec (quotientPoly s_star δ_star h0 hcomplex) i)
+      atTop (𝓝 (polyToVec (quotientPoly s_star δ_star h0 hcomplex) i)) :=
+    tendsto_const_nhds
+  have hprod1 := Filter.Tendsto.mul hα hc1
+  have hprod2 := Filter.Tendsto.mul hβ hc2
+  have hadd := Filter.Tendsto.add hprod1 hprod2
+  simp only [zero_mul, add_zero] at hadd
+  exact hadd
+
+/-! ### Case B, B4: the joint matrix `[V, −Wₖ]` (textbook (6.15)–(6.16)) -/
+
+/-- `Wmul (quadAlpha s) (quadBeta s) μ` vanishes at `s`: the kernel version of
+`evalAtComplex_Wcol`. -/
+lemma evalAtComplex_Wmul {n : ℕ} (s : ℂ) (μ : Fin (n - 1) → ℝ) :
+    evalAtComplex (n := n) s (Wmul (quadAlpha s) (quadBeta s) μ) = 0 := by
+  unfold Wmul
+  rw [map_sum]
+  apply Finset.sum_eq_zero
+  intro j _
+  rw [map_smul, evalAtComplex_Wcol, Algebra.smul_def, quadFactor_vanishes s]
+  simp
+
+/-- The `W`-translate member: `Wmul` at the parameters of `s` lies in `P_sc n s`. -/
+lemma Wmul_mem_Psc_zero {n : ℕ} (s : ℂ) (μ : Fin (n - 1) → ℝ) :
+    Wmul (n := n) (quadAlpha s) (quadBeta s) μ ∈ P_sc n s := by
+  unfold P_sc; rw [LinearMap.mem_ker]; exact evalAtComplex_Wmul s μ
+
+/-- Indicator column sum over `Fin (n - 1)`: picks out the `c`-th value when it exists. -/
+private lemma sum_ite_val_fin {n c : ℕ} (g : Fin (n - 1) → ℝ) :
+    (∑ j : Fin (n - 1), (if j.val = c then g j else 0)) =
+      if h : c < n - 1 then g ⟨c, h⟩ else 0 := by
+  classical
+  by_cases hc : c < n - 1
+  · simp only [dif_pos hc]
+    rw [← Finset.sum_filter]
+    have hflt : Finset.filter (fun j : Fin (n - 1) => j.val = c) Finset.univ = {(⟨c, hc⟩ : Fin (n - 1))} := by
+      ext j
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
+      constructor
+      · intro hj; exact Fin.ext hj
+      · intro hj; subst hj; simp
+    rw [hflt, Finset.sum_singleton]
+  · simp only [dif_neg hc]
+    apply Finset.sum_eq_zero
+    intro j _
+    rw [if_neg]
+    intro hEq
+    have hj := j.isLt
+    omega
+
+/-- Evaluation of `Wmul` at a row: unfolds to a weighted sum of `Wcol` entries.
+Used directly by `Wmul_injective` without a closed-form dite formula
+(to avoid truncated-subtraction edge cases at rows 0 and 1). -/
+private lemma Wmul_apply_eq_sum {n : ℕ} (α β : ℝ) (μ : Fin (n - 1) → ℝ)
+    (i : Fin (n + 1)) :
+    (Wmul (n := n) α β μ) i =
+      ∑ j : Fin (n - 1), μ j * (Wcol (n := n) α β j i) := by
+  unfold Wmul
+  simp [Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
+
+/-- The `W` operator is injective: `Wmul α β μ = 0` implies `μ = 0`.
+Read `μ` off anti-diagonally from the top: the entry of the largest nonzero index at row
+`val + 2` is uncancelled. -/
+private lemma Wmul_injective {n : ℕ} {α β : ℝ} {μ : Fin (n - 1) → ℝ}
+    (h : Wmul (n := n) α β μ = 0) : μ = 0 := by
+  classical
+  refine funext fun j => by_contra fun hμ => ?_
+  have hfne : (Finset.univ.filter (fun k : Fin (n - 1) => μ k ≠ 0)).Nonempty := by
+    rw [Finset.filter_nonempty_iff]
+    exact ⟨j, Finset.mem_univ _, hμ⟩
+  obtain ⟨jm, hjm_mem, hmax⟩ :=
+    Finset.exists_max_image
+      (Finset.univ.filter (fun k : Fin (n - 1) => μ k ≠ 0)) (fun k => (k : ℕ)) hfne
+  have him : μ jm ≠ 0 := (Finset.mem_filter.mp hjm_mem).2
+  have hle : ∀ k : Fin (n - 1), μ k ≠ 0 → k.val ≤ jm.val := by
+    intro k hk
+    have hkmem : k ∈ Finset.univ.filter (fun k : Fin (n - 1) => μ k ≠ 0) :=
+      Finset.mem_filter.mpr ⟨Finset.mem_univ _, hk⟩
+    exact hmax k hkmem
+  have hgt : ∀ k : Fin (n - 1), jm.val < k.val → μ k = 0 := by
+    intro k hk
+    by_contra hkne
+    have := hle k hkne
+    omega
+  have hi_lt : jm.val + 2 < n + 1 := by have h := jm.isLt; omega
+  have hzero : (Wmul (n := n) α β μ) ⟨jm.val + 2, hi_lt⟩ = 0 :=
+    congrFun h _
+  rw [Wmul_apply_eq_sum] at hzero
+  -- Each summand vanishes except at `j = jm`, where it equals `μ jm`.
+  have hsum : (∑ j : Fin (n - 1), μ j * (Wcol (n := n) α β j ⟨jm.val + 2, hi_lt⟩))
+      = μ jm := by
+    rw [Finset.sum_eq_single jm]
+    · simp [Wcol]
+    · intro k _ hkne
+      by_cases hkj : k.val = jm.val + 2
+      · -- then `k.val > jm.val`, so `μ k = 0`
+        have hkgt : jm.val < k.val := by omega
+        rw [hgt k hkgt, zero_mul]
+      · by_cases hkj1 : k.val + 1 = jm.val + 2
+        · have hkgt : jm.val < k.val := by omega
+          rw [hgt k hkgt, zero_mul]
+        · by_cases hkj2 : k.val + 2 = jm.val + 2
+          · exfalso; apply hkne; ext; omega
+          · simp only [Wcol]
+            rw [if_neg (by omega : ¬ (jm.val + 2 = k.val)),
+              if_neg (by omega : ¬ (jm.val + 2 = k.val + 1)),
+              if_neg (by omega : ¬ (jm.val + 2 = k.val + 2))]
+            ring
+    · intro hcontra
+      exfalso
+      exact hcontra (Finset.mem_univ jm)
+  rw [hsum] at hzero
+  exact him hzero
+
+/-- A `faceCols` combination that vanishes has all coefficients zero (basis independence). -/
+private lemma eq_zero_of_faceCols_combo {n : ℕ} (F : Set (CoeffVec n))
+    (hF_dim_2 : dim (affineSpan ℝ F).direction = 2) (lam : Fin 2 → ℝ)
+    (hh : (lam 0 • faceCols F hF_dim_2 0 + lam 1 • faceCols F hF_dim_2 1) = 0) :
+    ∀ k : Fin 2, lam k = 0 := by
+  classical
+  let b := faceDirBasis F hF_dim_2
+  have hw : (lam 0 • b 0 + lam 1 • b 1 : (affineSpan ℝ F).direction) = 0 :=
+    Subtype.ext (by simpa [faceCols, b] using hh)
+  have h1 : b.repr (lam 0 • b 0 + lam 1 • b 1) = (0 : Fin 2 →₀ ℝ) := by rw [hw, map_zero]
+  have h2 : b.repr (lam 0 • b 0 + lam 1 • b 1)
+      = (lam 0 : ℝ) • Finsupp.single 0 1 + (lam 1 : ℝ) • Finsupp.single 1 1 := by
+    rw [LinearEquiv.map_add, LinearEquiv.map_smul, LinearEquiv.map_smul,
+      Module.Basis.repr_self (b := b), Module.Basis.repr_self (b := b)]
+  rw [h2] at h1
+  intro k
+  have hk : k = 0 ∨ k = 1 := by
+    have hlt := k.isLt
+    have : k.val = 0 ∨ k.val = 1 := by omega
+    rcases this with hz | ho
+    · left; exact Fin.ext hz
+    · right; exact Fin.ext ho
+  have h3 := DFunLike.congr_fun h1 k
+  simp only [Finsupp.zero_apply] at h3
+  rcases hk with rfl | rfl
+  · have e0 : ((lam 0 : ℝ) • Finsupp.single (0 : Fin 2) (1 : ℝ)
+        + (lam 1 : ℝ) • Finsupp.single (1 : Fin 2) (1 : ℝ)) (0 : Fin 2)
+        = lam 0 := by
+      simp [Finsupp.add_apply, Finsupp.smul_apply, Finsupp.single_eq_same,
+        Finsupp.single_eq_of_ne (by decide : (1 : Fin 2) ≠ 0)]
+    rw [e0] at h3
+    exact h3
+  · have e1 : ((lam 0 : ℝ) • Finsupp.single (0 : Fin 2) (1 : ℝ)
+        + (lam 1 : ℝ) • Finsupp.single (1 : Fin 2) (1 : ℝ)) (1 : Fin 2)
+        = lam 1 := by
+      simp [Finsupp.add_apply, Finsupp.smul_apply, Finsupp.single_eq_same,
+        Finsupp.single_eq_of_ne (by decide : (0 : Fin 2) ≠ 1)]
+    rw [e1] at h3
+    exact h3
+
+/-! ### Case B helpers: transverse 2×2 determinant -/
+
+/-- Determinant of the 2×2 real matrix `[Re c₀, Re c₁; Im c₀, Im c₁]`
+where `cᵢ(s) = evalAtComplex s Vᵢ`. Nonvanishing at `s*` is exactly the
+transversality `P_sc ∩ dir = ⊥` (textbook `[V,−W]` full-rank, Case B). -/
+noncomputable def detOf {n : ℕ} (V0 V1 : CoeffVec n) (s : ℂ) : ℝ :=
+  (evalAtComplex (n := n) s V0).re * (evalAtComplex (n := n) s V1).im -
+    (evalAtComplex (n := n) s V1).re * (evalAtComplex (n := n) s V0).im
+
+/-- Continuity of `detOf` in `s` (each entry is `Re/Im` of a polynomial in `s`). -/
+lemma continuous_detOf {n : ℕ} (V0 V1 : CoeffVec n) :
+    Continuous (fun s : ℂ => detOf (n := n) V0 V1 s) := by
+  unfold detOf
+  apply Continuous.sub
+  · apply Continuous.mul
+    · exact Complex.continuous_re.comp (continuous_evalAtComplex V0)
+    · exact Complex.continuous_im.comp (continuous_evalAtComplex V1)
+  · apply Continuous.mul
+    · exact Complex.continuous_re.comp (continuous_evalAtComplex V1)
+    · exact Complex.continuous_im.comp (continuous_evalAtComplex V0)
+
+/-- Sequential form: `detOf` along a convergent sequence. -/
+lemma tendsto_detOf {n : ℕ} (V0 V1 : CoeffVec n) {s_seq : ℕ → ℂ} {s_star : ℂ}
+    (hs : Tendsto s_seq atTop (𝓝 s_star)) :
+    Tendsto (fun k => detOf (n := n) V0 V1 (s_seq k)) atTop
+      (𝓝 (detOf (n := n) V0 V1 s_star)) :=
+  ((continuous_detOf (n := n) V0 V1).tendsto s_star).comp hs
+
+/-- `ℝ`-smul on `ℂ` acts coordinate-wise on `Re/Im`. -/
+private lemma real_smul_re (x : ℝ) (c : ℂ) : (x • c).re = x * c.re := by
+  rw [Algebra.smul_def]
+  simp [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]
+
+/-- `ℝ`-smul on `ℂ` acts coordinate-wise on `Re/Im`. -/
+private lemma real_smul_im (x : ℝ) (c : ℂ) : (x • c).im = x * c.im := by
+  rw [Algebra.smul_def]
+  simp [Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im]
+
+/-- Transversality implies the 2×2 determinant is nonzero.
+If `det = 0`, an explicit nonzero kernel vector `(x,y)` gives
+`x•V₀ + y•V₁ ∈ P_sc ⊓ dir = ⊥`, contradicting `faceCols` independence. -/
+private lemma detOf_ne_zero_of_transverse {n : ℕ} (F : Set (CoeffVec n))
+    (hF_dim_2 : dim (affineSpan ℝ F).direction = 2) (s_star : ℂ)
+    (hinf : P_sc n s_star ⊓ (affineSpan ℝ F).direction = ⊥) :
+    detOf (n := n) (faceCols F hF_dim_2 0) (faceCols F hF_dim_2 1) s_star ≠ 0 := by
+  classical
+  set V0 := faceCols F hF_dim_2 0 with hV0
+  set V1 := faceCols F hF_dim_2 1 with hV1
+  set c0 := evalAtComplex (n := n) s_star V0 with hc0
+  set c1 := evalAtComplex (n := n) s_star V1 with hc1
+  intro hdet
+  have hdet_eq : c0.re * c1.im - c1.re * c0.im = 0 := hdet
+  -- Build an explicit nonzero kernel vector for `M = [[Re c₀, Re c₁],[Im c₀, Im c₁]]`.
+  obtain ⟨x, y, hne, hrow1, hrow2⟩ :
+      ∃ x y : ℝ, ¬ (x = 0 ∧ y = 0) ∧
+        (c0.re * x + c1.re * y = 0) ∧ (c0.im * x + c1.im * y = 0) := by
+    by_cases hdc : c1.im = 0 ∧ c0.im = 0
+    · obtain ⟨hd0, hc0im⟩ := hdc
+      by_cases hab : c0.re = 0 ∧ c1.re = 0
+      · obtain ⟨ha0, hb0⟩ := hab
+        refine ⟨1, 0, by simp, ?_, ?_⟩
+        · simp [ha0, hb0]
+        · simp [hd0, hc0im]
+      · -- second row is zero; kill the first row with `(-b, a)`
+        refine ⟨-c1.re, c0.re, ?_, ?_, ?_⟩
+        · intro hcon
+          rcases hcon with ⟨h1, h2⟩
+          apply hab
+          constructor
+          · linarith
+          · linarith
+        · ring
+        · simp [hd0, hc0im]
+    · -- `(d, -c) ≠ 0` kills both rows via `det = 0`
+      refine ⟨c1.im, -c0.im, ?_, ?_, ?_⟩
+      · intro hcon
+        rcases hcon with ⟨h1, h2⟩
+        apply hdc
+        constructor
+        · linarith
+        · linarith
+      · linarith [hdet_eq]
+      · ring
+  -- The corresponding direction vector lies in `P_sc ⊓ dir`.
+  have heval : evalAtComplex (n := n) s_star (x • V0 + y • V1) = 0 := by
+    have hRe : (evalAtComplex (n := n) s_star (x • V0 + y • V1)).re = 0 := by
+      have hmap : (evalAtComplex (n := n) s_star (x • V0 + y • V1)).re =
+          x * (evalAtComplex (n := n) s_star V0).re +
+            y * (evalAtComplex (n := n) s_star V1).re := by
+        rw [map_add, map_smul, map_smul, Complex.add_re, real_smul_re,
+          real_smul_re]
+      rw [hmap]
+      have hc0r : (evalAtComplex (n := n) s_star V0).re = c0.re := rfl
+      have hc1r : (evalAtComplex (n := n) s_star V1).re = c1.re := rfl
+      rw [hc0r, hc1r]
+      linarith [hrow1]
+    have hIm : (evalAtComplex (n := n) s_star (x • V0 + y • V1)).im = 0 := by
+      have hmap : (evalAtComplex (n := n) s_star (x • V0 + y • V1)).im =
+          x * (evalAtComplex (n := n) s_star V0).im +
+            y * (evalAtComplex (n := n) s_star V1).im := by
+        rw [map_add, map_smul, map_smul, Complex.add_im, real_smul_im,
+          real_smul_im]
+      rw [hmap]
+      have hc0i : (evalAtComplex (n := n) s_star V0).im = c0.im := rfl
+      have hc1i : (evalAtComplex (n := n) s_star V1).im = c1.im := rfl
+      rw [hc0i, hc1i]
+      linarith [hrow2]
+    exact Complex.ext hRe hIm
+  have hmemU : x • V0 + y • V1 ∈ P_sc n s_star := by
+    unfold P_sc
+    rw [LinearMap.mem_ker]
+    exact heval
+  have hmemL : x • V0 + y • V1 ∈ (affineSpan ℝ F).direction := by
+    apply _root_.Submodule.add_mem
+    · apply _root_.Submodule.smul_mem
+      exact faceCols_mem_dir F hF_dim_2 0
+    · apply _root_.Submodule.smul_mem
+      exact faceCols_mem_dir F hF_dim_2 1
+  have hmemInf : x • V0 + y • V1 ∈ P_sc n s_star ⊓ (affineSpan ℝ F).direction :=
+    ⟨hmemU, hmemL⟩
+  rw [hinf] at hmemInf
+  have hzero : x • V0 + y • V1 = 0 := by
+    simpa using hmemInf
+  have hlam : ∀ k : Fin 2, (fun i => if i = 0 then x else y) k = 0 := by
+    have h' : ((fun i => if i = 0 then x else y) 0 • V0 +
+        (fun i => if i = 0 then x else y) 1 • V1) = 0 := by
+      simpa using hzero
+    exact eq_zero_of_faceCols_combo F hF_dim_2 _ h'
+  have hx0 : x = 0 := hlam 0
+  have hy0 : y = 0 := by
+    have := hlam 1
+    simpa using this
+  exact hne ⟨hx0, hy0⟩
+
 /-- Complex case of Lemma 6.2:
     If `s*` is a non-real point on the frontier of `RootSpaceSet F` (where `F` is an
     exposed face of dimension 2), then `s*` is a root of a coefficient vector
@@ -607,7 +1192,7 @@ theorem lemma62_complex_case {n : ℕ} (hn : n ≥ 1) (P : Polytope n)
         (h_inter_dim_of_meet F s_star δ_star hδ_star_Psc hδ_star_in_F hA)
     have hk : evalAtComplex (n := n) s_star δ_hat = 0 := by
       have h := hδ_hat_Psc
-      simp only [PscSet, P_sc, LinearMap.mem_ker] at h
+      simp only [PscSet, P_sc] at h
       exact h
     have hroot : ((polyOfVec δ_hat).map (algebraMap ℝ ℂ)).IsRoot s_star := by
       rw [Polynomial.IsRoot]
@@ -616,14 +1201,247 @@ theorem lemma62_complex_case {n : ℕ} (hn : n ≥ 1) (P : Polytope n)
       rw [h_eval, hk]
     exact rootspace_mem_of_isRoot s_star δ_hat hroot (relativeBoundary F)
       ⟨hδ_hat_F, hδ_hat_notrelint⟩
-  · -- Case B
+  · -- Case B: transverse (`dim = 0`), textbook `[V,−W]` full-rank.
+    -- Then `aff(F) ∩ P_sc = {δ*}`, and the approximating `sₙ → s*`
+    -- give `δₙ ∈ aff(F) ∖ F` with `δₙ → δ*`, so `δ* ∈ ∂F`.
+    have hdim0 : dim (P_sc n s_star ⊓ (affineSpan ℝ F).direction) = 0 := by
+      omega
+    have hinf : P_sc n s_star ⊓ (affineSpan ℝ F).direction = ⊥ :=
+      (Submodule.finrank_eq_zero (R := ℝ) (M := CoeffVec n)).mp hdim0
     have hc : s_star ∈ closure (RootSpaceSet F)ᶜ := by
       rw [frontier_eq_closure_inter_closure] at hs_star_front
       exact hs_star_front.2
     obtain ⟨s_seq, hs_out, _hs_ne, hs_tendsto⟩ :=
       exists_seq_notin_RootSpaceSet_tendsto
         (rootspace_mem_of_isRoot s_star δ_star hδ_star_root F hδ_star_in_F) hc
-    sorry
+    -- Face basis and determinant setup.
+    set V0 := faceCols F hF_dim_2 0 with hV0def
+    set V1 := faceCols F hF_dim_2 1 with hV1def
+    have hV0dir : V0 ∈ (affineSpan ℝ F).direction := faceCols_mem_dir F hF_dim_2 0
+    have hV1dir : V1 ∈ (affineSpan ℝ F).direction := faceCols_mem_dir F hF_dim_2 1
+    have hdet_ne : detOf (n := n) V0 V1 s_star ≠ 0 :=
+      detOf_ne_zero_of_transverse F hF_dim_2 s_star hinf
+    have hdet_tendsto :
+        Tendsto (fun k => detOf (n := n) V0 V1 (s_seq k)) atTop
+          (𝓝 (detOf (n := n) V0 V1 s_star)) :=
+      tendsto_detOf V0 V1 hs_tendsto
+    have hev_det : ∀ᶠ k in atTop, detOf (n := n) V0 V1 (s_seq k) ≠ 0 :=
+      hdet_tendsto.eventually_ne hdet_ne
+    -- Evaluation data and its limits.
+    have heval_star : evalAtComplex (n := n) s_star δ_star = 0 := by
+      have h := hδ_star_Psc
+      simp only [PscSet, P_sc] at h
+      exact h
+    have hrhs_tendsto :
+        Tendsto (fun k => evalAtComplex (n := n) (s_seq k) δ_star) atTop (𝓝 0) := by
+      have h := tendsto_evalAtComplex (n := n) hs_tendsto δ_star
+      rwa [heval_star] at h
+    have hc0_tendsto :
+        Tendsto (fun k => evalAtComplex (n := n) (s_seq k) V0) atTop
+          (𝓝 (evalAtComplex (n := n) s_star V0)) :=
+      tendsto_evalAtComplex hs_tendsto V0
+    have hc1_tendsto :
+        Tendsto (fun k => evalAtComplex (n := n) (s_seq k) V1) atTop
+          (𝓝 (evalAtComplex (n := n) s_star V1)) :=
+      tendsto_evalAtComplex hs_tendsto V1
+    have ha_tendsto : Tendsto (fun k => (evalAtComplex (n := n) (s_seq k) V0).re)
+        atTop (𝓝 (evalAtComplex (n := n) s_star V0).re) :=
+      (Complex.continuous_re.tendsto _).comp hc0_tendsto
+    have hb_tendsto : Tendsto (fun k => (evalAtComplex (n := n) (s_seq k) V1).re)
+        atTop (𝓝 (evalAtComplex (n := n) s_star V1).re) :=
+      (Complex.continuous_re.tendsto _).comp hc1_tendsto
+    have hc_tendsto : Tendsto (fun k => (evalAtComplex (n := n) (s_seq k) V0).im)
+        atTop (𝓝 (evalAtComplex (n := n) s_star V0).im) :=
+      (Complex.continuous_im.tendsto _).comp hc0_tendsto
+    have hd_tendsto : Tendsto (fun k => (evalAtComplex (n := n) (s_seq k) V1).im)
+        atTop (𝓝 (evalAtComplex (n := n) s_star V1).im) :=
+      (Complex.continuous_im.tendsto _).comp hc1_tendsto
+    have hb0_tendsto : Tendsto (fun k => -(evalAtComplex (n := n) (s_seq k) δ_star).re)
+        atTop (𝓝 0) := by
+      have h : Tendsto (fun k => (evalAtComplex (n := n) (s_seq k) δ_star).re)
+          atTop (𝓝 (0 : ℝ)) := by
+        have h0 : (evalAtComplex (n := n) s_star δ_star).re = 0 := by
+          rw [heval_star]; rfl
+        have h1 : Tendsto (fun k => (evalAtComplex (n := n) (s_seq k) δ_star).re)
+            atTop (𝓝 (evalAtComplex (n := n) s_star δ_star).re) :=
+          (Complex.continuous_re.tendsto _).comp
+            (tendsto_evalAtComplex hs_tendsto δ_star)
+        rwa [h0] at h1
+      simpa using h.neg
+    have hb1_tendsto : Tendsto (fun k => -(evalAtComplex (n := n) (s_seq k) δ_star).im)
+        atTop (𝓝 0) := by
+      have h : Tendsto (fun k => (evalAtComplex (n := n) (s_seq k) δ_star).im)
+          atTop (𝓝 (0 : ℝ)) := by
+        have h0 : (evalAtComplex (n := n) s_star δ_star).im = 0 := by
+          rw [heval_star]; rfl
+        have h1 : Tendsto (fun k => (evalAtComplex (n := n) (s_seq k) δ_star).im)
+            atTop (𝓝 (evalAtComplex (n := n) s_star δ_star).im) :=
+          (Complex.continuous_im.tendsto _).comp
+            (tendsto_evalAtComplex hs_tendsto δ_star)
+        rwa [h0] at h1
+      simpa using h.neg
+    -- Cramer's rule solution `λₖ` and points `δₖ ∈ aff(F)`.
+    set detk : ℕ → ℝ := fun k => detOf (n := n) V0 V1 (s_seq k) with hdetk
+    set ak : ℕ → ℝ := fun k => (evalAtComplex (n := n) (s_seq k) V0).re with hak
+    set bk : ℕ → ℝ := fun k => (evalAtComplex (n := n) (s_seq k) V1).re with hbk
+    set ck : ℕ → ℝ := fun k => (evalAtComplex (n := n) (s_seq k) V0).im with hck
+    set dk : ℕ → ℝ := fun k => (evalAtComplex (n := n) (s_seq k) V1).im with hdk
+    set b0k : ℕ → ℝ := fun k => -(evalAtComplex (n := n) (s_seq k) δ_star).re with hb0k
+    set b1k : ℕ → ℝ := fun k => -(evalAtComplex (n := n) (s_seq k) δ_star).im with hb1k
+    set lam0 : ℕ → ℝ := fun k => (b0k k * dk k - bk k * b1k k) / detk k with hlam0
+    set lam1 : ℕ → ℝ := fun k => (ak k * b1k k - b0k k * ck k) / detk k with hlam1
+    set deltak : ℕ → CoeffVec n :=
+      fun k => δ_star + (lam0 k • V0 + lam1 k • V1) with hdeltak
+    have hdet_star : detk = fun k => detOf (n := n) V0 V1 (s_seq k) := rfl
+    have hlam0_tendsto : Tendsto lam0 atTop (𝓝 0) := by
+      have hnum : Tendsto (fun k => b0k k * dk k - bk k * b1k k) atTop (𝓝 0) := by
+        have h1 : Tendsto (fun k => b0k k * dk k) atTop (𝓝 (0 * (evalAtComplex (n := n) s_star V1).im)) :=
+          hb0_tendsto.mul hd_tendsto
+        have h2 : Tendsto (fun k => bk k * b1k k) atTop (𝓝 ((evalAtComplex (n := n) s_star V1).re * 0)) :=
+          hb_tendsto.mul hb1_tendsto
+        simpa using h1.sub h2
+      have hden : Tendsto detk atTop (𝓝 (detOf (n := n) V0 V1 s_star)) := hdet_tendsto
+      have := hnum.div hden hdet_ne
+      simpa using this
+    have hlam1_tendsto : Tendsto lam1 atTop (𝓝 0) := by
+      have hnum : Tendsto (fun k => ak k * b1k k - b0k k * ck k) atTop (𝓝 0) := by
+        have h1 : Tendsto (fun k => ak k * b1k k) atTop (𝓝 ((evalAtComplex (n := n) s_star V0).re * 0)) :=
+          ha_tendsto.mul hb1_tendsto
+        have h2 : Tendsto (fun k => b0k k * ck k) atTop (𝓝 (0 * (evalAtComplex (n := n) s_star V0).im)) :=
+          hb0_tendsto.mul hc_tendsto
+        simpa using h1.sub h2
+      have hden : Tendsto detk atTop (𝓝 (detOf (n := n) V0 V1 s_star)) := hdet_tendsto
+      have := hnum.div hden hdet_ne
+      simpa using this
+    have hδ_aff : δ_star ∈ affineSpan ℝ F := subset_affineSpan ℝ F hδ_star_in_F
+    have hdeltak_aff : ∀ᶠ k in atTop, deltak k ∈ affineSpan ℝ F := by
+      apply Eventually.of_forall
+      intro k
+      have hcombo : lam0 k • V0 + lam1 k • V1 ∈ (affineSpan ℝ F).direction := by
+        apply _root_.Submodule.add_mem
+        · apply _root_.Submodule.smul_mem _ _ hV0dir
+        · apply _root_.Submodule.smul_mem _ _ hV1dir
+      have hmem := AffineSubspace.vadd_mem_of_mem_direction hcombo hδ_aff
+      have h_eq : ((lam0 k • V0 + lam1 k • V1) +ᵥ δ_star : CoeffVec n) =
+          deltak k := by
+        simp only [hdeltak, vadd_eq_add]
+        rw [add_comm]
+      rwa [h_eq] at hmem
+    -- `δₖ` carries root `sₖ` whenever `detₖ ≠ 0` (Cramer solves `Mₖλ = b`).
+    have hev_root : ∀ᶠ k in atTop,
+        evalAtComplex (n := n) (s_seq k) (deltak k) = 0 := by
+      filter_upwards [hev_det] with k hk
+      have hkdet : detk k ≠ 0 := by simpa [hdetk] using hk
+      have hdet_eq : detk k = ak k * dk k - bk k * ck k := by
+        simp [hdetk, hak, hbk, hck, hdk, detOf]
+      have hM0 : ak k * lam0 k + bk k * lam1 k = b0k k := by
+        simp only [hlam0, hlam1]
+        field_simp
+        rw [hdet_eq]
+        ring
+      have hM1 : ck k * lam0 k + dk k * lam1 k = b1k k := by
+        simp only [hlam0, hlam1]
+        field_simp
+        rw [hdet_eq]
+        ring
+      have heval_eq : evalAtComplex (n := n) (s_seq k) (deltak k) =
+          evalAtComplex (n := n) (s_seq k) δ_star +
+            (lam0 k • evalAtComplex (n := n) (s_seq k) V0 +
+              lam1 k • evalAtComplex (n := n) (s_seq k) V1) := by
+        simp [hdeltak, map_add, map_smul]
+      have hRe : (evalAtComplex (n := n) (s_seq k) (deltak k)).re = 0 := by
+        rw [heval_eq, Complex.add_re, Complex.add_re, real_smul_re, real_smul_re]
+        have hrhs : (evalAtComplex (n := n) (s_seq k) δ_star).re = -b0k k := by
+          simp [hb0k]
+        have ha0 : (evalAtComplex (n := n) (s_seq k) V0).re = ak k := rfl
+        have hb0 : (evalAtComplex (n := n) (s_seq k) V1).re = bk k := rfl
+        rw [hrhs, ha0, hb0]
+        linarith [hM0]
+      have hIm : (evalAtComplex (n := n) (s_seq k) (deltak k)).im = 0 := by
+        rw [heval_eq, Complex.add_im, Complex.add_im, real_smul_im, real_smul_im]
+        have hrhs : (evalAtComplex (n := n) (s_seq k) δ_star).im = -b1k k := by
+          simp [hb1k]
+        have hc0 : (evalAtComplex (n := n) (s_seq k) V0).im = ck k := rfl
+        have hd0 : (evalAtComplex (n := n) (s_seq k) V1).im = dk k := rfl
+        rw [hrhs, hc0, hd0]
+        linarith [hM1]
+      exact Complex.ext hRe hIm
+    have hev_notF : ∀ᶠ k in atTop, deltak k ∉ F := by
+      filter_upwards [hev_root, hdeltak_aff] with k hk haff
+      intro hmem
+      have hroot : ((polyOfVec (deltak k)).map (algebraMap ℝ ℂ)).IsRoot (s_seq k) := by
+        rw [Polynomial.IsRoot]
+        have h_eval : ((polyOfVec (deltak k)).map (algebraMap ℝ ℂ)).eval (s_seq k)
+            = evalAtComplex (n := n) (s_seq k) (deltak k) := rfl
+        rw [h_eval, hk]
+      exact hs_out k (rootspace_mem_of_isRoot _ _ hroot F hmem)
+    have hdeltak_tendsto : Tendsto deltak atTop (𝓝 δ_star) := by
+      have hzero_tendsto : Tendsto (fun k => lam0 k • V0 + lam1 k • V1) atTop (𝓝 0) := by
+        have h1 : Tendsto (fun k => lam0 k • V0) atTop (𝓝 ((0 : ℝ) • V0)) :=
+          hlam0_tendsto.smul tendsto_const_nhds
+        have h2 : Tendsto (fun k => lam1 k • V1) atTop (𝓝 ((0 : ℝ) • V1)) :=
+          hlam1_tendsto.smul tendsto_const_nhds
+        simpa using h1.add h2
+      have hadd : Tendsto (fun k => δ_star + (lam0 k • V0 + lam1 k • V1)) atTop
+          (𝓝 (δ_star + 0)) :=
+        tendsto_const_nhds.add hzero_tendsto
+      simpa [hdeltak] using hadd
+    -- Hence `δ* ∉ ri(F)`; otherwise `δₖ ∈ F` eventually, contradiction.
+    have hdeltak_aff_all : ∀ k, deltak k ∈ affineSpan ℝ F := by
+      intro k
+      have hcombo : lam0 k • V0 + lam1 k • V1 ∈ (affineSpan ℝ F).direction := by
+        apply _root_.Submodule.add_mem
+        · apply _root_.Submodule.smul_mem _ _ hV0dir
+        · apply _root_.Submodule.smul_mem _ _ hV1dir
+      have hmem := AffineSubspace.vadd_mem_of_mem_direction hcombo hδ_aff
+      have h_eq : ((lam0 k • V0 + lam1 k • V1) +ᵥ δ_star : CoeffVec n) =
+          deltak k := by
+        simp only [hdeltak, vadd_eq_add]
+        rw [add_comm]
+      rwa [h_eq] at hmem
+    have hnot_ri : δ_star ∉ intrinsicInterior ℝ F := by
+      intro hri
+      have hpre : (⟨δ_star, hδ_aff⟩ : affineSpan ℝ F) ∈
+          interior ((Subtype.val : affineSpan ℝ F → CoeffVec n) ⁻¹' F) := by
+        have h_eq : intrinsicInterior ℝ F =
+            (Subtype.val : affineSpan ℝ F → CoeffVec n) ''
+              interior ((Subtype.val : affineSpan ℝ F → CoeffVec n) ⁻¹' F) := rfl
+        rw [h_eq] at hri
+        rcases hri with ⟨y, hy, hy_val⟩
+        have hy_eq : y = ⟨δ_star, hδ_aff⟩ := Subtype.ext hy_val
+        rwa [hy_eq] at hy
+      have hopen : IsOpen (interior ((Subtype.val : affineSpan ℝ F → CoeffVec n) ⁻¹' F)) :=
+        isOpen_interior
+      obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.mp hopen _ hpre
+      have hsub_tendsto : Tendsto
+          (fun k : ℕ => (⟨deltak k, hdeltak_aff_all k⟩ : affineSpan ℝ F))
+          atTop (𝓝 ⟨δ_star, hδ_aff⟩) := by
+        rw [Metric.tendsto_atTop]
+        intro ε' hε'
+        obtain ⟨N, hN⟩ := Metric.tendsto_atTop.mp hdeltak_tendsto ε' hε'
+        exact ⟨N, fun k hk => hN k hk⟩
+      obtain ⟨N0, hN0⟩ := Metric.tendsto_atTop.mp hsub_tendsto ε hε
+      have hev_inF : ∀ᶠ k in atTop, deltak k ∈ F := by
+        rw [eventually_atTop]
+        refine ⟨N0, fun k hk => ?_⟩
+        have hk_dist := hN0 k hk
+        have hk_ball : (⟨deltak k, hdeltak_aff_all k⟩ : affineSpan ℝ F) ∈
+            Metric.ball (⟨δ_star, hδ_aff⟩ : affineSpan ℝ F) ε :=
+          Metric.mem_ball.mpr hk_dist
+        have hk_in : (⟨deltak k, hdeltak_aff_all k⟩ : affineSpan ℝ F) ∈
+            interior ((Subtype.val : affineSpan ℝ F → CoeffVec n) ⁻¹' F) :=
+          hball hk_ball
+        have hmem_pre : (⟨deltak k, hdeltak_aff_all k⟩ : affineSpan ℝ F) ∈
+            (Subtype.val : affineSpan ℝ F → CoeffVec n) ⁻¹' F :=
+          interior_subset hk_in
+        exact hmem_pre
+      obtain ⟨N1, hN1⟩ := eventually_atTop.mp hev_inF
+      obtain ⟨N2, hN2⟩ := eventually_atTop.mp hev_notF
+      have h1N : deltak (max N1 N2) ∈ F := hN1 _ (le_max_left _ _)
+      have h2N : deltak (max N1 N2) ∉ F := hN2 _ (le_max_right _ _)
+      exact h2N h1N
+    have hrel : δ_star ∈ relativeBoundary F := ⟨hδ_star_in_F, hnot_ri⟩
+    exact rootspace_mem_of_isRoot s_star δ_star hδ_star_root (relativeBoundary F) hrel
 
 /--
 **Lemma 6.2:** for an exposed face `F` of a polytope `P` with

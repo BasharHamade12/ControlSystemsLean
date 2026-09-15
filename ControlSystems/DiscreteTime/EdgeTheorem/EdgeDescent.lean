@@ -318,7 +318,7 @@ private lemma exists_boundary_point_in_face_rootspace {n : ℕ} (P : Polytope n)
 
 /-- Complex analogue of `exists_boundary_point_in_face_rootspace`:
   finds a point on the relative boundary of `F` that also lies in `P_sc n s`. -/
-private lemma exists_boundary_point_in_face_rootspace_complex {n : ℕ} (P : Polytope n) (s : ℂ)
+lemma exists_boundary_point_in_face_rootspace_complex {n : ℕ} (P : Polytope n) (s : ℂ)
     (δ_F : CoeffVec n) (F : Set (CoeffVec n)) (hF_exposed : IsExposedFace P F)
     (hδ_F_in_F : δ_F ∈ F) (hδ_F_root : δ_F ∈ PscSet n s)
     (h_inter_dim : Module.finrank ℝ (meetDir n (P_sc n s) (affineSpan ℝ F)) ≥ 1) :
