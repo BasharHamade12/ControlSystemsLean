@@ -23,6 +23,12 @@ Marp/presentation.odp
 Marp/presentation.pptx
 Marp/presentation.pdf
 Marp/presentation.html
+# Marp build outputs and temporary files (cleanup)
+Marp/*.pdf
+Marp/*.pptx
+Marp/*.odp
+Marp/*.html
+Marp/**/*.png
 # Editor / tool leftovers.
 *.tmp
 .~lock.*#
