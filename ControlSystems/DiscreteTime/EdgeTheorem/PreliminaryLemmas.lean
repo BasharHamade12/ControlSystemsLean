@@ -3,7 +3,6 @@ module
 public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 public import ControlSystems.DiscreteTime.EdgeTheorem.EdgeTheoremDefs
 public import ControlSystems.DiscreteTime.EdgeTheorem.BasicLemmas
-public import ControlSystems.DiscreteTime.EdgeTheorem.SubfaceConstruction
 
 
 @[expose] public section
@@ -331,97 +330,59 @@ private lemma line_in_intersection {n : ℕ} (U : Submodule ℝ (CoeffVec n))
       rw [vadd_eq_add, add_comm]
     rw [h_eq]; exact h_vadd
 
-/-- Rewrite a convex combination of `δ` and `δ + t_out • v` as `δ + (c * t_out) • v`. -/
-private lemma segment_point_rewrite2 (δ v : CoeffVec n) (c t_out : ℝ) :
-    (1 - c) • δ + c • (δ + t_out • v) = δ + (c * t_out) • v := by
-  calc (1 - c) • δ + c • (δ + t_out • v)
-    _ = (1 - c) • δ + (c • δ + c • (t_out • v)) := by rw [smul_add]
-    _ = ((1 - c) • δ + c • δ) + c • (t_out • v) := by rw [←add_assoc]
-    _ = ((1 - c) + c) • δ + c • (t_out • v) := by rw [←add_smul]
-    _ = 1 • δ + (c * t_out) • v := by
-      have h_one : (1 - c) + c = 1 := by ring
-      simp only [h_one, smul_smul, one_smul]
-    _ = δ + (c * t_out) • v := by rw [one_smul]
+/-- Generic boundary point: for any submodule U, a point in P.Ω cap U
+with dim(meetDir) >= 1 yields a boundary point in U cap frontier P.Ω.
+This is the single copy behind exists_boundary_point_in_Psr/Psc. -/
+lemma exists_boundary_point_in_submodule {n : ℕ} (P : Polytope n)
+    (U : Submodule ℝ (CoeffVec n)) (δ : CoeffVec n)
+    (hδ_in_Ω : δ ∈ P.Ω) (hδ_in_U : δ ∈ (U : Set (CoeffVec n)))
+    (affΩ : AffineSubspace ℝ (CoeffVec n)) (hδ_aff : δ ∈ affΩ)
+    (hA_dim : dim (meetDir n U affΩ) ≥ 1) :
+    ∃ δ_bound, δ_bound ∈ (U : Set (CoeffVec n)) ∩ frontier P.Ω := by
+  have h_dim_pos : 0 < dim (meetDir n U affΩ) := by omega
+  haveI : Nontrivial ↥(U ⊓ affΩ.direction) :=
+    intersection_nontrivial U affΩ δ hδ_in_U hδ_aff h_dim_pos
+  obtain ⟨v_sub, hv_sub_nonzero⟩ := exists_ne (0 : ↑(U ⊓ affΩ.direction))
+  let v : CoeffVec n := v_sub.val
+  have h_line_in_intersection : ∀ (t : ℝ), δ + t • v ∈ (U : Set (CoeffVec n)) ∩
+      (affΩ : Set (CoeffVec n)) :=
+    line_in_intersection U affΩ δ hδ_in_U hδ_aff v_sub
+  have hv_nonzero : v ≠ 0 := by
+    intro h; apply hv_sub_nonzero; exact Submodule.coe_eq_zero.mp h
+  have h_escapes : ∃ (t : ℝ), 0 < t ∧ δ + t • v ∉ P.Ω :=
+    ray_escapes_of_bounded P.isBounded δ v hδ_in_Ω hv_nonzero
+  obtain ⟨t_out, ht_out_pos, ht_out⟩ := h_escapes
+  by_cases hδ_front : δ ∈ frontier P.Ω
+  · exact ⟨δ, hδ_in_U, hδ_front⟩
+  · obtain ⟨δ_bound, h_seg, h_front⟩ :=
+      segment_boundary_intersection P δ hδ_in_Ω hδ_front v hv_nonzero t_out ht_out
+    rw [segment_eq_image] at h_seg
+    obtain ⟨c, hc_in_Icc, hc_eq⟩ := h_seg
+    have h_rewrite : (1 - c) • δ + c • (δ + t_out • v) = δ + (c * t_out) • v :=
+      segment_point_rewrite δ v c t_out
+    have h_mem := h_line_in_intersection (c * t_out)
+    rcases h_mem with ⟨hmem_U, hmem_aff⟩
+    have h_eq : δ_bound = δ + (c * t_out) • v := by
+      calc δ_bound = (1 - c) • δ + c • (δ + t_out • v) := by rw [←hc_eq]
+        _ = δ + (c * t_out) • v := by rw [h_rewrite]
+    exact ⟨δ_bound, h_eq ▸ hmem_U, h_front⟩
 
-/-- Given a point `δ` in `P.Ω ∩ P_sr n r` and an affine subspace `affΩ` containing `δ` whose intersection with `P_sr` has direction dimension at least 1, there exists a boundary point of `P.Ω` also in `P_sr n r`. -/
+/-- Real case (U = P_sr n r): thin wrapper over the generic lemma. -/
 lemma exists_boundary_point_in_Psr {n : ℕ} (P : Polytope n) (r : ℝ) (δ : CoeffVec n)
     (hδ_in_Ω : δ ∈ P.Ω) (hδ_in_Psr : δ ∈ PsrSet n r)
     (affΩ : AffineSubspace ℝ (CoeffVec n)) (hδ_aff : δ ∈ affΩ)
     (hA_dim : dim (meetDir n (P_sr n r) affΩ) ≥ 1) :
-    ∃ δ_bound, δ_bound ∈ PsrSet n r ∩ frontier P.Ω := by
-  have h_dim_pos : 0 < dim (meetDir n (P_sr n r) affΩ) := by
-    omega
-  let U : Submodule ℝ (CoeffVec n) := P_sr n r
-  haveI : Nontrivial ↥(U ⊓ affΩ.direction) :=
-    intersection_nontrivial U affΩ δ hδ_in_Psr hδ_aff h_dim_pos
-  obtain ⟨v_sub, hv_sub_nonzero⟩ := exists_ne (0 : ↑(U ⊓ affΩ.direction))
-  let v : CoeffVec n := v_sub.val
-  have h_line_in_intersection : ∀ (t : ℝ), δ + t • v ∈ (P_sr n r : Set (CoeffVec n)) ∩
-      (affΩ : Set (CoeffVec n)) :=
-    line_in_intersection U affΩ δ hδ_in_Psr hδ_aff v_sub
-  have hv_nonzero : v ≠ 0 := by
-    intro h; apply hv_sub_nonzero; exact Submodule.coe_eq_zero.mp h
-  have h_escapes : ∃ (t : ℝ), 0 < t ∧ δ + t • v ∉ P.Ω :=
-    ray_escapes_polytope P δ v hδ_in_Ω hv_nonzero
-  obtain ⟨t_out, ht_out_pos, ht_out⟩ := h_escapes
-  by_cases hδ_front : δ ∈ frontier P.Ω
-  · use δ
-    exact ⟨hδ_in_Psr, hδ_front⟩
-  · obtain ⟨δ_bound, h_seg, h_front⟩ :=
-      segment_boundary_intersection P δ hδ_in_Ω hδ_front v hv_nonzero t_out ht_out
-    rw [segment_eq_image] at h_seg
-    obtain ⟨c, hc_in_Icc, hc_eq⟩ := h_seg
-    have h_rewrite : (1 - c) • δ + c • (δ + t_out • v) = δ + (c * t_out) • v :=
-      segment_point_rewrite δ v c t_out
-    have h_mem := h_line_in_intersection (c * t_out)
-    rcases h_mem with ⟨hmem_Psr, hmem_aff⟩
-    have : δ_bound ∈ (P_sr n r : Set (CoeffVec n)) := by
-      have h_eq : δ_bound = δ + (c * t_out) • v := by
-        calc δ_bound = (1 - c) • δ + c • (δ + t_out • v) := by rw [←hc_eq]
-          _ = δ + (c * t_out) • v := by rw [h_rewrite]
-      rw [h_eq]
-      exact hmem_Psr
-    exact ⟨δ_bound, this, h_front⟩
+    ∃ δ_bound, δ_bound ∈ PsrSet n r ∩ frontier P.Ω :=
+  exists_boundary_point_in_submodule P (P_sr n r) δ hδ_in_Ω hδ_in_Psr affΩ hδ_aff hA_dim
 
-/-- Given a point `δ` in `P.Ω ∩ P_sc n s` and an affine subspace `affΩ` containing `δ` whose intersection with `P_sc` has direction dimension at least 1, there exists a boundary point of `P.Ω` also in `P_sc n s`. -/
+/-- Complex case (U = P_sc n s): thin wrapper over the generic lemma. -/
 lemma exists_boundary_point_in_Psc {n : ℕ} (P : Polytope n) (s : ℂ) (δ : CoeffVec n)
     (hδ_in_Ω : δ ∈ P.Ω) (hδ_in_Psc : δ ∈ PscSet n s)
     (affΩ : AffineSubspace ℝ (CoeffVec n)) (hδ_aff : δ ∈ affΩ)
     (hA_dim : dim (meetDir n (P_sc n s) affΩ) ≥ 1) :
-    ∃ δ_bound, δ_bound ∈ PscSet n s ∩ frontier P.Ω := by
-  have h_dim_pos : 0 < dim (meetDir n (P_sc n s) affΩ) := by
-    omega
-  let U : Submodule ℝ (CoeffVec n) := P_sc n s
-  haveI : Nontrivial ↥(U ⊓ affΩ.direction) :=
-    intersection_nontrivial U affΩ δ hδ_in_Psc hδ_aff h_dim_pos
-  obtain ⟨v_sub, hv_sub_nonzero⟩ := exists_ne (0 : ↑(U ⊓ affΩ.direction))
-  let v : CoeffVec n := v_sub.val
-  have h_line_in_intersection : ∀ (t : ℝ), δ + t • v ∈ (P_sc n s : Set (CoeffVec n)) ∩
-      (affΩ : Set (CoeffVec n)) :=
-    line_in_intersection U affΩ δ hδ_in_Psc hδ_aff v_sub
-  have hv_nonzero : v ≠ 0 := by
-    intro h; apply hv_sub_nonzero; exact Submodule.coe_eq_zero.mp h
-  have h_escapes : ∃ (t : ℝ), 0 < t ∧ δ + t • v ∉ P.Ω :=
-    ray_escapes_polytope P δ v hδ_in_Ω hv_nonzero
-  obtain ⟨t_out, ht_out_pos, ht_out⟩ := h_escapes
-  by_cases hδ_front : δ ∈ frontier P.Ω
-  · use δ
-    exact ⟨hδ_in_Psc, hδ_front⟩
-  · obtain ⟨δ_bound, h_seg, h_front⟩ :=
-      segment_boundary_intersection P δ hδ_in_Ω hδ_front v hv_nonzero t_out ht_out
-    rw [segment_eq_image] at h_seg
-    obtain ⟨c, hc_in_Icc, hc_eq⟩ := h_seg
-    have h_rewrite : (1 - c) • δ + c • (δ + t_out • v) = δ + (c * t_out) • v :=
-      segment_point_rewrite δ v c t_out
-    have h_mem := h_line_in_intersection (c * t_out)
-    rcases h_mem with ⟨hmem_Psc, hmem_aff⟩
-    have : δ_bound ∈ (P_sc n s : Set (CoeffVec n)) := by
-      have h_eq : δ_bound = δ + (c * t_out) • v := by
-        calc δ_bound = (1 - c) • δ + c • (δ + t_out • v) := by rw [←hc_eq]
-          _ = δ + (c * t_out) • v := by rw [h_rewrite]
-      rw [h_eq]
-      exact hmem_Psc
-    exact ⟨δ_bound, this, h_front⟩
+    ∃ δ_bound, δ_bound ∈ PscSet n s ∩ frontier P.Ω :=
+  exists_boundary_point_in_submodule P (P_sc n s) δ hδ_in_Ω hδ_in_Psc affΩ hδ_aff hA_dim
+
 
 /-- If `U` has dimension `n-1` and `W` has dimension at least 3, then `U ⊓ W` has dimension at least 1. -/
 private lemma finrank_inf_ge_one' {n : ℕ} (U W : Submodule ℝ (CoeffVec n))

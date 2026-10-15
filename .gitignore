@@ -1,18 +1,33 @@
-/.lake
-ControlSystems/DiscreteTime/*.md
-ControlSystems/DiscreteTime/*.txt
-chapter6.md
-plan_complex_case.md 
+# --- Push policy: only the Lean package and the Marp deck are tracked. ---
+# Ignore everything at the repo root except the explicitly allowlisted
+# entries below (notes, plans, reports, venvs, build dirs, ... stay local).
+/*
+# The Lean sources (entire directory, including new files).
+!/ControlSystems/
+# The Marp slide deck with its figures and tooling.
+!/Marp/
+# Lean package build files (lake project root).
+!/lakefile.toml
+!/lean-toolchain
+!/ControlSystems.lean
+!/Main.lean
+# Repo basics (already tracked).
+!/.github/
+!/README.md
+!/lake-manifest.json
+!/.gitignore
+!/presentation.pdf
 
-# Ignore all .md files in the project
-*.md
-!README.md
-
-# Ignore all .txt files in the project
-*.txt
-
-# LaTeX directory
-latex/
-
-# Images
-image.png
+# --- Junk excluded even inside the allowlisted directories. ---
+# Generated slide renders (rebuild with Marp CLI / marp2odp.py).
+Marp
+Marp/presentation.odp
+Marp/presentation.pptx
+Marp/presentation.pdf
+Marp/presentation.html
+# Editor / tool leftovers.
+*.tmp
+.~lock.*#
+__pycache__/
+*.aux
+*.log

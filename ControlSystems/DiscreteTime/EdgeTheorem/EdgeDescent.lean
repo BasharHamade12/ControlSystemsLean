@@ -5,6 +5,7 @@ public import ControlSystems.DiscreteTime.EdgeTheorem.BasicLemmas
 public import ControlSystems.DiscreteTime.EdgeTheorem.PreliminaryLemmas
 public import ControlSystems.DiscreteTime.EdgeTheorem.ExposedFaceLemmas
 public import ControlSystems.DiscreteTime.EdgeTheorem.SubfaceConstruction
+public import ControlSystems.DiscreteTime.EdgeTheorem.VertexEdge
 public import Mathlib.Algebra.Module.SpanRank
 
 
@@ -13,6 +14,16 @@ public import Mathlib.Algebra.Module.SpanRank
 open Polynomial Affine FiniteDimensional LinearMap Set
 
 namespace CoeffBox
+
+/-! # Descent to edges/faces (Lemma 6.1 recursion)
+
+Textbook: iterate `exists_proper_subface_of_boundary_point`, terminating by
+`dim aff(·)`. Real `U = P_sr`: `descend_to_exposed_edge` ends at `dim = 1`
+(an `IsExposedEdge`) or `dim = 0` (singleton face → `exists_exposed_edge_of_singleton`
+in `VertexEdge.lean`). Complex `U = P_sc`: `descend_to_exposed_face` ends below `dim = 3`.
+`exists_boundary_point_in_face_rootspace[_complex]` lift face roots to the
+relative boundary (`δ ∉ intrinsicInterior`) at each step.
+-/
 
 /-- An exposed face of a polytope whose affine span has dimension 1 is an exposed edge. -/
 lemma isExposedEdge_of_dim_1 {n : ℕ} {P : Polytope n} {F : Set (CoeffVec n)}
@@ -677,7 +688,7 @@ lemma exposed_face_dim_zero_mem_vertices {n : ℕ} (P : Polytope n) (G : Set (Co
   exact hv
 
 /-- Given an exposed face `F` of `P` with `(r : ℂ) ∈ RootSpaceSet F` and dimension ≥ 2, recursively descend to a proper exposed subface until reaching dimension 0 or 1, then extract an exposed edge. -/
-lemma descend_to_exposed_edge {n : ℕ} (P : Polytope n) (r : ℝ)
+lemma descend_to_exposed_edge {n : ℕ} (hn : n ≥ 1) (P : Polytope n) (r : ℝ)
     (F : Set (CoeffVec n)) (hF_exp : IsExposedFace P F)
     (hs_F : (r : ℂ) ∈ RootSpaceSet F)
     (hF_dim_ge_2 : Module.finrank ℝ (affineSpan ℝ F).direction ≥ 2) :
@@ -703,17 +714,18 @@ lemma descend_to_exposed_edge {n : ℕ} (P : Polytope n) (r : ℝ)
     have hs_G : (r : ℂ) ∈ RootSpaceSet G :=
       rootspace_mem_of_eval_zero r δ_bound hδ_bound_Psr G hδ_bound_in_G
     by_cases hG_dim_ge_2 : Module.finrank ℝ (affineSpan ℝ G).direction ≥ 2
-    · exact descend_to_exposed_edge P r G hG_exp hs_G hG_dim_ge_2
+    · exact descend_to_exposed_edge hn P r G hG_exp hs_G hG_dim_ge_2
     · by_cases hG_dim_1 : Module.finrank ℝ (affineSpan ℝ G).direction = 1
       · refine ⟨G, isExposedEdge_of_dim_1 hG_exp hG_dim_1, hs_G⟩
-      · -- dim(G) = 0: δ_bound is a vertex; use the vertex_adjacent_edge axiom.
+      · -- dim(G) = 0: G is the singleton {δ_bound}; get an edge through it.
         have hG_dim_0 : Module.finrank ℝ (affineSpan ℝ G).direction = 0 := by
           have h_not_ge_2 : ¬ Module.finrank ℝ (affineSpan ℝ G).direction ≥ 2 := hG_dim_ge_2
           have h_not_1 : ¬ Module.finrank ℝ (affineSpan ℝ G).direction = 1 := hG_dim_1
           omega
-        have hδ_is_vertex : δ_bound ∈ P.vertices :=
-          exposed_face_dim_zero_mem_vertices P G hG_exp hG_dim_0 δ_bound hδ_bound_in_G
-        obtain ⟨E, hE_edge, hδ_in_E⟩ := vertex_incident_to_exposed_edge P δ_bound hδ_is_vertex
+        have hG_single : G = {δ_bound} :=
+          exposed_face_dim_zero_singleton G hG_dim_0 δ_bound hδ_bound_in_G
+        obtain ⟨E, hE_edge, hδ_in_E⟩ :=
+          exists_exposed_edge_of_singleton hn P δ_bound G hG_exp hG_single
         have h_root_E : (r : ℂ) ∈ RootSpaceSet E :=
           rootspace_mem_of_eval_zero r δ_bound hδ_bound_Psr E hδ_in_E
         exact ⟨E, hE_edge, h_root_E⟩
@@ -722,11 +734,12 @@ lemma descend_to_exposed_edge {n : ℕ} (P : Polytope n) (r : ℝ)
 
 /-- Complex descent: given an exposed face `F` of `P` with `s ∈ RootSpaceSet F` and `dim(F) ≥ 3`,
   recursively descend to a proper exposed subface of dimension at most 2. -/
-lemma descend_to_exposed_face {n : ℕ} (hn : n ≥ 1) (P : Polytope n) (s : ℂ)
+lemma descend_to_exposed_face_with_dim {n : ℕ} (hn : n ≥ 1) (P : Polytope n) (s : ℂ)
     (hcomplex : s.im ≠ 0) (F : Set (CoeffVec n)) (hF_exp : IsExposedFace P F)
     (hs_F : s ∈ RootSpaceSet F)
     (hF_dim_ge_3 : Module.finrank ℝ (affineSpan ℝ F).direction ≥ 3) :
-    ∃ F', IsExposedFace P F' ∧ s ∈ RootSpaceSet F' := by
+    ∃ F', IsExposedFace P F' ∧ s ∈ RootSpaceSet F' ∧
+      Module.finrank ℝ (affineSpan ℝ F').direction ≤ 2 := by
   obtain ⟨δ_F, hδ_F_in_F, hδ_F_root⟩ : ∃ δ ∈ F, ((polyOfVec δ).map (algebraMap ℝ ℂ)).IsRoot s :=
     hs_F
   let affF := affineSpan ℝ F
@@ -749,10 +762,20 @@ lemma descend_to_exposed_face {n : ℕ} (hn : n ≥ 1) (P : Polytope n) (s : ℂ
       have hzero : evalAtComplex s δ_bound = 0 := hδ_bound_Psc
       simpa [evalAtComplex] using hzero) G hδ_bound_in_G
   by_cases hG_dim_ge_3 : Module.finrank ℝ (affineSpan ℝ G).direction ≥ 3
-  · exact descend_to_exposed_face hn P s hcomplex G hG_exp hs_G hG_dim_ge_3
-  · exact ⟨G, hG_exp, hs_G⟩
+  · exact descend_to_exposed_face_with_dim hn P s hcomplex G hG_exp hs_G hG_dim_ge_3
+  · exact ⟨G, hG_exp, hs_G, by omega⟩
   termination_by Module.finrank ℝ (affineSpan ℝ F).direction
   decreasing_by exact hG_dim_lt
+
+/-- Compatibility wrapper when only the face and root membership are needed. -/
+lemma descend_to_exposed_face {n : ℕ} (hn : n ≥ 1) (P : Polytope n) (s : ℂ)
+    (hcomplex : s.im ≠ 0) (F : Set (CoeffVec n)) (hF_exp : IsExposedFace P F)
+    (hs_F : s ∈ RootSpaceSet F)
+    (hF_dim_ge_3 : Module.finrank ℝ (affineSpan ℝ F).direction ≥ 3) :
+    ∃ F', IsExposedFace P F' ∧ s ∈ RootSpaceSet F' := by
+  obtain ⟨F', hF'_exp, hs_F', _⟩ :=
+    descend_to_exposed_face_with_dim hn P s hcomplex F hF_exp hs_F hF_dim_ge_3
+  exact ⟨F', hF'_exp, hs_F'⟩
 
 /-- Given a boundary point δ_bound ∈ P.Ω that lies in P_sr, find an exposed edge E
   of P.Ω such that (r : ℂ) ∈ RootSpaceSet E.
@@ -760,9 +783,9 @@ lemma descend_to_exposed_face {n : ℕ} (hn : n ≥ 1) (P : Polytope n) (s : ℂ
   Wires `exists_exposed_face_containing_boundary_point` to get an exposed face F,
   then dispatches by dimension.  For dim(F) ≥ 2 it delegates to
   `descend_to_exposed_edge`.  For dim(F) = 1 the face is already an edge.
-  For dim(F) = 0 (a vertex) the `vertex_adjacent_edge` gap remains.
+  For dim(F) = 0 (a singleton) it uses `exists_exposed_edge_of_singleton`.
 -/
-lemma exists_exposed_edge_through_vertex {n : ℕ} (P : Polytope n) (r : ℝ) (δ_bound : CoeffVec n)
+lemma exists_exposed_edge_through_vertex {n : ℕ} (hn : n ≥ 1) (P : Polytope n) (r : ℝ) (δ_bound : CoeffVec n)
     (hδ_bound_in_Ω : δ_bound ∈ P.Ω) (hδ_bound_front : δ_bound ∈ frontier P.Ω)
     (hδ_bound_Psr : δ_bound ∈ (P_sr n r : Set (CoeffVec n))) :
     ∃ E, IsExposedEdge P E ∧ (r : ℂ) ∈ RootSpaceSet E := by
@@ -771,13 +794,14 @@ lemma exists_exposed_edge_through_vertex {n : ℕ} (P : Polytope n) (r : ℝ) (�
     exists_exposed_face_containing_boundary_point P r δ_bound hδ_bound_front hδ_bound_Psr h_int_nonempty
   let m_F := Module.finrank ℝ (affineSpan ℝ F).direction
   by_cases hm_F_ge_2 : m_F ≥ 2
-  · exact descend_to_exposed_edge P r F hF_exposed hs_in_RF hm_F_ge_2
+  · exact descend_to_exposed_edge hn P r F hF_exposed hs_in_RF hm_F_ge_2
   · by_cases hm_F_1 : m_F = 1
     · refine ⟨F, isExposedEdge_of_dim_1 hF_exposed hm_F_1, hs_in_RF⟩
     · have hm_F_0 : m_F = 0 := by omega
-      have hδ_is_vertex : δ_bound ∈ P.vertices :=
-        exposed_face_dim_zero_mem_vertices P F hF_exposed hm_F_0 δ_bound hδ_in_F
-      obtain ⟨E, hE_edge, hδ_in_E⟩ := vertex_incident_to_exposed_edge P δ_bound hδ_is_vertex
+      have hF_single : F = {δ_bound} :=
+        exposed_face_dim_zero_singleton F hm_F_0 δ_bound hδ_in_F
+      obtain ⟨E, hE_edge, hδ_in_E⟩ :=
+        exists_exposed_edge_of_singleton hn P δ_bound F hF_exposed hF_single
       have h_root_E : (r : ℂ) ∈ RootSpaceSet E :=
         rootspace_mem_of_eval_zero r δ_bound hδ_bound_Psr E hδ_in_E
       exact ⟨E, hE_edge, h_root_E⟩
