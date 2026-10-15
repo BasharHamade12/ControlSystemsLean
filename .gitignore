@@ -25,6 +25,8 @@ Marp/presentation.odp
 Marp/presentation.pptx
 Marp/presentation.pdf
 Marp/presentation.html
+# Marp presentation source file (tracked for animations)
+!/Marp/presentation.md
 # Marp build outputs and temporary files (cleanup)
 Marp/*.pdf
 Marp/*.pptx
