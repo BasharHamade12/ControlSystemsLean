@@ -15,6 +15,10 @@
 !/lake-manifest.json
 !/.gitignore
 
+!/presentation.pdf
+
+Marp
+Marp/
 # --- Junk excluded even inside the allowlisted directories. ---
 # Generated slide renders (rebuild with Marp CLI / marp2odp.py).
 Marp/presentation.odp
