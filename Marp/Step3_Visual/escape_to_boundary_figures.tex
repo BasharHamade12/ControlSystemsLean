@@ -1,0 +1,164 @@
+%% =====================================================================
+%%  Step 3 -- "Escape to the boundary"
+%%  Six uncluttered diagrams for the proof in PreliminaryLemmas.lean.
+%%
+%%  Build: pdflatex escape_to_boundary_figures.tex
+%%         pdftoppm -r 220 -png escape_to_boundary_figures.pdf step3_fig
+%%         python3 check_geometry.py
+%% =====================================================================
+\documentclass[10pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc}
+\usepackage[active,tightpage]{preview}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+
+%% Shared geometry: one polytope, one affine slice, one direction, one ray.
+\def\omegapath{(0.5,3.0) -- (2.0,4.5) -- (4.5,4.4) -- (6.0,3.0) -- (4.5,1.0) -- (1.0,1.0) -- cycle}
+\def\strippath{(-1.0,5.72) -- (7.2,1.62) -- (7.2,-0.62) -- (-1.0,3.48) -- cycle}
+\def\lline{(-1.115,4.6575) -- (7.115,0.5425)}
+\def\dd{3.0,2.6}
+\def\bexit{4.964,1.618}
+\def\qq{6.757,0.722}
+\def\crad{3.2}
+
+\tikzset{
+  omega/.style = {fill=orange!13, draw=orange!60!black, line width=1.25pt},
+  strip/.style = {fill=blue!8, draw=blue!48, line width=0.9pt, dashed},
+  lineL/.style = {draw=violet!75!black, line width=1.5pt, dashed},
+  ray/.style = {draw=blue!70!black, line width=2pt, -{Latex[length=3mm,width=2.2mm]}},
+  segment/.style = {draw=red!72!black, line width=2.4pt, -{Latex[length=3mm,width=2.2mm]}},
+  ball/.style = {fill=black!3, draw=black!55, dashed, line width=1pt},
+  point/.style = {circle, fill=black, inner sep=2pt},
+  boundarypoint/.style = {circle, fill=red!82!black, draw=white, line width=1pt, inner sep=2.5pt},
+  outsidepoint/.style = {circle, fill=white, draw=red!75!black, line width=1.5pt, inner sep=2.5pt},
+  label/.style = {font=\small\sffamily, fill=white, fill opacity=0.94,
+                  text opacity=1, rounded corners=2pt, inner sep=2.5pt},
+  slicelabel/.style = {font=\small\sffamily, fill=blue!12, draw=blue!48,
+                       rounded corners=2pt, inner sep=2.5pt},
+  polytopelabel/.style = {font=\large\sffamily\bfseries, text=orange!60!black,
+                          fill=white, fill opacity=0.9, text opacity=1, inner sep=2pt},
+}
+
+\begin{document}
+
+%% 1. The common direction space is the intersection of U and dir(aff Omega).
+\begin{preview}
+\begin{tikzpicture}[x=1.05cm,y=1.05cm, line join=round]
+  % Schematic 3D view: two direction planes meet along their shared line.
+  \path[fill=blue!11, draw=blue!55!black, line width=1.2pt]
+    (-3.8,0) -- (3.8,0) -- (4.75,2.05) -- (-2.85,2.05) -- cycle;
+  \path[fill=orange!14, draw=orange!70!black, line width=1.2pt]
+    (-3.8,0) -- (3.8,0) -- (2.85,-2.05) -- (-4.75,-2.05) -- cycle;
+
+  % Distinct non-shared directions establish each plane; the intersection is bold.
+  \draw[-{Latex[length=3mm,width=2.2mm]}, blue!75!black, line width=1.6pt]
+    (0,0) -- (0.85,1.55)
+    node[above right, font=\large\sffamily, fill=white, inner sep=2pt] {$u\in U$};
+  \draw[-{Latex[length=3mm,width=2.2mm]}, orange!80!black, line width=1.6pt]
+    (0,0) -- (-0.85,-1.55)
+    node[below left, font=\large\sffamily, fill=white, inner sep=2pt] {$w\in\operatorname{aff}\Omega.\mathrm{dir}$};
+  \draw[red!75!black, line width=4pt, -{Latex[length=3.5mm,width=2.6mm]}]
+    (-3.45,0) -- (3.45,0)
+    node[pos=0.72, above, font=\large\sffamily\bfseries, fill=white, inner sep=2pt] {$v$};
+  \fill[black] (0,0) circle (2pt);
+  \node[below, font=\small\sffamily, fill=white, inner sep=2pt] at (0,-0.16) {$0$};
+
+  \node[font=\Large\sffamily\bfseries, text=blue!65!black, fill=white, rounded corners=2pt, inner sep=4pt]
+    at (3.2,1.55) {$U$};
+  \node[font=\Large\sffamily\bfseries, text=orange!70!black, fill=white, rounded corners=2pt, inner sep=4pt]
+    at (3.2,-1.55) {$\operatorname{aff}\Omega.\mathrm{dir}$};
+  \node[font=\large\sffamily\bfseries, text=red!70!black, fill=white, rounded corners=3pt, inner sep=5pt]
+    at (0,-2.8) {$U\sqcap\operatorname{aff}\Omega.\mathrm{dir}$};
+\end{tikzpicture}
+\end{preview}
+
+%% 2. A positive-dimensional intersection gives a nonzero direction.
+\begin{preview}
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \draw[strip] \strippath;
+  \draw[omega] \omegapath;
+  \node[slicelabel] at (0.35,4.8) {$\operatorname{aff}\Omega$};
+  \node[polytopelabel] at (4.8,3.75) {$\Omega$};
+  \draw[ray] (\dd) -- (4.252,1.974);
+  \node[point] at (\dd) {};
+  \node[label, anchor=north east] at (2.75,2.38) {$\delta \in \Omega \cap U$};
+  \node[label, anchor=north east] at (4.45,2.02) {$v$};
+\end{tikzpicture}
+\end{preview}
+
+%% 3. The full affine line through delta in direction v stays in the slice.
+\begin{preview}
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \draw[strip] \strippath;
+  \draw[omega] \omegapath;
+  \node[slicelabel] at (0.35,4.8) {$\operatorname{aff}\Omega$};
+  \node[polytopelabel] at (4.8,3.75) {$\Omega$};
+  \draw[lineL] \lline;
+  \node[label, anchor=south west] at (1.48,3.38) {$\mathcal{L}$};
+  \node[point] at (\dd) {};
+  \node[label, anchor=north east] at (2.75,2.38) {$\delta \in \Omega \cap U$};
+\end{tikzpicture}
+\end{preview}
+
+%% 4. Boundedness supplies an endpoint q beyond the ball containing Omega.
+\begin{preview}
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \draw[strip] \strippath;
+  \draw[ball] (\dd) circle [radius=\crad];
+  \draw[omega] \omegapath;
+  \node[polytopelabel] at (1.7,3.25) {$\Omega$};
+  \node[label, anchor=south west] at (0.75,4.85) {$\Omega\subseteq\overline{B}(\delta,C)$};
+  \draw[ray] (\dd) -- (\qq);
+  \draw[line width=1pt] (\dd) -- (4.43,5.46)
+    node[midway, right, font=\small\sffamily, fill=white, inner sep=1pt] {$C$};
+  \draw[red!70!black, line width=1.5pt] (4.964,1.3) -- (4.964,1.95);
+  \node[point] at (\dd) {};
+  \node[label, anchor=north east] at (2.75,2.38) {$\delta$};
+  \node[boundarypoint] at (\bexit) {};
+  \node[outsidepoint] at (\qq) {};
+  \node[label, anchor=south west] at (4.72,2.0) {$\delta_{\mathrm{bound}}$};
+  \node[label, anchor=north west] at (5.05,1.45) {$\partial\Omega$};
+  \node[label, anchor=south east] at (6.48,0.25) {$q$};
+\end{tikzpicture}
+\end{preview}
+
+%% 5. The segment from delta to q crosses the polytope boundary.
+\begin{preview}
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \draw[strip] \strippath;
+  \draw[omega] \omegapath;
+  \node[polytopelabel] at (2.0,3.45) {$\Omega$};
+  \node[label, anchor=west] at (0.0,4.75) {$\Omega^{c}$};
+  \draw[segment] (\dd) -- (\qq);
+  \node[point] at (\dd) {};
+  \node[label, anchor=north east] at (2.75,2.38) {$\delta$};
+  \node[boundarypoint] at (\bexit) {};
+  \node[outsidepoint] at (\qq) {};
+  \node[label, rotate=-26.6] at (4.15,2.15) {$[\delta,q]$};
+  \node[label, anchor=south west] at (4.72,2.0) {$\delta_{\mathrm{bound}}$};
+  \node[label, anchor=south east] at (6.48,0.25) {$q$};
+\end{tikzpicture}
+\end{preview}
+
+%% 6. Since delta and v belong to U, the crossing point remains in U.
+\begin{preview}
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \draw[strip] \strippath;
+  \draw[omega] \omegapath;
+  \node[slicelabel] at (0.35,4.8) {$\operatorname{aff}\Omega$};
+  \node[polytopelabel] at (2.0,3.45) {$\Omega$};
+  \draw[lineL] \lline;
+  \draw[segment] (\dd) -- (\qq);
+  \node[point] at (\dd) {};
+  \node[label, anchor=north east] at (2.75,2.38) {$\delta$};
+  \node[boundarypoint] at (\bexit) {};
+  \node[outsidepoint] at (\qq) {};
+  \node[label, rotate=-26.6] at (3.8,2.15) {$[\delta,q]$};
+  \node[label, anchor=south west] at (4.72,2.0) {$\delta_{\mathrm{bound}}$};
+  \node[label, anchor=south east] at (6.48,0.25) {$q$};
+\end{tikzpicture}
+\end{preview}
+
+\end{document}
