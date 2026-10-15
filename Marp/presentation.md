@@ -100,6 +100,9 @@ style: |
   .claims-tr ul { margin: 2px 0 0; padding-left: 14px; }
   .claims-tr li { margin-bottom: 1px; }
   .claims-tr .todo { opacity: 0.45; }
+  /* hiderDiv: absolutely-positioned white overlay that covers (hides) content */
+  .cover { position: relative; }
+  .hiderDiv { position: absolute; inset: 0; background: #ffffff; z-index: 5; border-radius: inherit; }
 header: ''
 footer: ''
 ---
@@ -324,9 +327,6 @@ a compact $3$-dimensional box ($8$ vertices, $12$ edges) with leading coefficien
 
 
 ---
-<!-- _class: fragment -->
-*** The edge theorem applies to each 1-parameter family (edge) of polynomials. The 12 edges of the coefficient box each give a root locus inside |z| < 1. ***
-
 <!-- SLIDE 10 | Section 1 · Preliminaries -->
 <!-- _class: section -->
 # Section 1 · Preliminaries
@@ -397,7 +397,6 @@ $$
 <div class="lean"><div class="lean-head">EdgeTheoremDefs.lean</div>
 <pre><span class="tok-com">-- α : CoeffVec 2,  α 0 = 1,  α 1 = -2,  α 2 = 3</span>
 <span class="tok-com">-- polyOfVec α = 3s² - 2s + 1</span></pre></div>
-<!-- _class: fragment -->
 *** The coefficient vector uniquely determines the polynomial. This example shows α = (1, -2, 3) giving 3s² - 2s + 1. ***
 
 ---
@@ -840,7 +839,6 @@ ol { font-size: 0.78em; }
 </div>
 </div>
 
-<!-- _class: fragment -->
 *** Step-by-step dimension analysis: each step reveals on a new slide ***
 
 ---
@@ -1815,4 +1813,50 @@ How: $\dim = 1$ is already an edge; $\dim = 0$ is a singleton lying on an edge t
 
 ---
 
- 
+<!-- hiderDiv demo 1/2 | HIDDEN — overlays cover the content -->
+# hiderDiv demo — hidden
+
+<style scoped>
+p { font-size: 0.85em; }
+</style>
+
+<div class="cover">
+
+**Theorem (Edge Theorem).** $\partial R(\Omega) \subseteq \bigcup_{E} R(E)$ over the exposed edges $E$ of $\Omega$.
+
+<div class="hiderDiv"></div>
+</div>
+
+<div class="cover">
+
+<div class="lean"><div class="lean-head">EdgeTheoremDefs.lean</div>
+<pre><span class="tok-kw">abbrev</span> <span class="tok-type">CoeffVec</span> (n : <span class="tok-type">ℕ</span>) := <span class="tok-type">Fin</span> (n + <span class="tok-num">1</span>) → <span class="tok-type">ℝ</span></pre></div>
+
+<div class="hiderDiv"></div>
+</div>
+
+*The white boxes above are `hiderDiv` overlays hiding the theorem and the code.*
+
+---
+
+<!-- hiderDiv demo 2/2 | REVEALED — same content, no overlays -->
+# hiderDiv demo — revealed
+
+<style scoped>
+p { font-size: 0.85em; }
+</style>
+
+<div class="cover">
+
+**Theorem (Edge Theorem).** $\partial R(\Omega) \subseteq \bigcup_{E} R(E)$ over the exposed edges $E$ of $\Omega$.
+
+</div>
+
+<div class="cover">
+
+<div class="lean"><div class="lean-head">EdgeTheoremDefs.lean</div>
+<pre><span class="tok-kw">abbrev</span> <span class="tok-type">CoeffVec</span> (n : <span class="tok-type">ℕ</span>) := <span class="tok-type">Fin</span> (n + <span class="tok-num">1</span>) → <span class="tok-type">ℝ</span></pre></div>
+
+</div>
+
+*Same slide with the `hiderDiv` overlays removed — content revealed.*
