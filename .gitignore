@@ -4,8 +4,6 @@
 /*
 # The Lean sources (entire directory, including new files).
 !/ControlSystems/
-# The Marp slide deck with its figures and tooling.
-!/Marp/
 # Lean package build files (lake project root).
 !/lakefile.toml
 !/lean-toolchain
