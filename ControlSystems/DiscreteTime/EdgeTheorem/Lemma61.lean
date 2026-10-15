@@ -14,140 +14,16 @@ open Polynomial Affine FiniteDimensional LinearMap Set
 
 namespace CoeffBox
 
-/-! # Lemma 6.1: Root Spaces Meet Exposed Edges/Faces
+/-! # Lemma 6.1 (edgetheorem.md, Lemma 6.1)
 
-**Statement (Lemma 6.1):** Let `Ω ⊆ ℝⁿ⁺¹` be a polytope (convex hull of finitely many
-vertices, with nonempty interior).  For any `s ∈ ℂ` with `s ∈ R(Ω)` (the root space of
-`Ω` – i.e. `s` is a root of some polynomial whose coefficient vector lies in `Ω`):
+Real `s` in `R(Omega)` lies in `R(E)` for an exposed edge `E`;
+non-real `s` lies in `R(F)` for an exposed face `F` (Assumption 6.1:
+positive leading coefficient on vertices).
 
-  • **Real case** (`s.im = 0`):  There exists an **exposed edge** `E` of `Ω` such that
-    `s ∈ R(E)`.
-  • **Complex case** (`s.im ≠ 0`):  There exists an **exposed face** `F` of `Ω` such that
-    `s ∈ R(F)`.
-
-This file implements `lemma61_real` (the real case) and provides a deferred stub for
-`lemma61_complex` (the complex case).  The full theorem `lemma61` bundles both.
-
----
-
-## Proof Structure of `lemma61_real`
-
-### Overview
-
-The proof uses a **dimension descent** argument.  Let `m := dim(aff(Ω))` be the
-dimension of the affine hull of `Ω`.
-
-  • If `m = 0`, the result is impossible because `Ω` has nonempty interior
-    (`polytope_direction_dim_pos`).
-  • If `m = 1`, then `Ω` itself is already an exposed edge
-    (`polytope_dim1_is_exposed_edge`).
-  • If `m ≥ 2`, we carry out the following steps:
-
-### Step 1 – Obtain a root vector `δ ∈ Ω`
-
-Unfold the definition of `RootSpace` and extract a coefficient vector `δ ∈ Ω`
-whose polynomial has `s` as a root:
-```lean4
-obtain ⟨δ, hδ_in_Ω, hδ_root⟩ := hs
-```
-
-### Step 2 – Place `δ` in `P_sr` (the kernel of evaluation at `s.re`)
-
-Because `s` is real (`s.im = 0`), we have `s = (s.re : ℂ)`.  The condition that
-`δ`'s polynomial has root `s` translates to `δ` belonging to the subspace
-`P_sr n s.re := ker(evalLinear s.re)`.  This is a linear subspace of codimension 1,
-hence `dim(P_sr) = n`.
-```lean4
-have hδ_in_Psr : δ ∈ (P_sr n s.re : Set (CoeffVec n)) :=
-  mem_P_sr_of_isRoot s.re δ hδ_root
-```
-
-### Step 3 – Lower bound on the intersection dimension
-
-Let `U = P_sr` and `affΩ = aff(Ω)`.  Consider
-`S := aff( U ∩ affΩ )`, the affine hull of the intersection.  Using the dimension
-formula for the intersection of a linear subspace and an affine subspace
-(`intersection_affine_dim_ge_one`), we get:
-```lean4
-have hA_dim : Module.finrank ℝ (↥dir') ≥ 1 :=
-  intersection_affine_dim_ge_one U affΩ δ hδ_in_Psr hδ_aff hdim_Psr hm
-```
-**(Uses `P_sr_dimension` – a lemma from `PreliminaryLemmas` proving `dim(P_sr) = n`.)**
-
-### Step 4 – Find a boundary point `δ_bound ∈ P_sr ∩ frontier(Ω)`
-
-Because `S` contains a line through `δ` (from `dim(S) ≥ 1`) and `Ω` is bounded,
-that line must exit `Ω`, so it crosses the frontier.  The key lemma
-`exists_boundary_point_in_Psr` produces a point `δ_bound` belonging to both
-`P_sr` and `frontier P.Ω`.
-```lean4
-have h_boundary_root : ∃ δ_bound, δ_bound ∈ (P_sr n s.re : Set (CoeffVec n)) ∩ frontier P.Ω :=
-  exists_boundary_point_in_Psr P s.re δ hδ_in_Ω hδ_in_Psr affΩ hδ_aff hA_dim
-```
-
-### Step 5 – Construct an exposed face `F` containing `δ_bound`
-
-Apply `exists_exposed_face_containing_boundary_point` (from `ExposedFaceLemmas`).
-This uses the Hahn–Banach separation theorem (`geometric_hahn_banach_open_point`) to
-strictly separate `δ_bound` from `interior P.Ω`, then extends the resulting functional
-to a supporting hyperplane.  The exposed face `F` is the intersection of `Ω` with that
-hyperplane.
-```lean4
-obtain ⟨F, hF_exposed, hδ_in_F, hs_in_RF⟩ :=
-  exists_exposed_face_containing_boundary_point P s.re δ_bound hδ_bound_front hδ_bound_Psr
-    h_int_nonempty
-```
-**(Uses `frontier_point_not_interior`, `frontier_point_in_Ω`, and
-`rootspace_mem_of_eval_zero` from `ExposedFaceLemmas`.)**
-
-### Step 6 – Dimension descent on `F`
-
-Let `m_F := dim(aff(F))`.
-
-  • **If `m_F ≥ 2`**:  Recursively descend (`descend_to_exposed_edge` from
-    `EdgeDescent`).  This lemma finds a boundary point `δ_bound` on the *relative*
-    boundary of `F` (guaranteed not to be in `intrinsicInterior ℝ F`), constructs a
-    **proper** exposed subface `G ⊂ F` with strictly smaller dimension, and recurses.
-  • **If `m_F = 1`**:  `F` is already an exposed edge; we are done
-    (`isExposedEdge_of_dim_1` from `EdgeDescent`).
-  • **If `m_F = 0`** (a vertex):  Use `exists_exposed_edge_through_vertex` (from
-    `EdgeDescent`), which relies on the axiom `vertex_incident_to_exposed_edge`
-    (stated in `EdgeTheoremDefs`).
-
-The recursive descent terminates because the dimension strictly decreases at each
-step and is bounded below by 0.
-
-### Step 7 – Wrap up
-
-The final exposed edge `E` satisfies `IsExposedEdge P E` and `s ∈ RootSpaceSet E`
-(as required).
-
----
-
-## Key Lemmas Referenced (by source file)
-
-| Lemma | File | Role |
-|-------|------|------|
-| `mem_P_sr_of_isRoot` | `ExposedFaceLemmas` | Step 2 |
-| `P_sr_dimension` | `PreliminaryLemmas` | Step 3 |
-| `intersection_affine_dim_ge_one` | `PreliminaryLemmas` | Step 3 |
-| `exists_boundary_point_in_Psr` | `PreliminaryLemmas` | Step 4 |
-| `exists_exposed_face_containing_boundary_point` | `ExposedFaceLemmas` | Step 5 |
-| `frontier_point_not_interior` | `ExposedFaceLemmas` | Step 5 |
-| `frontier_point_in_Ω` | `ExposedFaceLemmas` | Step 5 |
-| `rootspace_mem_of_eval_zero` | `ExposedFaceLemmas` | Steps 5–6 |
-| `descend_to_exposed_edge` | `EdgeDescent` | Step 6 |
-| `isExposedEdge_of_dim_1` | `EdgeDescent` | Step 6 |
-| `exists_exposed_edge_through_vertex` | `EdgeDescent` | Step 6 |
-| `vertex_incident_to_exposed_edge` | `EdgeTheoremDefs` | Step 6 (axiom) |
-| `polytope_direction_dim_pos` | This file | Edge case `m=0` |
-| `polytope_dim1_is_exposed_edge` | This file | Edge case `m=1` |
-
----
-
-## Complex Case (`lemma61_complex`)
-
-
+Proof idea: `P_sr` has dim n, `P_sc` dim n-1; each meets `aff(Omega)`
+in positive dimension, giving a boundary point; Hahn-Banach yields an
+exposed face; descent (`EdgeDescent`) lowers `dim aff(F)` to 1 (real)
+or at most 2 (complex). See `lemma61_real`, `lemma61_complex`, `lemma61`.
 -/
 
 /-- A polytope with nonempty interior has affine dimension ≥ 1,
@@ -296,7 +172,7 @@ theorem lemma61_real (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootS
     let m_F := Module.finrank ℝ (affineSpan ℝ F).direction
     by_cases hm_F_ge_2 : m_F ≥ 2
     · obtain ⟨E, hE_edge, h_edge_re⟩ :=
-        descend_to_exposed_edge P s.re F hF_exposed hs_in_RF hm_F_ge_2
+        descend_to_exposed_edge hn P s.re F hF_exposed hs_in_RF hm_F_ge_2
       use E, hE_edge
       rw [← hs_real] at h_edge_re
       exact h_edge_re
@@ -304,11 +180,11 @@ theorem lemma61_real (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootS
       · refine ⟨F, isExposedEdge_of_dim_1 hF_exposed hm_F_1, ?_⟩
         rw [hs_real]
         exact hs_in_RF
-      · -- F has dim 0: δ_bound is a vertex. Fall back to exists_exposed_edge_through_vertex.
+      · -- F has dim 0: singleton face. Fall back to exists_exposed_edge_through_vertex.
         have hδ_bound_in_Ω : δ_bound ∈ P.Ω :=
           frontier_point_in_Ω P δ_bound hδ_bound_front
         obtain ⟨E, hE_edge, hs_re_RF⟩ :=
-          exists_exposed_edge_through_vertex P s.re δ_bound hδ_bound_in_Ω hδ_bound_front hδ_bound_Psr
+          exists_exposed_edge_through_vertex hn P s.re δ_bound hδ_bound_in_Ω hδ_bound_front hδ_bound_Psr
         use E, hE_edge
         rw [hs_real]
         exact hs_re_RF
@@ -329,8 +205,10 @@ theorem lemma61_real (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootS
 /-- Complex case of Lemma 6.1: If `s` has nonzero imaginary part and `P` satisfies Assumption 6.1
   (all vertices have positive leading coefficient), then there exists an exposed face `F` of `P`
   such that `s ∈ RootSpaceSet F`. -/
-theorem lemma61_complex (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootSpace P)
-    (hleading : ∀ v ∈ P.vertices, 0 < v (Fin.last n)) : s.im ≠ 0 → ∃ F, IsExposedFace P F ∧ s ∈ RootSpaceSet F := by
+theorem lemma61_complex_with_dim (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootSpace P)
+    (hleading : ∀ v ∈ P.vertices, 0 < v (Fin.last n)) : s.im ≠ 0 →
+    ∃ F, IsExposedFace P F ∧ s ∈ RootSpaceSet F ∧
+      Module.finrank ℝ (affineSpan ℝ F).direction ≤ 2 := by
   intro hcomplex
   by_cases hn2 : n ≥ 2
   · unfold RootSpace RootSpaceSet at hs
@@ -363,8 +241,8 @@ theorem lemma61_complex (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ Ro
         hδ_bound_front hδ_bound_Psc h_int_nonempty
     let m_F := Module.finrank ℝ (affineSpan ℝ F).direction
     by_cases hm_F_ge_3 : m_F ≥ 3
-    · exact descend_to_exposed_face hn P s hcomplex F hF_exposed hs_in_RF hm_F_ge_3
-    · exact ⟨F, hF_exposed, hs_in_RF⟩
+    · exact descend_to_exposed_face_with_dim hn P s hcomplex F hF_exposed hs_in_RF hm_F_ge_3
+    · exact ⟨F, hF_exposed, hs_in_RF, by omega⟩
   · -- n = 1. By Assumption 6.1 (P.leading_pos), all vertices have positive leading
     -- coefficient, thus so does every δ ∈ P.Ω. Hence (δ 1 : ℂ) ≠ 0, forcing s to be
     -- real, contradicting hcomplex.
@@ -427,6 +305,14 @@ theorem lemma61_complex (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ Ro
         exact h_subset h_mem_conv
       have h_δ1_ne_zero' : (δ 1 : ℂ) ≠ 0 := by exact_mod_cast h_δ1_pos.ne.symm
       exact absurd h_δ1_ne_zero' hδ1_ne_zero
+
+/-- Lemma 6.1's complex case without the additional dimension information. -/
+theorem lemma61_complex (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootSpace P)
+    (hleading : ∀ v ∈ P.vertices, 0 < v (Fin.last n)) : s.im ≠ 0 →
+    ∃ F, IsExposedFace P F ∧ s ∈ RootSpaceSet F := by
+  intro hcomplex
+  obtain ⟨F, hF, hsF, _⟩ := lemma61_complex_with_dim hn P s hs hleading hcomplex
+  exact ⟨F, hF, hsF⟩
 
 /-- Lemma 6.1: For a polytope `P` satisfying Assumption 6.1 (all vertices have positive leading
   coefficient) and a root `s` of `P`, either `s` is real (in which case there exists an exposed edge

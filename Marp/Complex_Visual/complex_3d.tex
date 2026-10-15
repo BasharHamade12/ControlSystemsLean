@@ -1,0 +1,91 @@
+%% =====================================================================
+%%  Lemma 6.2 complex case -- true-3D Case A vs Case B figure
+%%
+%%  complex_caseAB_3d.png -- two panels in real 3D perspective:
+%%    blue plane  = aff(F) flat (lifted), teal plane = dir aff(F) at z = 0,
+%%    orange triangle = face F, black dot = witness, red line = P_sc slice
+%%    (in-plane for Case A, piercing for Case B)
+%%
+%%  Build: pdflatex complex_3d.tex
+%%         pdftoppm -r 200 -png -singlefile complex_3d.pdf complex_caseAB_3d
+%% =====================================================================
+\documentclass[10pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usetikzlibrary{arrows.meta,calc}
+\usepackage[active,tightpage]{preview}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+
+\tikzset{
+  dirfill/.style  = {fill=teal!25, fill opacity=0.45, draw=teal!65!black, line width=1pt},
+  afffill/.style  = {fill=blue!12, fill opacity=0.55, draw=blue!60!black, line width=1pt},
+  facefill/.style = {fill=orange!25, fill opacity=0.85, draw=orange!70!black, line width=1.4pt},
+  point/.style    = {circle, fill=black, inner sep=2.6pt},
+  origin/.style   = {circle, fill=gray!70, inner sep=1.8pt},
+  sub/.style      = {font=\small\sffamily, fill=white, fill opacity=0.95, text opacity=1,
+                      rounded corners=2pt, inner sep=3pt},
+  tag/.style      = {font=\large\sffamily\bfseries, fill=white, fill opacity=0.92, text opacity=1,
+                      rounded corners=3pt, inner sep=4pt},
+  sliceline/.style = {draw=red!75!black, line width=2.4pt},
+}
+
+\tdplotsetmaincoords{62}{118}
+
+%% Shared coordinates (local panel frame).
+%% dir plane: z = 0 through the origin; aff plane: same footprint at z = 1.2.
+\newcommand{\dirplane}{
+  \fill[dirfill] (0,0,0) -- (4.6,0,0) -- (5.2,2.6,0) -- (0.6,2.6,0) -- cycle;
+}
+\newcommand{\affplane}{
+  \fill[afffill] (0,0,1.2) -- (4.6,0,1.2) -- (5.2,2.6,1.2) -- (0.6,2.6,1.2) -- cycle;
+}
+\newcommand{\facetri}{
+  \fill[facefill] (1.7,0.7,1.2) -- (3.7,0.85,1.2) -- (2.65,1.95,1.2) -- cycle;
+}
+
+\begin{document}
+\begin{preview}
+%% ================= Panel A: the slice shares direction v =================
+\begin{tikzpicture}[tdplot_main_coords, line join=round]
+  \dirplane
+  \node[origin] at (0,0,0) {};
+  \node[sub] at (-0.5,-0.55,0) {$0$};
+  \node[sub] at (5.6,0.5,0) {$\mathrm{dir}\,\mathrm{aff}\,F$};
+  \affplane
+  \node[sub] at (2.7,3.0,1.2) {$\mathrm{aff}\,F$};
+  \facetri
+  % P_sc line through the witness, lying in the flat (direction v).
+  \draw[sliceline] (0.05,0.77,1.2) -- (5.35,1.55,1.2);
+  \node[point] at (2.62,1.12,1.2) {};
+  \node[sub] at (1.95,1.62,1.45) {$\delta^\star$};
+  \node[sub] at (4.5,2.8,0.98) {$v$};
+  \node[sub] at (5.75,1.7,1.45) {$P_{s_c}$};
+  \node[font=\normalsize\sffamily\bfseries, fill=white, fill opacity=0.95, text opacity=1,
+    rounded corners=3pt, inner sep=4pt] at (3.6,-1.7,2.2) {Case A: shared direction};
+  \node[font=\small\sffamily, fill=white, fill opacity=0.95, text opacity=1,
+    rounded corners=2pt, inner sep=3pt] at (2.7,-1.85,0)
+    {$\dim(P_{s_c} \sqcap \mathrm{dir}) \ge 1$};
+\end{tikzpicture}\hspace{1.2cm}\begin{tikzpicture}[tdplot_main_coords, line join=round]
+  %% ================= Panel B: transverse pierce =================
+  \dirplane
+  \node[origin] at (0,0,0) {};
+  \node[sub] at (-0.5,-0.55,0) {$0$};
+  \node[sub] at (5.6,0.5,0) {$\mathrm{dir}\,\mathrm{aff}\,F$};
+  \affplane
+  \node[sub] at (2.7,3.0,1.2) {$\mathrm{aff}\,F$};
+  \facetri
+  % P_sc line through the witness, transverse to the flat.
+  \draw[sliceline] (2.1,2.32,2.7) -- (3.14,-0.08,-0.3);
+  \node[point] at (2.62,1.12,1.2) {};
+  \node[sub] at (1.95,1.62,1.45) {$\delta^\star$};
+  \node[sub] at (1.75,2.75,2.85) {$P_{s_c}$};
+  \node[font=\normalsize\sffamily\bfseries, fill=white, fill opacity=0.95, text opacity=1,
+    rounded corners=3pt, inner sep=4pt] at (3.6,-1.7,2.2) {Case B: transverse};
+  \node[font=\small\sffamily, fill=white, fill opacity=0.95, text opacity=1,
+    rounded corners=2pt, inner sep=3pt] at (2.7,-1.85,0)
+    {$\dim(P_{s_c} \sqcap \mathrm{dir}) = 0$};
+\end{tikzpicture}
+\end{preview}
+\end{document}

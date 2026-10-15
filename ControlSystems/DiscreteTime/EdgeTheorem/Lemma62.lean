@@ -19,6 +19,17 @@ open Filter Topology
 
 namespace CoeffBox
 
+/-! # Lemma 6.2 (edgetheorem.md, Lemma 6.2): ∂R(F) ⊆ R(∂F)
+
+For a 2-dimensional exposed face `F`: `lemma62_real_case` (real `s*`,
+via `P_sr`, §6.2 Case A style) and `lemma62_complex_case` (non-real `s*`).
+Complex Case A (`dim(P_sc ⊓ dir) ≥ 1`): reuse relative-boundary descent.
+Complex Case B (transverse, textbook `[V,−W]` full rank, (6.10)–(6.16)):
+`W`-matrix (`Wcol`/`Wmul`), quotient offset `νₖ` (6.12)–(6.13) with
+`νₖ → 0` (6.14), joint matrix via 2×2 `detOf` and Cramer's rule
+(`δₖ ∈ aff(F) ∖ F`, `δₖ → δ*`, hence `δ* ∉ ri(F)`).
+-/
+
 /-- If `W` is compact, then `RootSpaceSet W` is closed in ℂ.
 Proof: `evalAtComplex s δ = ((polyOfVec δ).map (algebraMap ℝ ℂ)).eval s` is jointly continuous
 in `(δ, s)`, so its zero set intersected with `W × ℂ` is closed. Projecting to ℂ via `snd`
@@ -74,32 +85,40 @@ lemma rootSpaceSet_isClosed_of_isCompact {n : ℕ} {W : Set (CoeffVec n)} (hW : 
   rw [← h_image]
   exact h_closed_map Z hZ_closed
 
-/-- If `F` is a compact convex set, then any ray starting from a point in `F`
-    along a nonzero direction eventually exits `F`. -/
-lemma ray_escapes_compact_convex {n : ℕ} {F : Set (CoeffVec n)} (hF_compact : IsCompact F)
-    (_hF_convex : Convex ℝ F) (δ : CoeffVec n) (hδ_in_F : δ ∈ F) (v : CoeffVec n)
-    (hv_ne : v ≠ 0) : ∃ (t : ℝ), 0 < t ∧ δ + t • v ∉ F := by
-  rcases Metric.isBounded_iff.mp hF_compact.isBounded with ⟨C, hC⟩
-  have hv_norm_pos : 0 < ‖v‖ := norm_pos_iff.mpr hv_ne
-  let t := (|C| + 1) / ‖v‖
-  have ht_pos : 0 < t := div_pos (by have : 0 ≤ |C| := abs_nonneg C; linarith) hv_norm_pos
-  by_cases h_contra : δ + t • v ∈ F
-  · exfalso
-    have h_dist : dist (δ + t • v) δ = t * ‖v‖ := by
-      rw [dist_eq_norm]
-      have h_sub : δ + t • v - δ = t • v := by abel
-      have ht_nonneg : 0 ≤ t := ht_pos.le
-      rw [h_sub, norm_smul, Real.norm_eq_abs t, abs_of_nonneg ht_nonneg]
-    have h_le : dist (δ + t • v) δ ≤ C := by
-      apply hC
-      · exact h_contra
-      · exact hδ_in_F
-    have h_C_lt : C < |C| + 1 := by have : C ≤ |C| := le_abs_self C; linarith
-    rw [h_dist] at h_le
-    have h_t_mul : t * ‖v‖ = |C| + 1 := div_mul_cancel₀ (|C| + 1) (ne_of_gt hv_norm_pos)
-    rw [h_t_mul] at h_le
-    linarith
-  · exact ⟨t, ht_pos, h_contra⟩
+/-- The ray-stay set `{t | 0 ≤ t ∧ δ_star + t • v ∈ F}` is bounded above by any
+    escape time `t_out`: past `t_out`, convexity would pull the escaped point
+    back into `F`, contradicting the escape. -/
+lemma ray_stay_set_bddAbove {n : ℕ} {F : Set (CoeffVec n)} {δ_star v : CoeffVec n}
+    (hF_convex : Convex ℝ F) (hδ_star_in_F : δ_star ∈ F)
+    (t_out : ℝ) (ht_out_pos : 0 < t_out) (ht_out : δ_star + t_out • v ∉ F) :
+    BddAbove {t : ℝ | 0 ≤ t ∧ δ_star + t • v ∈ F} := by
+  refine ⟨t_out, ?_⟩
+  rintro t ⟨ht_nonneg, ht_mem⟩
+  by_contra! h_gt
+  have ha_nonneg : 0 ≤ t_out / t := div_nonneg (by linarith) (by linarith)
+  have hdiv : t_out / t ≤ 1 := (div_le_one (by linarith)).mpr (by linarith)
+  have hb_nonneg : 0 ≤ 1 - t_out / t := by linarith
+  have hsum : (t_out / t : ℝ) + (1 - t_out / t) = 1 := by ring
+  have hstar : StarConvex ℝ (δ_star + t • v) F := hF_convex ht_mem
+  have h_conv : ((t_out / t : ℝ) • (δ_star + t • v) + (1 - t_out / t) • δ_star) = δ_star + t_out • v := by
+    calc
+      (t_out / t : ℝ) • (δ_star + t • v) + (1 - t_out / t) • δ_star
+          = (t_out / t) • δ_star + (t_out / t) • (t • v) + (1 - t_out / t) • δ_star := by rw [smul_add]
+      _ = ((t_out / t) • δ_star + (1 - t_out / t) • δ_star) + (t_out / t) • (t • v) := by abel
+      _ = ((t_out / t + (1 - t_out / t)) • δ_star) + ((t_out / t) * t) • v := by
+        simp [smul_smul]
+      _ = (1 • δ_star) + (t_out • v) := by
+        have h_t_ne_zero : t ≠ 0 := by linarith
+        have h_sum : t_out / t + (1 - t_out / t) = 1 := by ring
+        have h_mul : (t_out / t) * t = t_out := by field_simp [h_t_ne_zero]
+        simp [h_sum, h_mul]
+      _ = δ_star + t_out • v := by simp
+  have h_mem_conv : (t_out / t : ℝ) • (δ_star + t • v) + (1 - t_out / t) • δ_star ∈ F :=
+    hstar hδ_star_in_F ha_nonneg hb_nonneg hsum
+  have h_mem : δ_star + t_out • v ∈ F := by
+    rw [← h_conv]
+    exact h_mem_conv
+  exact ht_out h_mem
 
 /-- Real case of Lemma 6.2:
     If `s*` is a real point on the frontier of `RootSpaceSet F` (where `F` is an
@@ -151,7 +170,7 @@ theorem lemma62_real_case {n : ℕ}  (P : Polytope n)
       exact h.2
     have hv_affF_dir : v ∈ (affineSpan ℝ F).direction := hv_V
     obtain ⟨t_out, ht_out_pos, ht_out⟩ :=
-      ray_escapes_compact_convex hF_compact hF_convex δ_star hδ_star_in_F v hv_ne
+      ray_escapes_of_bounded hF_compact.isBounded δ_star v hδ_star_in_F hv_ne
     let S : Set ℝ := {t | 0 ≤ t ∧ δ_star + t • v ∈ F}
     have hS_nonempty : S.Nonempty := ⟨0, ⟨by norm_num, by simpa using hδ_star_in_F⟩⟩
     have hS_closed : IsClosed S := by
@@ -167,34 +186,8 @@ theorem lemma62_real_case {n : ℕ}  (P : Polytope n)
         · rintro ⟨ht_mem, ht_nonneg⟩; exact ⟨ht_nonneg, ht_mem⟩
       rw [hS_eq]
       exact h_preimage_closed.inter h_nonneg_closed
-    have h_bdd_above : BddAbove S := by
-      refine ⟨t_out, ?_⟩
-      rintro t ⟨ht_nonneg, ht_mem⟩
-      by_contra! h_gt
-      have ha_nonneg : 0 ≤ t_out / t := div_nonneg (by linarith) (by linarith)
-      have hdiv : t_out / t ≤ 1 := (div_le_one (by linarith)).mpr (by linarith)
-      have hb_nonneg : 0 ≤ 1 - t_out / t := by linarith
-      have hsum : (t_out / t : ℝ) + (1 - t_out / t) = 1 := by ring
-      have hstar : StarConvex ℝ (δ_star + t • v) F := hF_convex ht_mem
-      have h_conv : ((t_out / t : ℝ) • (δ_star + t • v) + (1 - t_out / t) • δ_star) = δ_star + t_out • v := by
-        calc
-          (t_out / t : ℝ) • (δ_star + t • v) + (1 - t_out / t) • δ_star
-              = (t_out / t) • δ_star + (t_out / t) • (t • v) + (1 - t_out / t) • δ_star := by rw [smul_add]
-          _ = ((t_out / t) • δ_star + (1 - t_out / t) • δ_star) + (t_out / t) • (t • v) := by abel
-          _ = ((t_out / t + (1 - t_out / t)) • δ_star) + ((t_out / t) * t) • v := by
-            simp [smul_smul]
-          _ = (1 • δ_star) + (t_out • v) := by
-            have h_t_ne_zero : t ≠ 0 := by linarith
-            have h_sum : t_out / t + (1 - t_out / t) = 1 := by ring
-            have h_mul : (t_out / t) * t = t_out := by field_simp [h_t_ne_zero]
-            simp [h_sum, h_mul]
-          _ = δ_star + t_out • v := by simp
-      have h_mem_conv : (t_out / t : ℝ) • (δ_star + t • v) + (1 - t_out / t) • δ_star ∈ F :=
-        hstar hδ_star_in_F ha_nonneg hb_nonneg hsum
-      have h_mem : δ_star + t_out • v ∈ F := by
-        rw [← h_conv]
-        exact h_mem_conv
-      exact ht_out h_mem
+    have h_bdd_above : BddAbove S :=
+      ray_stay_set_bddAbove hF_convex hδ_star_in_F t_out ht_out_pos ht_out
     let t1 := sSup S
     have h_max : t1 ∈ S := by
       simpa [t1] using hS_closed.csSup_mem hS_nonempty h_bdd_above

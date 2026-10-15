@@ -47,95 +47,29 @@ public import Mathlib.Topology.Order.OrderClosed
 
 open Polynomial
 
-/--
-A box `B_n` in the space of coefficients for polynomials of degree `n`.
-It is defined by lower bounds `l` and upper bounds `u` for each coefficient index `j ∈ {0, ..., n}`.
+/-! # Core definitions for the Edge Theorem (Ch. 6, §6.2)
+
+Textbook mapping (`edgetheorem.md`):
+- `CoeffVec n` = coefficient space `ℝ^{n+1}`, `δ = [δₙ,…,δ₀]ᵀ` (6.1).
+- `P.Ω` = polytope `Ω ⊂ ℝ^{n+1}` (convex hull of `P.vertices`).
+- `RootSpaceSet W` = root space `R(W) = {s : δ(s)=0 for some δ ∈ W}`.
+- `RootSpace P` = `R(Ω)`.
+- `SupportingHyperplane` / `IsExposedFace` / `IsExposedEdge` = §6.2 exposed sets;
+  one-dimensional exposed sets are edges, two-dimensional are faces.
+- `P_sr n r` = `𝒫_{s_r}` (real-root subspace, `dim = n`);
+  `P_sc n s` = `𝒫_{s_c}` (complex-root subspace, `dim = n-1`).
+- `dim U` = `dim U` (finrank over ℝ); `meetDir` = `dir(aff(U ∩ affΩ))`.
+- Assumption 6.1 (fixed leading-sign / degree) is taken as explicit
+  hypotheses (`hleading`) at use sites, not baked into `Polytope`.
+
+Notation: `open EdgeNotation` enables `R[W]`, `Ω[P]`
+shorthands below. Existing names (`RootSpaceSet`, `P.Ω`, `frontier`, …)
+remain canonical; notations are additive aliases only.
 -/
-structure CoeffBox (n : ℕ) where
-  l : Fin (n + 1) → ℝ
-  u : Fin (n + 1) → ℝ
-  interval : ∀ j : Fin (n + 1), l j ≤ u j
 
 namespace CoeffBox
 
-/--
-Predicate stating that the polynomial `f` has natural degree `n`
-and its coefficients lie within the box `B`.
-Note: We explicitly require `f.natDegree = n` to ensure the leading coefficient
-is non-zero and corresponds to index `n`.
--/
-def InBox (B : CoeffBox n) (f : Polynomial ℝ) : Prop :=
-  f.natDegree = n ∧  ∀ j : Fin (n + 1), B.l j ≤ coeff f j.val ∧ coeff f j.val ≤ B.u j
-
-/--
-The family of polynomials in the box `B`: all polynomials whose coefficients
-lie within the box and whose natural degree is exactly `n`.
--/
-def FOIP (B : CoeffBox n) : Set (Polynomial ℝ) :=
-  { f | InBox B f }
-
-/--
-The set of extreme coefficient vectors `E_k` for a fixed index `k`.
-A coefficient vector `α` (represented here as a function `Fin (n+1) → ℝ`)
-is in `E_k B` if:
-1. The k-th coefficient `α k` is within its interval `[l k, u k]`.
-2. For all other indices `j ≠ k`, the coefficient `α j` is exactly either `l j` or `u j`.
--/
-def ExtremeCoeffs (B : CoeffBox n) (k : Fin (n + 1)) : Set (Fin (n + 1) → ℝ) :=
-  { α |
-    (B.l k ≤ α k ∧ α k ≤ B.u k) ∧
-    ∀ j : Fin (n + 1), j ≠ k → (α j = B.l j ∨ α j = B.u j)
-  }
-
-/--
-The collection of all extreme coefficient vectors `E`.
-This is the union of `ExtremeCoeffs B k` for all `k` from `0` to `n`.
-Geometrically, this represents the "edges" of the hyperrectangle `B_n`
-parallel to the axes.
--/
-def ExtremeSet (B : CoeffBox n) : Set (Fin (n + 1) → ℝ) :=
-  ⋃ k : Fin (n + 1), ExtremeCoeffs B k
-
-/--
-The Family of Extreme Polynomials.
-This maps the extreme coefficient vectors back to polynomials.
-Note: Not every vector in `ExtremeSet` necessarily forms a polynomial of degree `n`
-(i.e., the leading coefficient might be 0 if `l n = 0` and `α n` is chosen as `l n`).
-We filter for `natDegree = n` to match the definition of `FOIP`.
--/
-def ExtremePolys (B : CoeffBox n) : Set (Polynomial ℝ) :=
-  { f | ∃ α ∈ ExtremeSet B,
-      (∀ j : Fin (n + 1), coeff f j.val = α j) ∧
-      f.natDegree = n
-  }
-
-/--
-A real polynomial `f` is Schur stable if all its real roots lie strictly
-inside the unit disc (i.e., have absolute value < 1).
--/
-def Schur_Stable (f : Polynomial ℝ) : Prop :=
-  ∀ a : ℝ , f.IsRoot a → abs a < 1
-
-/--
-The product of two Schur-stable polynomials is itself Schur stable.
-This follows because any root of `f * g` is a root of `f` or a root of `g`.
--/
-theorem Product_of_Schur_Stable (f : Polynomial ℝ) (g : Polynomial ℝ) :
-  (Schur_Stable f) → (Schur_Stable g) → (Schur_Stable (f * g)) := by
-  intros hf hg
-  unfold Schur_Stable
-  intro a hfg
-  have heval : f.eval a * g.eval a = 0 := by
-    rw [← eval_mul]
-    exact hfg
-  rcases mul_eq_zero.mp heval with hfa | hga
-  · exact hf a hfa
-  · exact hg a hga
-
-/--
-A coefficient vector of dimension `n`: a function from `Fin (n+1)` to ℝ,
-representing the coefficients `(α₀, …, αₙ)` of a degree-`n` polynomial.
--/
+/-- Coefficient vector `(α₀,…,αₙ) : ℝ^{n+1}` for `δ(s) = α₀+α₁s+…+αₙsⁿ`. -/
 abbrev CoeffVec (n : ℕ) := Fin (n + 1) → ℝ
 
 /--
@@ -202,19 +136,8 @@ structure SupportingHyperplane (P : Polytope n) where
   nonzero : f ≠ 0
   upper_bound : ∀ x ∈ P.Ω, f x ≤ c
   touches : ∃ x ∈ P.Ω, f x = c
-  H : Set (CoeffVec n) := Hyperplane f c
 
-/--
-The exposed face of `P` associated to a supporting hyperplane `hp`,
-defined as the intersection `P.Ω ∩ hp.H` (using the `H` field).
--/
-def ExposedFace_ (P : Polytope n) (hp : SupportingHyperplane P) :=
-  P.Ω ∩ hp.H
-
-/--
-The exposed face of `P` associated to a supporting hyperplane `hp`,
-defined directly as `{x | x ∈ P.Ω ∧ hp.f x = hp.c}`.
--/
+/-- The exposed face of `P` for `hp`: `F = Ω ∩ {x | hp.f x = hp.c}`. -/
 def ExposedFace {n : ℕ} {P : Polytope n} (hp : SupportingHyperplane P) :
     Set (CoeffVec n) :=
   { x | x ∈ P.Ω ∧ hp.f x = hp.c }
@@ -345,14 +268,11 @@ such that `F` equals the exposed face of `hp`. -/
 def IsExposedFace {n : ℕ} (P : Polytope n) (F : Set (CoeffVec n)) : Prop :=
   ∃ hp : SupportingHyperplane P, F = ExposedFace hp
 
-/-- [Axiom of Polyhedral Geometry]
-Every vertex of a polytope is incident to at least one exposed edge.
-This is a standard result in polyhedral combinatorics (following from the
-face lattice structure / Krein-Milman theorem), but requires the full
-V-representation/H-representation face lattice API which is currently
-outside the scope of Mathlib's basic convex geometry. -/
-axiom vertex_incident_to_exposed_edge {n : ℕ} (P : Polytope n) (v : CoeffVec n)
-  (hv : v ∈ P.vertices) : ∃ (E : Set (CoeffVec n)), IsExposedEdge P E ∧ v ∈ E
+-- NOTE (fix-vertex-edge-axiom): the old axiom
+-- `vertex_incident_to_exposed_edge : v ∈ P.vertices → ∃ edge ∋ v`
+-- was false for redundant vertices. It has been removed; the geometric
+-- replacement `exists_exposed_edge_of_singleton` lives in `VertexEdge.lean`
+-- (singleton exposed face `{v}` lies on an exposed edge).
 
 /--
 The ℝ-vector space `CoeffVec n` (functions `Fin (n+1) → ℝ`) has
@@ -387,33 +307,8 @@ Every polytope is bounded (since it is compact).
 lemma Polytope.isBounded {n : ℕ} (P : Polytope n) : Bornology.IsBounded P.Ω :=
   P.isCompact.isBounded
 
-/--
-Given a point `δ` inside a polytope `P` and a nonzero direction `v`,
-there exists a positive `t` such that the ray `δ + t•v` exits the polytope.
--/
-lemma ray_escapes_polytope {n : ℕ} (P : Polytope n) (δ v : CoeffVec n)
-    (hp_in_Ω : δ ∈ P.Ω) (hv_nonzero : v ≠ 0) : ∃ (t : ℝ), 0 < t ∧ δ + t • v ∉ P.Ω := by
-  rcases Metric.isBounded_iff.mp P.isBounded with ⟨C, hC⟩
-  have hv_norm_pos : 0 < ‖v‖ := norm_pos_iff.mpr hv_nonzero
-  let t := (|C| + 1) / ‖v‖
-  have ht_pos : 0 < t := div_pos (by have : 0 ≤ |C| := abs_nonneg C; linarith) hv_norm_pos
-  by_cases h_contra : δ + t • v ∈ P.Ω
-  · exfalso
-    have h_dist : dist (δ + t • v) δ = t * ‖v‖ := by
-      rw [dist_eq_norm]
-      have h_sub : δ + t • v - δ = t • v := by abel
-      have ht_nonneg : 0 ≤ t := ht_pos.le
-      rw [h_sub, norm_smul, Real.norm_eq_abs t, abs_of_nonneg ht_nonneg]
-    have h_le : dist (δ + t • v) δ ≤ C := by
-      apply hC
-      · exact h_contra
-      · exact hp_in_Ω
-    have h_C_lt : C < |C| + 1 := by have : C ≤ |C| := le_abs_self C; linarith
-    rw [h_dist] at h_le
-    have h_t_mul : t * ‖v‖ = |C| + 1 := div_mul_cancel₀ (|C| + 1) (ne_of_gt hv_norm_pos)
-    rw [h_t_mul] at h_le
-    linarith
-  · exact ⟨t, ht_pos, h_contra⟩
+-- Ray escape for polytopes is `ray_escapes_of_bounded` in `BasicLemmas`
+-- (single copy): `ray_escapes_of_bounded P.isBounded δ v hδ hv`.
 
 /--
 The affine span of the intersection of a submodule `U` with an affine
@@ -454,14 +349,5 @@ mathematical exposition: `dim U = Module.finrank ℝ U`.  It composes with
 noncomputable abbrev dim {M : Type*} [AddCommGroup M] [Module ℝ M]
     (U : Submodule ℝ M) : ℕ :=
   Module.finrank ℝ U
-
-/--
-A set `F` is a polytope (in the sense of being the convex hull of a finite
-nonempty set). Unlike `Polytope`, this predicate does NOT require nonempty
-topological interior in the full ambient space, so it applies to faces of
-any dimension.
--/
-def IsPolytopeSet {n : ℕ} (F : Set (CoeffVec n)) : Prop :=
-  ∃ (V : Finset (CoeffVec n)), V.Nonempty ∧ convexHull ℝ (V : Set (CoeffVec n)) = F
 
 end CoeffBox
