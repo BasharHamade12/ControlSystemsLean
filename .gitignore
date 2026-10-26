@@ -19,14 +19,17 @@
 
 Marp
 Marp/
+!/Marp/
+Marp/*
 # --- Junk excluded even inside the allowlisted directories. ---
 # Generated slide renders (rebuild with Marp CLI / marp2odp.py).
 Marp/presentation.odp
 Marp/presentation.pptx
 Marp/presentation.pdf
 Marp/presentation.html
-# Marp presentation source file (tracked for animations)
+# Marp presentation sources (original and staged-reveal copy)
 !/Marp/presentation.md
+!/Marp/presentation_animated.md
 # Marp build outputs and temporary files (cleanup)
 Marp/*.pdf
 Marp/*.pptx

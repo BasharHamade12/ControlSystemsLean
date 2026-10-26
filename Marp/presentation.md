@@ -105,34 +105,90 @@ style: |
   .hiderDiv { position: absolute; inset: 0; background: #ffffff; z-index: 5; border-radius: inherit; }
 header: ''
 footer: ''
+
+
 ---
+
+<!-- SLIDE 1 | Edge Theorem in Lean 4 (Lemma 6.1, real case) -->
+
 
 <!-- _class: lead -->
 
 
-<!-- SLIDE 1 | Edge Theorem in Lean 4 (Lemma 6.1, real case) -->
+
 # Edge Theorem in Lean 4 (Lemma 6.1, real case)
+<div class="cover">
+
 ## TODO: subtitle — polytopic families and exposed edges
+
+
+</div>
+
+<div class="cover">
 
 TODO: Author Name · Institute
 
+
+</div>
+
 ---
-<!-- _class: list -->
 
 <!-- SLIDE 2 | Outline -->
+
+
+<!-- _class: list -->
+
+
 # Outline
 
+<div class="cover">
+
 1. **Background** — Why the Edge Theorem is needed in Control Systems 
+
+
+</div>
+<div class="cover">
+
 2. **Preliminaries** — coefficient vectors, polytopes, affine span/direction/dimension, supporting hyperplanes, root spaces
+
+
+</div>
+<div class="cover">
+
 3. **Exposed faces and edges** — boundary geometry and examples
+
+
+</div>
+<div class="cover">
+
 4. **Edge Theorem** — Assumption 6.1, Lemmas 6.1–6.2, theorem, how the lemmas fit
+
+
+</div>
+<div class="cover">
+
 5. **Proof of Lemma 6.1 (real case)** — Steps 1–6 in Lean, recap, complex-case extra
+
+
+</div>
+<div class="cover">
+
 6. **Proof of Lemma 6.2 (real case)** — goal, math proof, helper lemma, Lean walkthroughs, maps, complex-case extra
+
+
+</div>
+<div class="cover">
+
 7. **Edge Theorem assembled** — formal proof, lemmas behind the steps, Lean implementation
 
 
+</div>
+
 ---
+
 <!-- SLIDE 3 | What is a control system? -->
+
+
 # What is a control system?
 
 <style scoped>
@@ -140,41 +196,83 @@ h1 { font-size: 1.2em; margin-bottom: 4px; }
 blockquote, ul, p { font-size: 0.88em; }
 </style>
 
+<div class="cover">
+
 > A **control system** manages, commands, directs, or regulates the behavior of other devices or systems using control loops — from simple applications like a home thermostat to complex industrial processes.
+
+
+</div>
 
 <div class="columns">
 <div class="col">
 
+<div class="cover">
+
 **Continuous-time state-space model:**
+
+
+</div>
+<div class="cover">
+
 $$
 \dot{x}(t) = A x(t) + B u(t)
 $$
+
+
+</div>
+<div class="cover">
+
 $$
 y(t) = C x(t) + D u(t)
 $$
 
+
+</div>
+
 </div>
 <div class="col">
 
+<div class="cover">
+
 **Discrete-time state-space model:**
+
+
+</div>
+<div class="cover">
+
 $$
 x[k+1] = A_d x[k] + B_d u[k]
 $$
+
+
+</div>
+<div class="cover">
+
 $$
 y[k] = C_d x[k] + D_d u[k]
 $$
 
+
+</div>
+
 </div>
 </div>
+
+<div class="cover">
 
 **Where:** $x$ is the state vector 
  $y$ the output vector
   $u$ the input (control) vector 
   $A, B, C, D$ the state, input, output, and feedthrough matrices, respectively.
 
+
+</div>
+
 ---
 
 <!-- SLIDE 4 | From state-space to transfer function -->
+
+
 # From state-space to transfer function
 
 <style scoped>
@@ -183,7 +281,14 @@ ol, p { font-size: 0.88em; }
 ol { line-height: 1.5; }
 </style>
 
+<div class="cover">
+
 Starting from $\dot{x}(t) = Ax(t) + Bu(t)$, $y(t) = Cx(t) + Du(t)$, with zero initial conditions ($x(0) = 0$):
+
+
+</div>
+
+<div class="cover">
 
 Applying Laplace transform: 
 $sX(s) = AX(s) + BU(s)$, $Y(s) = CX(s) + DU(s)$.
@@ -191,15 +296,25 @@ $(sI - A)X(s) = BU(s)$,
 so $X(s) = (sI - A)^{-1}BU(s)$.
 $\implies Y(s) = C(sI - A)^{-1}BU(s) + DU(s)$.
 
+
+</div>
+
+<div class="cover">
+
 <div class="thm">
 
 $G(s) = \dfrac{Y(s)}{U(s)} = C(sI - A)^{-1}B + D$ — the **transfer function**.
 
 </div>
 
+
+</div>
+
 ---
 
 <!-- SLIDE 5 | Example: mass-spring-damper -->
+
+
 # Example: mass-spring-damper
 
 <style scoped>
@@ -207,15 +322,37 @@ h1 { font-size: 1.2em; margin-bottom: 4px; }
 p { font-size: 0.88em; margin: 3px 0; }
 </style>
 
+<div class="cover">
+
 $m = 1\,\mathrm{kg}$, $c = 2\,\mathrm{N{\cdot}s/m}$, $k = 3\,\mathrm{N/m}$; input $u(t)$ = force (N), output $y(t)$ = displacement (m).
+
+
+</div>
+<div class="cover">
+
 $$m\ddot{y} + c\dot{y} + ky = u(t) \quad\Rightarrow\quad \ddot{y} + 2\dot{y} + 3y = u(t)$$
+
+
+</div>
+<div class="cover">
+
 States $x_1 = y$ (position), $x_2 = \dot{y}$ (velocity):
+
+
+</div>
+<div class="cover">
+
 $$\begin{cases} \dot{x}_1 = x_2 \\ \dot{x}_2 = -3x_1 - 2x_2 + u \end{cases}
 \qquad\Rightarrow\qquad
 A = \begin{bmatrix} 0 & 1 \\ -3 & -2 \end{bmatrix},\;
 B = \begin{bmatrix} 0 \\ 1 \end{bmatrix},\;
 C = \begin{bmatrix} 1 & 0 \end{bmatrix},\;
 D = 0$$
+
+
+</div>
+<div class="cover">
+
 <div class="thm">
 
 $G(s) = C(sI-A)^{-1}B + D
@@ -226,9 +363,14 @@ $G(s) = C(sI-A)^{-1}B + D
 
 </div>
 
+
+</div>
+
 ---
 
 <!-- SLIDE 6 | Poles and stability -->
+
+
 # Poles and stability
 
 <style scoped>
@@ -236,18 +378,47 @@ h1 { font-size: 1.2em; margin-bottom: 4px; }
 blockquote, p { font-size: 0.88em; }
 </style>
 
-> **Stability criterion.** A system is **stable** iff all poles of $G(s)$ have strictly negative real parts; it is **unstable** if some pole of $G(s)$ has positive real part.
+<div class="cover">
+
+> **Continuous-time stability criterion:** A continuous-time system is **stable** iff all poles of $G(s)$ have strictly negative real parts; it is **unstable** if any pole has positive real part.
+>
+> **Discrete-time stability criterion:** A discrete-time system is **stable** iff all poles of $G(z)$ lie strictly inside the unit circle, $|z| < 1$.
 
 
+
+</div>
+
+
+
+<div class="cover">
 
 **Example.** $G(s) = \dfrac{1}{s^2+2s+3}$: the poles solve $s^2 + 2s + 3 = 0$,
+
+
+</div>
+<div class="cover">
+
 $$s = \frac{-b \pm \sqrt{b^2-4ac}}{2a} = \frac{-2 \pm \sqrt{-8}}{2} = -1 \pm j\sqrt{2}$$
+
+
+</div>
+<div class="cover">
+
 so with $p_1 = -1 + j\sqrt{2}$ and $p_2 = -1 - j\sqrt{2}$,
-$\mathrm{Re}(p_1) = \mathrm{Re}(p_2) = -1 < 0$ $\Rightarrow$ the system is **stable**. 
+$\mathrm{Re}(p_1) = \mathrm{Re}(p_2) = -1 < 0$ $\Rightarrow$ the system is **stable**.
+
+<div class="figs cols-2 figs-sm">
+  <figure class="fig-card"><img src="./cont.png" alt="Continuous-time stability diagram" style="height:150px;"><figcaption>Continuous-time</figcaption></figure>
+  <figure class="fig-card"><img src="./discrete.png" alt="Discrete-time stability diagram" style="height:150px;"><figcaption>Discrete-time</figcaption></figure>
+</div>
+
+</div>
 
 ---
 
 <!-- SLIDE 7 | Kharitonov's theorem -->
+
+
 # Kharitonov's theorem
 
 <style scoped>
@@ -255,6 +426,8 @@ h1 { font-size: 1.15em; margin-bottom: 4px; }
 .thm { font-size: 0.72em; }
 p { font-size: 0.85em; margin: 3px 0; }
 </style>
+
+<div class="cover">
 
 <div class="thm">
 
@@ -267,13 +440,28 @@ $$\mathcal{P}\ \text{Hurwitz stable} \iff K_1, K_2, K_3, K_4\ \text{each Hurwitz
 
 </div>
 
+
+</div>
+
+<div class="cover">
+
 **Example (primary structure + TMD).** Primary: $m_1 \in [\underline{m}_1, \bar{m}_1]$, $k_1 \in [\underline{k}_1, \bar{k}_1]$, $c_1 \in [\underline{c}_1, \bar{c}_1]$; tuned mass damper: $m_2 \in [\underline{m}_2, \bar{m}_2]$, $k_2 \in [\underline{k}_2, \bar{k}_2]$, $c_2 \in [\underline{c}_2, \bar{c}_2]$. The equations of motion give $p(s) = a_4 s^4 + a_3 s^3 + a_2 s^2 + a_1 s + a_0 = 0$ with $a_i \in [\underline{a}_i, \bar{a}_i]$ — an interval family, so these four polynomials decide its stability.
 
+
+</div>
+
+<div class="cover">
+
 <div class="figs"><figure class="fig-card"><img src="./Intro_Visual/tmd.png" alt="Wall, primary mass m1 on spring k1 and damper c1 driven by force u(t) with displacement y(t), coupled to tuned mass damper m2 on spring k2 and damper c2" style="height:120px;"></figure></div>
+
+
+</div>
 
 ---
 
 <!-- SLIDE 8 | Kharitonov vs Edge Theorem (discrete systems) -->
+
+
 # Kharitonov vs Edge Theorem (discrete systems)
 
 <style scoped>
@@ -285,27 +473,69 @@ h1 { font-size: 1.2em; margin-bottom: 4px; }
 <div class="columns">
 <div class="col">
 
+<div class="cover">
+
 ### Why Kharitonov fails (discrete)
+
+
+</div>
+<div class="cover">
+
 - Kharitonov's proof relies on a special even/odd symmetry of the imaginary axis. The unit circle has no such symmetry, so four stable corner polynomials prove nothing — an unstable member can still hide in the family.
+
+
+</div>
+<div class="cover">
+
 - A bilinear map sends the disc to the half-plane, but it mixes all coefficients together
+
+
+</div>
 
 
 </div>
 <div class="col">
 
+<div class="cover">
+
 ### Counterexample: Kharitonov fails (discrete)
+
+
+</div>
+<div class="cover">
+
 - Interval family $p(z) = a_3 z^3 + a_2 z^2 + a_1 z + a_0$ with $a_0 \in [-0.2, 0.5]$, $a_1 \in [0.3, 0.5]$, $a_2 \in [0.6, 1.3]$, $a_3 \in [0.9, 1.2]$.
+
+
+</div>
+<div class="cover">
+
 - All four Kharitonov polynomials are stable (largest root moduli $0.83$, $0.79$, $0.98$, $0.82$ — all $< 1$).
+
+
+</div>
+<div class="cover">
+
 - But the vertex member $p^\star(z) = 0.9z^3 + 1.3z^2 + 0.3z + 0.5$ has a root of modulus $1.47 > 1$ — unstable. Four stable corners, yet the family is not stable. 
 
+
+</div>
+
 </div>
 </div>
 
+<div class="cover">
+
 <div class="fig-takeaway">Discrete-time robustness needs polytopes, not intervals — and a theorem that works on any stability region.</div>
+
+
+</div>
 
 ---
 
 <!-- SLIDE 9 | The Edge Theorem at work (discrete) -->
+
+
 # The Edge Theorem at work (discrete)
 
 <style scoped>
@@ -314,69 +544,126 @@ h1 { font-size: 1.2em; margin-bottom: 4px; }
 p { font-size: 0.88em; margin: 4px 0; }
 </style>
 
+<div class="cover">
+
 <div class="thm">
 
 **Theorem (Edge Theorem; Bartlett–Hollot–Lin 1988).** Let $\Omega$ be a polytope of fixed-degree polynomials. Then $\partial R(\Omega) \subseteq \bigcup_{E} R(E)$ over the exposed edges $E$ of $\Omega$. Hence the family is stable (Hurwitz, Schur, …) iff every exposed edge is — and each edge is a one-parameter family $a(\lambda) = (1-\lambda)a^{(1)} + \lambda a^{(2)}$, $\lambda \in [0,1]$.
 
 </div>
 
+
+</div>
+
+<div class="cover">
+
 **Example (Ch. 6, Ex. 6.2).** Family $\delta(z;\underline{\delta}) = z^3 + \delta_2 z^2 + \delta_1 z + \delta_0$ with $\underline{\delta} = (\delta_3,\delta_2,\delta_1,\delta_0) \in \Omega := \{1\} \times [0.042,0.158] \times [-0.058,0.058] \times [-0.06,0.056] \subset \mathbb{R}^4$: 
 a compact $3$-dimensional box ($8$ vertices, $12$ edges) with leading coefficient $\equiv 1$.
+
+
+</div>
+
+<div class="cover">
 
 <div class="figs"><figure class="fig-card"><img src="./Intro_Visual/edge_example_62.png" alt="Left: the coefficient box with 8 vertices and 12 edges colored by varying coefficient. Right: unit disc with the 12 edge root loci inside" width="551" height="350" style="height:350px;width:auto;"><figcaption><b>Ex. 6.2:</b> the box (left) and its 12 edge root loci inside |z| < 1 (right)</figcaption></figure></div>
 
 
+</div>
+
 ---
+
 <!-- SLIDE 10 | Section 1 · Preliminaries -->
+
 <!-- _class: section -->
 # Section 1 · Preliminaries
 
 ---
 
 <!-- SLIDE 11 | Polytopic family of polynomials -->
+
+
 # Polytopic family of polynomials
+
+<div class="cover">
 
 A polytopic family of polynomials can be thought of as the convex hull of a
 finite number of points (polynomials). Mathematically, this can be represented as
 the family
 
+
+</div>
+
+<div class="cover">
+
 $$
 P(s) = \lambda_1 P_1(s) + \cdots + \lambda_n P_n(s)
 $$
 
+
+</div>
+
+<div class="cover">
+
 where $P_i(s)$ are fixed real polynomials and the $\lambda_i$ are real with
 $\lambda_i \geq 0$ and $\sum \lambda_i = 1$.
+
+
+</div>
+
+<div class="cover">
 
 > **Definition (Polytope).**
 > Let $v_1,\dots,v_N \in \mathbb{R}^d$. The *polytope* spanned by
 > $v_1,\dots,v_N$ is the set of all convex combinations of these points:
-> $$
-> \Omega \;=\; \operatorname{conv}\{v_1,\dots,v_N\}
-> \;=\;
-> \left\{
-> \sum_{i=1}^{N} \lambda_i\, v_i
-> \;\middle|\;
-> \lambda_i \in \mathbb{R},\; \lambda_i \ge 0,\;
-> \sum_{i=1}^{N} \lambda_i = 1
-> \right\}.
-> $$
+$$
+\Omega \;=\; \operatorname{conv}\{v_1,\dots,v_N\}
+\;=\;
+\left\{
+\sum_{i=1}^{N} \lambda_i\, v_i
+\;\middle|\;
+\lambda_i \in \mathbb{R},\; \lambda_i \ge 0,\;
+\sum_{i=1}^{N} \lambda_i = 1
+\right\}.
+$$
 > Equivalently, $\Omega$ is compact and convex.
+
+
+</div>
 
 ---
 
 <!-- SLIDE 12 | Coefficient vectors (`CoeffVec`) -->
+
+
 # Coefficient vectors (`CoeffVec`)
+
+<div class="cover">
 
 **Restatement.**
 A degree-$n$ polynomial $\delta(s)=\delta_0+\delta_1 s+\cdots+\delta_n s^n$
 is identified with its coefficient vector
 $\underline\delta=(\delta_0,\delta_1,\dots,\delta_n)\in\mathbb{R}^{n+1}$.
 
+
+</div>
+
+<div class="cover">
+
 **Lean** (`EdgeTheoremDefs.lean`):
+
+
+</div>
+
+<div class="cover">
 
 <div class="lean"><div class="lean-head">EdgeTheoremDefs.lean</div>
 <pre><span class="tok-com">/-- Coefficient vector `(α₀,…,αₙ) : ℝ^{n+1}` for `δ(s) = α₀+α₁s+…+αₙsⁿ`. -/</span>
 <span class="tok-kw">abbrev</span> <span class="tok-type">CoeffVec</span> (n : <span class="tok-type">ℕ</span>) := <span class="tok-type">Fin</span> (n + <span class="tok-num">1</span>) → <span class="tok-type">ℝ</span></pre></div>
+
+
+</div>
+
+<div class="cover">
 
 <div class="lean"><div class="lean-head">EdgeTheoremDefs.lean:95-99</div>
 <pre><span class="tok-com">/-- Convert a coefficient vector α : Fin(n+1) → ℝ to a polynomial
@@ -385,26 +672,58 @@ $\underline\delta=(\delta_0,\delta_1,\dots,\delta_n)\in\mathbb{R}^{n+1}$.
 <span class="tok-kw">noncomputable</span> <span class="tok-kw">def</span> <span class="tok-type">polyOfVec</span> {n : <span class="tok-type">ℕ</span>} (α : <span class="tok-type">CoeffVec</span> n) : <span class="tok-type">Polynomial</span> <span class="tok-type">ℝ</span> :=
   ∑ j : <span class="tok-type">Fin</span> (n + <span class="tok-num">1</span>), <span class="tok-type">Polynomial.monomial</span> j.val (α j)</pre></div>
 
+
+</div>
+
+<div class="cover">
+
 **Example** ($n=2$).
 `CoeffVec 2` = `Fin 3 → ℝ`, i.e. $\mathbb{R}^3$. Take
 $\alpha = (\alpha_0,\alpha_1,\alpha_2) = (1,\,-2,\,3)$, i.e.
 $\alpha(0)=1,\ \alpha(1)=-2,\ \alpha(2)=3$. Then
 
+
+</div>
+
+<div class="cover">
+
 $$
 \texttt{polyOfVec}\ \alpha = 1 + (-2)\,s + 3\,s^2 = 3s^2 - 2s + 1.
 $$
 
+
+</div>
+
+<div class="cover">
+
 <div class="lean"><div class="lean-head">EdgeTheoremDefs.lean</div>
 <pre><span class="tok-com">-- α : CoeffVec 2,  α 0 = 1,  α 1 = -2,  α 2 = 3</span>
 <span class="tok-com">-- polyOfVec α = 3s² - 2s + 1</span></pre></div>
+
+
+</div>
+<div class="cover">
+
 *** The coefficient vector uniquely determines the polynomial. This example shows α = (1, -2, 3) giving 3s² - 2s + 1. ***
+
+
+</div>
 
 ---
 
 <!-- SLIDE 13 | Polytope: Lean formalization -->
+
+
 # Polytope: Lean formalization
 
+<div class="cover">
+
 **Lean** (`EdgeTheoremDefs.lean`):
+
+
+</div>
+
+<div class="cover">
 
 <div class="lean"><div class="lean-head">EdgeTheoremDefs.lean</div>
 
@@ -422,32 +741,89 @@ and is assumed to have nonempty topological interior.
 <span class="tok-kw">def</span> <span class="tok-type">Polytope.Ω</span> (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n) : <span class="tok-type">Set</span> (<span class="tok-type">CoeffVec</span> n) :=
   convexHull <span class="tok-type">ℝ</span> (<span class="tok-type">P.vertices</span> : <span class="tok-type">Set</span> (<span class="tok-type">CoeffVec</span> n))</pre></div>
 
+
+</div>
+
+<div class="cover">
+
 > **Assumption.** The Lean `Polytope` structure additionally requires nonempty interior (`interior_nonempty`). Everything in this deck assumes it.
+
+
+</div>
 
 
 
 <div class="figs figs-sm">
+<div class="cover">
+
 <figure class="fig-card"><img src="./Defs_Visual/def_polytope.png" alt="Convex pentagon with vertices v1 to v5 and an interior point expressed as a convex combination of the vertices"></figure>
+
+
+</div>
 </div>
 
 ---
 
 <!-- SLIDE 14 | Affine span, direction, dimension — definition -->
+
+
 # Affine span, direction, dimension — definition
+<div class="cover">
+
 > **Definition (Affine subspace).** $A \subseteq \mathbb{R}^{d}$ is affine iff $\forall x,y \in A,\ \forall t \in \mathbb{R},\ (1-t)x + t y \in A$: closed under lines. Equivalently $A = p + V$ for $p \in A$ and a linear subspace $V = \mathrm{dir}(A)$.
+
+
+</div>
+
+<div class="cover">
 
 > **Definition (Affine span).** For $S \subseteq \mathbb{R}^{d}$, $\mathrm{aff}(S) = \bigcap\{A \text{ affine} \mid S \subseteq A\}$, the smallest affine subspace containing $S$.
 
+
+</div>
+
+<div class="cover">
+
 > **Definition (Direction).** For an affine subspace $A$, $\mathrm{dir}(A) = \{v \mid \forall p \in A,\ p + v \in A\}$, the underlying linear subspace of translations preserving $A$.
+
+
+</div>
+
+<div class="cover">
 
 > **Definition (Dimension).** For a linear subspace $U \subseteq \mathbb{R}^{d}$, $\dim U$ is the number of vectors in any basis of $U$, i.e. the maximal size of a linearly independent subset of $U$. For an affine subspace $A$, $\dim A := \dim \mathrm{dir}(A)$. Hence $\dim \mathrm{aff}(F) = 0$ means a point, $= 1$ a line, $= 2$ a plane.
 
+
+</div>
+
+<div class="cover">
+
 **Lean** (`EdgeTheoremDefs.lean:341-354`): continued on the next slide.
+
+
+</div>
 
 ---
 
 <!-- SLIDE 15 | Affine span, direction, dimension — Lean -->
+
 # Affine span, direction, dimension — Lean
+
+<div class="cover">
+
+<div class="thm">
+
+**Formal definitions (what the Lean abbreviates).** For a linear subspace $U \subseteq \mathbb{R}^{n+1}$ and an affine subspace $A \subseteq \mathbb{R}^{n+1}$:
+
+$$\operatorname{meetDir}(U, A) := \operatorname{dir}\!\big(\operatorname{aff}(U \cap A)\big) \;\overset{U \cap A \neq \varnothing}{=}\; U \cap \operatorname{dir}(A)$$
+
+$$\dim U := \dim_{\mathbb{R}} U = \operatorname{finrank}_{\mathbb{R}}(U), \qquad \dim(\mathbb{R}^{n+1}) = n + 1$$
+
+The direction identity holds because $U$, viewed as an affine subspace, has direction $U$ itself (`intersection_direction_eq`, `PreliminaryLemmas.lean:196`; with `affineSpan_inter` also `aff(U \cap A) = U \sqcap A`). Applied in **Step 2** of Lemma 6.1: $U = P_{s_r}(r)$ has $\dim U = n$, $A = \operatorname{aff}(\Omega)$ has $\dim(\operatorname{dir}(A)) \ge 2$, hence
+
+$$\dim(\operatorname{meetDir}(U, A)) = \dim\big(U \cap \operatorname{dir}(A)\big) \ge n + 2 - (n+1) = 1.$$ 
+
+</div>
 
 <div class="lean"><div class="lean-head">EdgeTheoremDefs.lean:338-351</div>
 
@@ -460,13 +836,20 @@ and is assumed to have nonempty topological interior.
     (<span class="tok-var">U</span> : <span class="tok-type">Submodule</span> <span class="tok-type">ℝ</span> <span class="tok-var">M</span>) : <span class="tok-type">ℕ</span> :=
   <span class="tok-type">Module.finrank</span> <span class="tok-type">ℝ</span> <span class="tok-var">U</span></pre></div>
 
+
+</div>
+
 ---
 
 <!-- SLIDE 16 | Supporting hyperplane -->
+
+
 # Supporting hyperplane
 
 <div class="columns">
 <div class="col">
+
+<div class="cover">
 
 > **Definition (Supporting hyperplane).**
 > Let $\Omega \subseteq \mathbb{R}^{d}$ be convex and
@@ -476,6 +859,29 @@ and is assumed to have nonempty topological interior.
 > **(i)** $f(x) \le c$ for all $x \in \Omega$
 > **(ii)** $f(x_{0}) = c$ for some $x_{0} \in \Omega$.
 > The *exposed set* is $\Omega \cap H$.
+
+
+</div>
+
+<div class="cover">
+
+**Lean** (`EdgeTheoremDefs.lean`):
+
+
+</div>
+
+<div class="cover">
+
+<div class="lean"><div class="lean-head">EdgeTheoremDefs.lean</div>
+<pre><span class="tok-kw">structure</span> <span class="tok-type">SupportingHyperplane</span> (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n) <span class="tok-kw">where</span>
+  f : <span class="tok-type">CoeffVec</span> n →ₗ[<span class="tok-type">ℝ</span>] <span class="tok-type">ℝ</span>
+  c : <span class="tok-type">ℝ</span>
+  nonzero : f ≠ <span class="tok-num">0</span>
+  upper_bound : ∀ x ∈ <span class="tok-type">P.Ω</span>, f x ≤ c
+  touches : ∃ x ∈ <span class="tok-type">P.Ω</span>, f x = c</pre></div>
+
+
+</div>
 
 <!--
 <div class="figs figs-sm">
@@ -489,6 +895,8 @@ and is assumed to have nonempty topological interior.
 </div>
 <div class="col">
 
+<div class="cover">
+
 > **Example (Concrete supporting hyperplane).**
 > Take $f(x,y) = -y$ and $c = 0$.
 > $H = \{\, (x,y) : y = 0 \,\}$
@@ -498,12 +906,30 @@ and is assumed to have nonempty topological interior.
 > Hence $H$ supports $\Omega$, and the exposed set $\Omega \cap H$
 > is the bottom edge of the polytope.
 
+
+</div>
+
 <div class="figs figs-sm">
+<div class="cover">
+
 <figure class="fig-card"><img src="./Defs_Visual/def_supporting_example.png" alt="Pentagon above the x-axis with the bottom edge highlighted as the exposed set and the functional f = -y pointing downwards"><figcaption>
+
+
+</div>
+
+<div class="cover">
 
 <b>Example $f=-y$, $c=0$:</b> $\Omega$ above $H=\{y=0\}$; $\Omega \cap H$ is the bottom edge
 
+
+</div>
+
+<div class="cover">
+
 </figcaption></figure>
+
+
+</div>
 </div>
 
 </div>
@@ -512,9 +938,18 @@ and is assumed to have nonempty topological interior.
 ---
 
 <!-- SLIDE 17 | Supporting hyperplane: Lean -->
+
+
 # Supporting hyperplane: Lean
 
+<div class="cover">
+
 **Lean** (`EdgeTheoremDefs.lean`):
+
+
+</div>
+
+<div class="cover">
 
 <div class="lean"><div class="lean-head">EdgeTheoremDefs.lean</div>
 <pre><span class="tok-kw">structure</span> <span class="tok-type">SupportingHyperplane</span> (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n) <span class="tok-kw">where</span>
@@ -524,32 +959,56 @@ and is assumed to have nonempty topological interior.
   upper_bound : ∀ x ∈ <span class="tok-type">P.Ω</span>, f x ≤ c
   touches : ∃ x ∈ <span class="tok-type">P.Ω</span>, f x = c</pre></div>
 
+
+</div>
+
 ---
+
+<!-- SLIDE 18 | Root spaces -->
 
 <!-- _class: section -->
 
 
-<!-- SLIDE 18 | Root spaces -->
+
 # Root spaces
 
 ---
 
 <!-- SLIDE 19 | Root space — definition -->
+
+
 # Root space — definition
+<div class="cover">
+
 **Notation.**
 For $\delta = (\delta_0,\dots,\delta_n) \in \mathbb{R}^{n+1}$,
 $\operatorname{polyOfVec}(\delta)(s)
 = \delta_0 + \delta_1 s + \cdots + \delta_n s^n$.
 
+
+</div>
+
+<div class="cover">
+
 > **Definition (Root space).**
 > Let $W \subseteq \mathbb{R}^{n+1}$. Then
-> $$
-> R(W) = \{\, s \in \mathbb{C} \mid
-> \exists\, \delta \in W,\ \delta(s) = 0 \,\},
-> $$
+$$
+R(W) = \{\, s \in \mathbb{C} \mid
+\exists\, \delta \in W,\ \delta(s) = 0 \,\},
+$$
 > and for a polytope $P$, $R(P) := R(P.\Omega)$.
 
+
+</div>
+
+<div class="cover">
+
 **Lean** (`EdgeTheoremDefs.lean`):
+
+
+</div>
+
+<div class="cover">
 
 <div class="lean"><div class="lean-head">EdgeTheoremDefs.lean</div>
 
@@ -565,20 +1024,35 @@ some coefficient vector in `P.Ω` yields a polynomial vanishing at `s`.
 <span class="tok-kw">def</span> <span class="tok-type">RootSpace</span> (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n) : <span class="tok-type">Set</span> <span class="tok-type">ℂ</span> :=
   <span class="tok-type">RootSpaceSet</span> <span class="tok-type">P.Ω</span></pre></div>
 
+
+</div>
+
 ---
-<!-- _class: section -->
 
 <!-- SLIDE 20 | Exposed faces and edges -->
+
+<!-- _class: section -->
+
+
 # Exposed faces and edges
 
 ---
 
 <!-- SLIDE 21 | Boundary and exposed faces — definition -->
+
+
 # Boundary and exposed faces — definition
+<div class="cover">
+
 > **Definition (Closure and boundary).**
 > $\overline{S} = \bigcap \{\, F \supseteq S : F
 > \text{ closed} \,\}$ (smallest closed set containing $S$);
 > $\partial S = \overline{S} \setminus \operatorname{int}(S)$.
+
+
+</div>
+
+<div class="cover">
 
 > **Definition (Intrinsic interior / relative boundary).**
 > For $S \subseteq \mathbb{R}^{d}$, the *intrinsic interior*
@@ -588,17 +1062,33 @@ some coefficient vector in `P.Ω` yields a polynomial vanishing at `s`.
 > $B(x, \varepsilon) \cap \operatorname{aff}(S) \subseteq S$.
 > The *relative boundary* is $S \setminus \operatorname{relint}(S)$.
 
+
+</div>
+
+<div class="cover">
+
 > **Definition (Exposed face / edge).**
 > For $H$ supporting $\Omega$, $F = \Omega \cap H$ is
 > *exposed*; $\dim\operatorname{aff}(F) = 1$ gives an
 > *exposed edge* $E$, $= 2$ an *exposed face*.
 
+
+</div>
+
+<div class="cover">
+
 **Lean** (`EdgeTheoremDefs.lean:140-151`)
+
+
+</div>
 
 ---
 
 <!-- SLIDE 22 | Boundary and exposed faces — Lean -->
+
 # Boundary and exposed faces — Lean
+<div class="cover">
+
 <div class="lean"><div class="lean-head">EdgeTheoremDefs.lean:140-151</div>
 
 <pre><span class="tok-com">/-- The exposed face of `P` for `hp`: `F = Ω ∩ {x | hp.f x = hp.c}`. -/</span>
@@ -614,12 +1104,19 @@ some coefficient vector in `P.Ω` yields a polynomial vanishing at `s`.
     <span class="tok-var">E</span> = <span class="tok-type">ExposedFace</span> hp ∧
     <span class="tok-type">Module.finrank</span> <span class="tok-type">ℝ</span> (affineSpan <span class="tok-type">ℝ</span> (<span class="tok-type">ExposedFace</span> hp)).direction = <span class="tok-num">1</span></pre></div>
 
+
+</div>
+
 ---
 
 <!-- SLIDE 23 | Boundary and exposed edge — example -->
+
+
 # Boundary and exposed edge — example
 <div class="columns">
 <div class="col">
+
+<div class="cover">
 
 > **Example (Boundary).**
 > $S = \{\, s : |s| \le 1 \,\}$ is closed, so
@@ -627,16 +1124,36 @@ some coefficient vector in `P.Ω` yields a polynomial vanishing at `s`.
 > $\operatorname{int}(S) = \{\, s : |s| < 1 \,\}$. Thus
 > $\partial S = \{\, s : |s| = 1 \,\}$.
 
+
+</div>
+
 <div class="figs figs-sm">
+<div class="cover">
+
 <figure class="fig-card"><img src="./Defs_Visual/def_boundary.png" alt="Closed unit disk with its interior, its rim as the boundary, and a small ball about a rim point meeting both the disk and its complement"><figcaption>
+
+
+</div>
+
+<div class="cover">
 
 <b>Boundary:</b> $\operatorname{int}(S)=\{|s|<1\}$, $\partial S=\{|s|=1\}$ — a small ball about $s_0$ meets both $S$ and $S^{c}$
 
+
+</div>
+
+<div class="cover">
+
 </figcaption></figure>
+
+
+</div>
 </div>
 
 </div>
 <div class="col">
+
+<div class="cover">
 
 > **Example (Exposed edge).**
 > Let $\Omega = \operatorname{conv}\{(0,0),(1,0),(1,1),(0,1)\}$
@@ -645,89 +1162,175 @@ some coefficient vector in `P.Ω` yields a polynomial vanishing at `s`.
 > with $\dim\operatorname{aff}(\Omega \cap H) = 1$:
 > an exposed edge.
 
+
+</div>
+
 <div class="figs figs-sm">
+<div class="cover">
+
 <figure class="fig-card"><img src="./Defs_Visual/def_exposed_edge.png" alt="Unit square with the bottom edge highlighted as the exposed set on the hyperplane y = 0"><figcaption>
+
+
+</div>
+
+<div class="cover">
 
 <b>Exposed edge:</b> $H=\{y=0\}$ cuts the unit square in the segment $[\,(0,0),(1,0)\,]$, of affine dimension $1$
 
+
+</div>
+
+<div class="cover">
+
 </figcaption></figure>
+
+
+</div>
 </div>
 
 </div>
 </div>
 
 ---
-<!-- _class: section -->
 
 <!-- SLIDE 24 | Edge Theorem -->
+
+<!-- _class: section -->
+
+
 # Edge Theorem
 
 ---
 
 <!-- SLIDE 25 | Assumption 6.1 -->
+
+
 # Assumption 6.1
+
+<div class="cover">
 
 > **Assumption 6.1.**
 > The sign of the leading coefficient $\delta_n$ is constant
 > on $\Omega$; e.g. $\delta_n > \Delta > 0$ for all
 > $\underline\delta \in \Omega$.
 
+
+</div>
+
+<div class="cover">
+
 Every lemma and theorem below assumes it.
+
+
+</div>
 
 ---
 
 <!-- SLIDE 26 | Lemmas 6.1–6.2 — statements -->
+
+
 # Lemmas 6.1–6.2 — statements
+<div class="cover">
+
 > **Lemma 6.1.**
 > Let $\Omega \subset \mathbb{R}^{n+1}$ be a polytope satisfying
 > Assumption 6.1. Then
+
+
+</div>
+<div class="cover">
+
 > 1. If $s_r \in \mathbb{R}$ and $s_r \in R(\Omega)$,
 >    then $\exists$ an exposed edge $E$ of $\Omega$ with
 >    $s_r \in R(E)$;
+
+
+</div>
+<div class="cover">
+
 > 2. If $s_c \in \mathbb{C}$ and
 >    $s_c \in R(\Omega)$, then $\exists$ an exposed face
 >    $F$ of $\Omega$ with $s_c \in R(F)$.
 
+
+</div>
+
+<div class="cover">
+
 > **Lemma 6.2.**
 > For any exposed face $F$ of $\Omega$,
-> $$
-> \partial R(F) \;\subseteq\; R(\partial F),
-> $$
+$$
+\partial R(F) \;\subseteq\; R(\partial F),
+$$
 > i.e. the boundary of the root space of $F$ is contained
 > in the root space of the relative boundary of $F$.
 
 
+</div>
+
 ---
 
 <!-- SLIDE 27 | Edge Theorem — statement -->
+
 # Edge Theorem — statement
+<div class="cover">
+
 > **Theorem (Edge Theorem).**
 > Let $\Omega \subset \mathbb{R}^{n+1}$ be a polytope of polynomials
 > satisfying Assumption 6.1. Then the boundary of $R(\Omega)$
 > is contained in the root space of the exposed edges of $\Omega$:
-> $$
-> \partial R(\Omega) \;\subseteq\;
-> \bigcup_{E \text{ exposed edge}} R(E).
-> $$
+$$
+\partial R(\Omega) \;\subseteq\;
+\bigcup_{E \text{ exposed edg<e}} R(E).
+$$
+
+
+</div>
 
 ---
 
 <!-- SLIDE 28 | Edge Theorem — proof outline -->
+
+
 # Edge Theorem — proof outline
+<div class="cover">
+
 1. **Lemma 6.1.** Every $s \in R(\Omega)$ lies in $R(F)$ for some exposed face $F$ of $\Omega$; if $s = s_r \in \mathbb{R}$ then $F = E$ can be taken to be an exposed edge.
+
+
+</div>
+<div class="cover">
+
 2. **Lemma 6.2.** For $F$ exposed, $\partial R(F) \subseteq R(\mathrm{rel}\,\partial F)$: a boundary root of a face is already a root on its relative boundary.
+
+
+</div>
+<div class="cover">
+
 3. **Descent.** Let $s \in \partial R(\Omega)$. By (1), $s \in R(F_0)$ for $F_0$ exposed; while $s \in \partial R(F_k)$, (2) moves the root to $R(F_{k+1})$ for $F_{k+1} \subsetneq F_k$ exposed, so $\dim F_{k+1} < \dim F_k$. The dimension drops strictly at each step, hence the process terminates at an exposed edge $E$ with $s \in R(E)$.
+
+
+</div>
+
+<div class="cover">
 
 Together: $\partial R(\Omega) \subseteq \bigcup_{E} R(E)$ over exposed edges $E$.
 
+
+</div>
+
 ---
+
 <!-- SLIDE 29 | Section 4 · Proof of Lemma 6.1, real case -->
+
 <!-- _class: section -->
 # Section 4 · Proof of Lemma 6.1, real case
 
 ---
 
 <!-- SLIDE 30 | Lemma 6.1 (real case) — proof overview -->
+
+
 # Lemma 6.1 (real case) — proof overview
 
 <style scoped>
@@ -735,25 +1338,74 @@ h1 { font-size: 1.15em; margin-bottom: 2px; }
 blockquote { font-size: 0.72em; }
 ol { font-size: 0.78em; }
 </style>
+<div class="cover">
+
 > **Lemma 6.1.** :  Let $\Omega \subset \mathbb{R}^{n+1}$ be a polytope satisfying Assumption 6.1. Then
+
+
+</div>
+<div class="cover">
+
 > 1. If $s_r \in \mathbb{R}$ and $s_r \in R(\Omega)$,
 >    then $\exists$ an exposed edge $E$ of $\Omega$ with
 >    $s_r \in R(E)$;
+
+
+</div>
+<div class="cover">
+
 > 2. If $s_c \in \mathbb{C}$ and
 >    $s_c \in R(\Omega)$, then $\exists$ an exposed face
 >    $F$ of $\Omega$ with $s_c \in R(F)$.
 
+
+</div>
+
+<div class="cover">
+
 1. **Unpack.** $s \in R(\Omega)$ with $\mathrm{Im}(s) = 0$ gives $\delta \in \Omega \cap P_{s_r}(r)$ with $s = \bar{r}$.
+
+
+</div>
+<div class="cover">
+
 2. **Count.** $\dim U = n$ and $\dim\mathrm{dir} \ge 2$ give $\dim(U \cap \mathrm{dir}) \ge 1$.
+
+
+</div>
+<div class="cover">
+
 3. **Escape.** Follow the nonzero direction to $\delta_{\mathrm{bound}} \in P_{s_r} \cap \partial\Omega$.
+
+
+</div>
+<div class="cover">
+
 4. **Expose.** Hahn–Banach at $\delta_{\mathrm{bound}}$ gives exposed $F \ni \delta_{\mathrm{bound}}$ with $\bar{r} \in R(F)$.
+
+
+</div>
+<div class="cover">
+
 5. **Descend.** $F \to G \to \cdots \to E$ with $\bar{r} \in R(E)$, $\dim E = 1$ (termination by dimension).
+
+
+</div>
+<div class="cover">
+
 6. **Degenerate.** $m = 0$ is impossible; $m = 1$ makes $\Omega$ itself the edge.
+
+
+</div>
 
 ---
 
 <!-- SLIDE 31 | Step 1: Unpack the root — Lean + map -->
+
+
 # Step 1: Unpack the root — Lean + map
+<div class="cover">
+
 <div class="thm">
 
 **Claim.** Let $s \in R(\Omega)$ with $\mathrm{Im}(s) = 0$. Then $s = \bar{r}$ $\in R$ and there is $\delta \in P_{s_r}(r)$ with $\tilde P_\delta(s) = 0$.
@@ -764,7 +1416,12 @@ ol { font-size: 0.78em; }
 
 </div>
 
+
+</div>
+
 <div class="codeside">
+<div class="cover">
+
 <div class="lean"><div class="lean-head">Lemma61.lean:142-153</div>
 <pre><span class="tok-kw">theorem</span> <span class="tok-type">lemma61_real</span> (hn : n ≥ <span class="tok-num">1</span>) (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n) (s : <span class="tok-type">ℂ</span>) (hs : s ∈ <span class="tok-type">RootSpace</span> <span class="tok-var">P</span>) :
     s.im = <span class="tok-num">0</span> → ∃ <span class="tok-var">E</span>, <span class="tok-type">IsExposedEdge</span> <span class="tok-var">P</span> <span class="tok-var">E</span> ∧ s ∈ <span class="tok-type">RootSpaceSet</span> <span class="tok-var">E</span> := <span class="tok-tac">by</span>
@@ -778,6 +1435,11 @@ ol { font-size: 0.78em; }
 <span class="grp mk1"><span class="gn">1.3</span><span class="gbox">  <span class="tok-kw">have</span> hδ_in_Psr : δ ∈ (<span class="tok-type">P_sr</span> n s.re : <span class="tok-type">Set</span> (<span class="tok-type">CoeffVec</span> n)) := <span class="tok-tac">by</span>
     <span class="tok-tac">rw</span> [hs_real] <span class="tok-kw">at</span> hδ_root
     <span class="tok-tac">exact</span> <span class="tok-type">mem_P_sr_of_isRoot</span> s.re δ hδ_root</span></span></pre></div>
+
+
+</div>
+<div class="cover">
+
 <div class="side">
 
 ### Map
@@ -789,12 +1451,19 @@ ol { font-size: 0.78em; }
 | **1.3** | Root at $\bar{r}$ gives $P_\delta(r) = 0$, i.e. $\delta \in P_{s_r}(r)$ |
 
 </div>
+
+
+</div>
 </div>
 
 ---
 
 <!-- SLIDE 32 | Step 2: Dimension count — Lean + map -->
+
+
 # Step 2: Dimension count — Lean + map
+<div class="cover">
+
 <div class="thm">
 
 **Claim.** Let $U$ be linear with $\dim U = n$, $\mathrm{aff}\Omega$ affine with $\dim(\mathrm{dir}(\mathrm{aff}\Omega)) \ge 2$, and $\delta \in U \cap \mathrm{aff}\Omega$. Then $\dim(\mathrm{meetDir}) \ge 1$.
@@ -808,7 +1477,12 @@ ol { font-size: 0.78em; }
 
 </div>
 
+
+</div>
+
 <div class="codeside">
+<div class="cover">
+
 <div class="lean"><div class="lean-head">PreliminaryLemmas.lean</div>
 <pre><span class="tok-kw">lemma</span> <span class="tok-type">intersection_affine_dim_ge_one</span> {n : <span class="tok-type">ℕ</span>} (<span class="tok-var">U</span> : <span class="tok-type">Submodule</span> <span class="tok-type">ℝ</span> (<span class="tok-type">CoeffVec</span> n))
     (affΩ : <span class="tok-type">AffineSubspace</span> <span class="tok-type">ℝ</span> (<span class="tok-type">CoeffVec</span> n))
@@ -823,6 +1497,11 @@ ol { font-size: 0.78em; }
     <span class="tok-tac">rw</span> [<span class="tok-type">affineSpan_inter</span> <span class="tok-var">U</span> affΩ]</span></span>
 <span class="grp mk1"><span class="gn">2.5</span><span class="gbox">  <span class="tok-tac">rw</span> [hA_eq, hA_dir]</span></span>
 <span class="grp mk1"><span class="gn">2.6</span><span class="gbox">  <span class="tok-tac">exact</span> <span class="tok-type">finrank_inf_ge_one</span> <span class="tok-var">U</span> affΩ.direction hU_dim haff_dim</span></span></pre></div>
+
+
+</div>
+<div class="cover">
+
 <div class="side">
 
 ### Map
@@ -837,12 +1516,23 @@ ol { font-size: 0.78em; }
 | **2.6** | $\dim(U \cap V) = \dim U + \dim V - \dim(U+V) \ge n + 2 - (n+1) = 1$ ,  |
 
 </div>
+
+
 </div>
+</div>
+
+<div class="cover">
 
 *** Step-by-step dimension analysis: each step reveals on a new slide ***
 
+
+</div>
+
 ---
+
 <!-- SLIDE 33 | Step 3: Escape — Lean + map -->
+
+
 # Step 3: Escape — Lean + map
 
 <style scoped>
@@ -852,6 +1542,8 @@ ol { font-size: 0.78em; }
 .thm { font-size: 0.85em; }
 .thm p { margin: 0.2em 0; }
 </style>
+<div class="cover">
+
 <div class="thm">
 
 **Claim.** Let $\Omega$ be a polytope, $U$ a linear subspace, $\delta \in \Omega \cap U$, with $\dim(\mathrm{meetDir}) \ge 1$. Then $\exists\, \delta_{\mathrm{bound}} \in U \cap \partial\Omega$.
@@ -864,7 +1556,12 @@ $\delta_{\mathrm{bound}} = \delta + (c \cdot t_{\mathrm{out}})v \in U \cap \part
 
 </div>
 
+
+</div>
+
 <div class="codeside">
+<div class="cover">
+
 <div class="lean">
 <pre><span class="tok-kw">lemma</span> <span class="tok-type">exists_boundary_point_in_submodule</span> {n : <span class="tok-type">ℕ</span>} (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n)
     (<span class="tok-var">U</span> : <span class="tok-type">Submodule</span> <span class="tok-type">ℝ</span> (<span class="tok-type">CoeffVec</span> n)) (δ : <span class="tok-type">CoeffVec</span> n)
@@ -899,6 +1596,11 @@ $\delta_{\mathrm{bound}} = \delta + (c \cdot t_{\mathrm{out}})v \in U \cap \part
       <span class="tok-kw">calc</span> δ_bound = (<span class="tok-num">1</span> - c) • δ + c • (δ + t_out • v) := <span class="tok-tac">by</span> <span class="tok-tac">rw</span> [←hc_eq]
         _ = δ + (c * t_out) • v := <span class="tok-tac">by</span> <span class="tok-tac">rw</span> [h_rewrite]
     <span class="tok-tac">exact</span> ⟨δ_bound, h_eq ▸ hmem_U, h_front⟩</span></span></pre></div>
+
+
+</div>
+<div class="cover">
+
 <div class="side">
 
 ### Map
@@ -912,11 +1614,16 @@ $\delta_{\mathrm{bound}} = \delta + (c \cdot t_{\mathrm{out}})v \in U \cap \part
 | **⑤** | $\delta_{\mathrm{bound}} = \delta + (c \cdot t_{\mathrm{out}})v$: on the line from ②, hence in $U$ — and in $\partial\Omega$ by ④ |
 
 </div>
+
+
+</div>
 </div>
 
 ---
 
 <!-- SLIDE 34 | Step 3: Escape — `exists_boundary_point_in_submodule` (Lean + map) -->
+
+
 # Step 3: Escape — `exists_boundary_point_in_submodule` (Lean + map)
 
 <style scoped>
@@ -925,6 +1632,8 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 .thm { font-size: 0.85em; }
 .thm p { margin: 0.2em 0; }
 </style>
+
+<div class="cover">
 
 <div class="thm">
 
@@ -938,7 +1647,12 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 
 </div>
 
+
+</div>
+
 <div class="codeside" style="grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);">
+<div class="cover">
+
 <div class="lean"><div class="lean-head">PreliminaryLemmas.lean:336-368 — full proof, 3.1–3.5 highlighted</div>
 <pre><span class="tok-kw">lemma</span> <span class="tok-type">exists_boundary_point_in_submodule</span> {n : <span class="tok-type">ℕ</span>} (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n)
     (<span class="tok-var">U</span> : <span class="tok-type">Submodule</span> <span class="tok-type">ℝ</span> (<span class="tok-type">CoeffVec</span> n)) (δ : <span class="tok-type">CoeffVec</span> n)
@@ -974,6 +1688,11 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
         _ = δ + (c * t_out) • v := <span class="tok-tac">by</span> <span class="tok-tac">rw</span> [h_rewrite]
     <span class="tok-tac">exact</span> ⟨δ_bound, h_eq ▸ hmem_U, h_front⟩</span></span></pre></div>
 
+
+</div>
+
+<div class="cover">
+
 <div class="side">
 
 ### Map
@@ -987,13 +1706,20 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 |  **3.5** | The witness stays in the slice: $\delta_{\mathrm{bound}}$ on the segment gives $c \in [0,1]$ with $\delta_{\mathrm{bound}} = (1-c)\delta + c(\delta + t_{\mathrm{out}}v) = \delta + (c \cdot t_{\mathrm{out}})v$ (via `segment_eq_image`, `segment_point_rewrite`), a point of the line from 3.2, hence in $U$ — and in $\partial\Omega$ by 3.4 |
 
 </div>
+
+
+</div>
 </div>
 
 ---
 
 <!-- SLIDE 35 | Step 3: Escape — `ray_escapes_of_bounded` (Lean + map) -->
+
+
 # Step 3: Escape — `ray_escapes_of_bounded` (Lean + map)
 <div class="codeside" style="grid-template-columns:minmax(0,1.58fr) minmax(0,1fr);">
+<div class="cover">
+
 <div class="lean"><div class="lean-head">BasicLemmas.lean:73-91 — full proof, A.1.1–A.1.4 highlighted</div>
 <pre><span class="tok-kw">lemma</span> <span class="tok-type">ray_escapes_of_bounded</span> {n : <span class="tok-type">ℕ</span>} {<span class="tok-var">S</span> : <span class="tok-type">Set</span> (<span class="tok-type">CoeffVec</span> n)}
     (hB : <span class="tok-type">Bornology.IsBounded</span> <span class="tok-var">S</span>) (δ v : <span class="tok-type">CoeffVec</span> n)
@@ -1014,6 +1740,11 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 <span class="grp mk1"><span class="gn">A.1.4</span><span class="gbox">  <span class="tok-tac">rw</span> [h_dist, h_t_mul] <span class="tok-kw">at</span> h_le
   <span class="tok-kw">have</span> : <span class="tok-var">C</span> ≤ |<span class="tok-var">C</span>| := le_abs_self <span class="tok-var">C</span>
   <span class="tok-tac">linarith</span></span></span></pre></div>
+
+
+</div>
+<div class="cover">
+
 <div class="side">
 
 ### Map
@@ -1026,12 +1757,19 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 |  **A.1.4** | $\|C\|+1 \le C \le \|C\|$, impossible  |
 
 </div>
+
+
+</div>
 </div>
 
 ---
 
 <!-- SLIDE 36 | Step 3: Escape — `segment_boundary_intersection` (Lean + map) -->
+
+
 # Step 3: Escape — `segment_boundary_intersection` (Lean + map)
+
+<div class="cover">
 
 <div class="thm">
 
@@ -1044,7 +1782,12 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 
 </div>
 
+
+</div>
+
 <div class="codeside" style="grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);">
+<div class="cover">
+
 <div class="lean"><div class="lean-head">PreliminaryLemmas.lean:273-294 — A.2.1–A.2.4 highlighted</div>
 <pre><span class="tok-kw">lemma</span> <span class="tok-type">segment_boundary_intersection</span> {n : <span class="tok-type">ℕ</span>} (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n) (δ : <span class="tok-type">CoeffVec</span> n)
     (hδ_in_Ω : δ ∈ <span class="tok-type">P.Ω</span>) (hδ_not_front : δ ∉ frontier <span class="tok-type">P.Ω</span>)
@@ -1070,6 +1813,11 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
   <span class="tok-tac">exact</span> hx_uv</span></span></pre></div>
 
 
+</div>
+
+
+<div class="cover">
+
 <div class="side">
 
 ### Map
@@ -1082,13 +1830,20 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 |  **A.2.4** | `segment_is_connected` (`BasicLemmas.lean:46`) forces a point in both — in $\emptyset$  |
 
 </div>
+
+
+</div>
 </div>
 
 ---
 
 <!-- SLIDE 37 | Step 3: Escape — slice wrappers `Psr`/`Psc` (Lean + map) -->
+
+
 # Step 3: Escape — slice wrappers `Psr`/`Psc` (Lean + map)
 <div class="codeside" style="display:grid;grid-template-columns:minmax(0,35%) 1fr;column-gap:16px;align-items:start;margin-top:8px;">
+<div class="cover">
+
 <div style="min-width:0;"><div class="lean" style="margin:0;"><div class="lean-head">PreliminaryLemmas.lean:371-384</div>
 
 <pre><span class="grp mk1"><span class="gn">A.3</span><span class="gbox"><span class="tok-kw">lemma</span> <span class="tok-type">exists_boundary_point_in_Psr</span> {n : <span class="tok-type">ℕ</span>} (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n) (r : <span class="tok-type">ℝ</span>) (δ : <span class="tok-type">CoeffVec</span> n)
@@ -1107,6 +1862,11 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
   <span class="tok-type">exists_boundary_point_in_submodule</span> <span class="tok-var">P</span> (<span class="tok-type">P_sc</span> n s) δ hδ_in_Ω hδ_in_Psc affΩ hδ_aff hA_dim</span></span></pre></div>
 </div>
 
+
+</div>
+
+<div class="cover">
+
 <div class="side">
 
 ### Map
@@ -1118,10 +1878,16 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 | **A.3** | `_in_Psr` / `_Psc` (:371,379): $U$ := $P_{s_r}$ / $P_{s_c}$ (this slide) |
 
 </div>
+
+
+</div>
 </div>
 
 ---
+
 <!-- SLIDE 38 | Step 4: Exposed face — Lean + map -->
+
+
 # Step 4: Exposed face — Lean + map
 
 <style scoped>
@@ -1131,13 +1897,20 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 .codeside { column-gap: 10px; margin-top: 2px; }
 .codeside .lean .grp { margin: 0; }
 </style>
+<div class="cover">
+
 <div class="thm">
 
 **Claim.** Let $\delta_{\mathrm{bound}} \in \mathrm{frontier}\,P.\Omega \cap \mathrm{PsrSet}\,n\,r = =\; \{\,\delta \in \mathbb{R}^{n+1} \mid P_\delta(r) = 0\,\} \;=\; \{\,\delta \mid \delta_0 + \delta_1 r + \cdots + \delta_n r^n = 0\,\}$ with $(\mathrm{interior}\,P.\Omega).\mathrm{Nonempty}$. Then there exists $F$ with $\mathrm{IsExposedFace}\,P\,F \land \delta_{\mathrm{bound}} \in F \land (r:\mathbb{C}) \in \mathrm{RootSpaceSet}\,F$.
 
 </div>
 
+
+</div>
+
 <div class="codeside">
+<div class="cover">
+
 <div class="lean"><div class="lean-head">ExposedFaceLemmas.lean:96-136</div>
 <pre style="font-size:0.32em;line-height:1.08;padding:0 6px;"><span class="tok-kw">lemma</span> <span class="tok-type">exists_exposed_face_containing_boundary_point</span> {n : <span class="tok-type">ℕ</span>} (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n)
     (r : <span class="tok-type">ℝ</span>) (δ_bound : <span class="tok-type">CoeffVec</span> n)
@@ -1180,6 +1953,11 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 <span class="grp mk1"><span class="gn">4.9</span><span class="gbox">  <span class="tok-kw">have</span> hr_in_rootspace : (r : <span class="tok-type">ℂ</span>) ∈ <span class="tok-type">RootSpaceSet</span> (<span class="tok-type">ExposedFace</span> hp) :=
     <span class="tok-type">rootspace_mem_of_eval_zero</span> r δ_bound hδ_bound_Psr (<span class="tok-type">ExposedFace</span> hp) hδ_in_face</span></span>
 <span class="grp mk1"><span class="gn">4.10</span><span class="gbox">  <span class="tok-tac">exact</span> ⟨<span class="tok-type">ExposedFace</span> hp, ⟨hp, <span class="tok-tac">rfl</span>⟩, hδ_in_face, hr_in_rootspace⟩</span></span></pre></div>
+
+
+</div>
+<div class="cover">
+
 <div class="side">
 
 ### Map
@@ -1198,10 +1976,16 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 | **4.10** | $\delta_{\mathrm{bound}}\in F\subseteq\Omega$ and $(r:\mathbb{C})\in R(F)$. In words: the same coefficient vector that lies on the frontier of the polytope belongs to the exposed face $F$, and the complex number $r$ is an element of the root‑space set of that face.
 
 </div>
+
+
+</div>
 </div>
 
 ---
+
 <!-- SLIDE 39 | Step 5: Descend — Lean + map (1/2) -->
+
+
 # Step 5: Descend — Lean + map (1/2)
 
 <style scoped>
@@ -1210,12 +1994,19 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 .thm p { margin: 0.2em 0; }
 .codeside { column-gap: 10px; margin-top: 2px; }
 </style>
+<div class="cover">
+
 <div class="thm">
 
 **Claim.** Let $\Omega \subset \mathbb{R}^{n+1}$ be a polytope with $n \ge 1$, and let $F \subseteq \mathbb{R}^{n+1}$ be an exposed face of $\Omega$ with $\dim \mathrm{aff}(F) \ge 2$. If $r \in \mathbb{R}$ satisfies $(r:\mathbb{C}) \in R(F)$, then there exists an exposed edge $E$ of $\Omega$ with $(r:\mathbb{C}) \in R(E)$.
 </div>
 
+
+</div>
+
 <div class="codeside">
+<div class="cover">
+
 <div class="lean"><div class="lean-head">EdgeDescent.lean:691-715 — part 1, 5.1–5.6 highlighted</div>
 <pre style="font-size:0.34em;line-height:1.1;padding:1px 6px;"><span class="tok-kw">lemma</span> <span class="tok-type">descend_to_exposed_edge</span> {n : <span class="tok-type">ℕ</span>} (hn : n ≥ <span class="tok-num">1</span>) (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n) (r : <span class="tok-type">ℝ</span>)
     (<span class="tok-var">F</span> : <span class="tok-type">Set</span> (<span class="tok-type">CoeffVec</span> n)) (hF_exp : <span class="tok-type">IsExposedFace</span> <span class="tok-var">P</span> <span class="tok-var">F</span>)
@@ -1242,6 +2033,11 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
         hδ_bound_in_F hδ_bound_front hδ_bound_not_relint hm_F_ge_2</span></span>
 <span class="grp mk1"><span class="gn">5.6</span><span class="gbox">    <span class="tok-kw">have</span> hs_G : (r : <span class="tok-type">ℂ</span>) ∈ <span class="tok-type">RootSpaceSet</span> <span class="tok-var">G</span> :=
       <span class="tok-type">rootspace_mem_of_eval_zero</span> r δ_bound hδ_bound_Psr <span class="tok-var">G</span> hδ_bound_in_G</span></span></pre></div>
+
+
+</div>
+<div class="cover">
+
 <div class="side">
 
 ### Map
@@ -1256,11 +2052,16 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 | **5.6** | Hence $(r:\mathbb{C}) \in R(G)$ — the root moves to the smaller face. |
 
 </div>
+
+
+</div>
 </div>
 
 ---
 
 <!-- SLIDE 40 | Step 5: Descend — Lean + map (2/2) -->
+
+
 # Step 5: Descend — Lean + map (2/2)
 
 <style scoped>
@@ -1271,6 +2072,8 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 </style>
 
 <div class="codeside">
+<div class="cover">
+
 <div class="lean"><div class="lean-head">EdgeDescent.lean:716-733 — part 2, 5.7–5.10 highlighted</div>
 <pre style="font-size:0.34em;line-height:1.1;padding:1px 6px;"><span class="grp mk1"><span class="gn">5.8</span><span class="gbox">    <span class="tok-tac">by_cases</span> hG_dim_ge_2 : <span class="tok-type">Module.finrank</span> <span class="tok-type">ℝ</span> (affineSpan <span class="tok-type">ℝ</span> <span class="tok-var">G</span>).direction ≥ <span class="tok-num">2</span>
     · <span class="tok-tac">exact</span> <span class="tok-type">descend_to_exposed_edge</span> hn <span class="tok-var">P</span> r <span class="tok-var">G</span> hG_exp hs_G hG_dim_ge_2</span></span>
@@ -1290,6 +2093,11 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
         <span class="tok-tac">exact</span> ⟨<span class="tok-var">E</span>, hE_edge, h_root_E⟩</span></span>
 <span class="grp mk1"><span class="gn">5.7</span><span class="gbox">  <span class="tok-kw">termination_by</span> <span class="tok-type">Module.finrank</span> <span class="tok-type">ℝ</span> (affineSpan <span class="tok-type">ℝ</span> <span class="tok-var">F</span>).direction
   <span class="tok-kw">decreasing_by</span> <span class="tok-tac">exact</span> hG_dim_lt</span></span></pre></div>
+
+
+</div>
+<div class="cover">
+
 <div class="side">
 
 ### Map
@@ -1302,12 +2110,19 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 | **5.10** | If $\dim G = 0$, then $G$ is the singleton $\{\delta_{\mathrm{bound}}\}$. Choose an exposed edge $E$ through this vertex, so $\delta_{\mathrm{bound}} \in E$. Since $P_{\delta_{\mathrm{bound}}}(r) = 0$, the root transfers to $E$ and the proof is complete. |
 
 </div>
+
+
+</div>
 </div>
 
 ---
 
 <!-- SLIDE 41 | Step 6: Degenerate cases — Lean + map -->
+
+
 # Step 6: Degenerate cases — Lean + map
+<div class="cover">
+
 <div class="thm">
 
 **Claim.** Let $m := \dim\mathrm{aff}(\Omega)$. Then $m = 0$ is impossible ($\mathrm{int}\,\Omega \neq \emptyset$), and $m = 1$ makes $\Omega$ itself the edge.
@@ -1316,7 +2131,12 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 
 </div>
 
+
+</div>
+
 <div class="codeside">
+<div class="cover">
+
 <div class="lean"><div class="lean-head">Lemma61.lean:191-203 — degenerate cases, ①② highlighted</div>
 <pre><span class="grp mk1"><span class="gn">①</span><span class="gbox">  · <span class="tok-tac">by_cases</span> hm0 : m = <span class="tok-num">0</span>
     · <span class="tok-kw">have</span> h_pos : <span class="tok-type">Module.finrank</span> <span class="tok-type">ℝ</span> (affineSpan <span class="tok-type">ℝ</span> <span class="tok-type">P.Ω</span>).direction ≥ <span class="tok-num">1</span> :=
@@ -1331,6 +2151,11 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
         (<span class="tok-type">mem_P_sr_of_isRoot</span> s.re δ (<span class="tok-tac">by</span>
           <span class="tok-tac">rw</span> [← hs_real]
           <span class="tok-tac">exact</span> hδ_root)) <span class="tok-type">P.Ω</span> hδ_in_Ω</span></span></pre></div>
+
+
+</div>
+<div class="cover">
+
 <div class="side">
 
 ### Map
@@ -1341,23 +2166,60 @@ h1 { font-size: 1.05em; margin-bottom: 2px; }
 | **D.2 ②** | $m = 1$: $\Omega$ itself the edge; $s = \bar{r}$ moves the root $\Omega \to E$ |
 
 </div>
+
+
+</div>
 </div>
 
 ---
 
 <!-- SLIDE 42 | Lemma 6.1 (real case) — recap -->
+
+
 # Lemma 6.1 (real case) — recap
+<div class="cover">
+
 1. **Step 1** unpacked $s \in R(\Omega)$ to $\delta \in P_{s_r}(r)$ with $s = \bar{r}$.
+
+
+</div>
+<div class="cover">
+
 2. **Step 2** gave $\dim(U \cap \mathrm{aff}\,\Omega) \ge 1$.
+
+
+</div>
+<div class="cover">
+
 3. **Step 3** followed it to $\delta_{\mathrm{bound}} \in P_{s_r} \cap \partial\Omega$.
+
+
+</div>
+<div class="cover">
+
 4. **Step 4** separated at $\delta_{\mathrm{bound}}$: exposed $F \ni \delta_{\mathrm{bound}}$ with $\bar{r} \in R(F)$.
+
+
+</div>
+<div class="cover">
+
 5. **Step 5** descended $F \to G \to \cdots \to E$ with $\bar{r} \in R(E)$, $\dim E = 1$.
 
+
+</div>
+
+<div class="cover">
+
 Degenerate cases (`lemma61_real:191-203`): $m = 0$ contradicts nonempty interior; $m = 1$ makes $\Omega$ itself the edge (`polytope_dim1_is_exposed_edge`).
+
+
+</div>
 
 ---
 
 <!-- SLIDE 43 | Lemma 6.1: complex case — what is extra -->
+
+
 # Lemma 6.1: complex case — what is extra
 
 <style scoped>
@@ -1366,22 +2228,82 @@ h1 { font-size: 1.15em; margin-bottom: 2px; }
 <div class="columns">
 <div class="col">
 
+<div class="cover">
+
 ### Mathematics
+
+
+</div>
+<div class="cover">
+
 - **Claim.** If $s \in R(\Omega)$ with $\mathrm{Im}(s) \ne 0$, then $s \in R(F)$ for an exposed face $F$ with $\dim\mathrm{aff}(F) \le 2$ — a face, not an edge.
+
+
+</div>
+<div class="cover">
+
 - **Thinner slice.** $U = \{\delta \mid P_\delta(s) = 0\}$ has dimension $n - 1$: real and imaginary parts must each vanish — two equations cut twice.
+
+
+</div>
+<div class="cover">
+
 - **Stronger count.** Grassmann needs direction dimension $\ge 3$ (and $n \ge 2$).
+
+
+</div>
+<div class="cover">
+
 - **Weaker target.** One condition gives a line to walk to an edge; two give isolated points that cannot slide — descent stops at dimension $2$.
+
+
+</div>
+<div class="cover">
+
 - **New degenerate case $n = 1$.** Linear $P_\delta$ forces $s = -\delta_0/\delta_1 \in \mathbb{R}$ unless $\delta_1 = 0$, which Assumption 6.1 forbids.
+
+
+</div>
 
 </div>
 <div class="col">
 
+<div class="cover">
+
 ### Lean
+
+
+</div>
+<div class="cover">
+
 - `P_sc_dimension` (`hn : n ≥ 1`, `hs : s.im ≠ 0`): the complex slice has dimension $n - 1$ (evaluation onto $\mathbb{C}$ is surjective of real rank $2$).
+
+
+</div>
+<div class="cover">
+
 - `mem_P_sc_of_isRoot`, `intersection_affine_dim_ge_one_complex` (needs direction dimension $\ge 3$), `exists_boundary_point_in_Psc`: Steps 1–3 with $P_{s_c}$ in place of $P_{s_r}$.
+
+
+</div>
+<div class="cover">
+
 - `exists_exposed_face_containing_boundary_point_complex`: Step 4 for the complex slice.
+
+
+</div>
+<div class="cover">
+
 - `descend_to_exposed_face_with_dim`: Step 5 stopping at dimension $\le 2$.
+
+
+</div>
+<div class="cover">
+
 - Assumption 6.1 as explicit hypothesis `hleading : ∀ v ∈ P.vertices, 0 < v (Fin.last n)`, threaded through `lemma61_complex_with_dim` → `lemma61_complex` → `lemma61`; the $n = 1$ case closes by leading-coefficient positivity (`convexHull_min`).
+
+
+</div>
 
 </div>
 </div>
@@ -1389,42 +2311,76 @@ h1 { font-size: 1.15em; margin-bottom: 2px; }
 ---
 
 <!-- SLIDE 44 | Section 5 · Lemma 6.2, real case -->
+
 <!-- _class: section -->
 # Section 5 · Lemma 6.2, real case
 
 ---
 
 <!-- SLIDE 45 | Lemma 6.2 (real case) — overview -->
+
+
 # Lemma 6.2 (real case) — overview
+<div class="cover">
+
 <div class="thm">
 
 **Theorem (Lemma 6.2).** Let $F$ be an exposed face of $\Omega$ with $\dim\mathrm{aff}(F) = 2$. Then $\partial R(F) \subseteq R(\partial F)$: every boundary point of the root space of $F$ is a root on the relative boundary (`lemma62`, `Lemma62.lean:1446`).
 
 </div>
 
+
+</div>
+
+<div class="cover">
+
 The Lean proof splits on `s_star.im = 0` (`by_cases hreal`): the **real case** (`lemma62_real_case`, this section) goes through $P_{s_r}$ as in Lemma 6.1; the **complex case** (`lemma62_complex_case`) needs the $W$-matrix machinery — future work.
+
+
+</div>
 
 ---
 
 <!-- SLIDE 46 | Lemma 6.2 (real case) — goal -->
+
+
 # Lemma 6.2 (real case) — goal
+<div class="cover">
+
 <div class="thm">
 
 **Goal.** Let $F$ be exposed with $\dim\mathrm{aff}(F) = 2$ and $s^\star \in \mathrm{frontier}\,R(F)$ real ($\mathrm{Im}(s^\star) = 0$). Then $s^\star \in R(\mathrm{relativeBoundary}\,F)$ (`lemma62_real_case`, `Lemma62.lean:127`).
 
 </div>
 
+
+</div>
+
+<div class="cover">
+
 **Proof sketch.** **6.1–6.3** $R(F)$ is closed, so $s^\star \in R(F)$ with $s^\star = \bar{r}$. **6.4–6.5** Unpack $\delta^\star \in F$; split on relint. **6.6–6.8** Escape to $\delta_{\mathrm{bound}} \in F \cap P_{s_r}$ off the relint. **6.9–6.12** Transfer the root; close Case A the same way.
+
+
+</div>
+
+<div class="cover">
 
 <div class="lean"><div class="lean-head">PreliminaryLemmas.lean:422-423</div>
 <pre><span class="tok-kw">def</span> <span class="tok-type">relativeBoundary</span> (<span class="tok-var">F</span> : <span class="tok-type">Set</span> (<span class="tok-type">CoeffVec</span> n)) : <span class="tok-type">Set</span> (<span class="tok-type">CoeffVec</span> n) :=
   <span class="tok-var">F</span> \ intrinsicInterior <span class="tok-type">ℝ</span> <span class="tok-var">F</span></pre></div>
 
+
+</div>
+
 ---
 
 <!-- SLIDE 47 | Lemma 6.2 (real case) — walkthrough 6.1–6.6 -->
+
+
 # Lemma 6.2 (real case) — walkthrough 6.1–6.6
 <div class="codeside">
+<div class="cover">
+
 <div class="lean"><div class="lean-head">Lemma62.lean:127-162, 6.1–6.6 highlighted</div>
 <pre style="font-size:0.52em;line-height:1.25;"><span class="tok-kw">theorem</span> <span class="tok-type">lemma62_real_case</span> {n : <span class="tok-type">ℕ</span>}  (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n)
     (<span class="tok-var">F</span> : <span class="tok-type">Set</span> (<span class="tok-type">CoeffVec</span> n)) (hF_exp : <span class="tok-type">IsExposedFace</span> <span class="tok-var">P</span> <span class="tok-var">F</span>)
@@ -1462,6 +2418,11 @@ The Lean proof splits on `s_star.im = 0` (`by_cases hreal`): the **real case** (
     let v : CoeffVec n := v_sub.val
     have hv_ne : v ≠ 0 := by
       intro h; apply hv_sub_ne; exact Subtype.ext h</span></span></pre></div>
+
+
+</div>
+<div class="cover">
+
 <div class="side">
 
 ### Map
@@ -1476,12 +2437,20 @@ The Lean proof splits on `s_star.im = 0` (`by_cases hreal`): the **real case** (
 |  **6.6** | $U = P_{s_r}$ ($\dim n$), $V = \mathrm{dir}$ ($\dim \ge 2$) give nonzero $v$  |
 
 </div>
+
+
+</div>
 </div>
 
 ---
+
 <!-- SLIDE 48 | Lemma 6.2 (real case) — walkthrough 6.7–6.9 -->
+
+
 # Lemma 6.2 (real case) — walkthrough 6.7–6.9
 <div class="codeside">
+<div class="cover">
+
 <div class="lean"><div class="lean-head">Lemma62.lean:163-190, 6.7–6.9 highlighted</div>
 <pre style="font-size:0.52em;line-height:1.25;"><span class="grp mk1"><span class="gn">6.7</span><span class="gbox">    <span class="tok-kw">have</span> hv_U : v ∈ <span class="tok-var">U</span> := <span class="tok-tac">by</span>
       <span class="tok-kw">have</span> h := v_sub.property
@@ -1511,6 +2480,11 @@ The Lean proof splits on `s_star.im = 0` (`by_cases hreal`): the **real case** (
       <span class="tok-tac">exact</span> h_preimage_closed.inter h_nonneg_closed</span></span>
 <span class="grp mk1"><span class="gn">6.9</span><span class="gbox">    <span class="tok-kw">have</span> h_bdd_above : <span class="tok-type">BddAbove</span> <span class="tok-var">S</span> :=
       <span class="tok-type">ray_stay_set_bddAbove</span> hF_convex hδ_star_in_F t_out ht_out_pos ht_out</span></span></pre></div>
+
+
+</div>
+<div class="cover">
+
 <div class="side">
 
 ### Map
@@ -1522,12 +2496,20 @@ The Lean proof splits on `s_star.im = 0` (`by_cases hreal`): the **real case** (
 |  **6.9** | $S$ bounded above by $t_{out}$ via convexity (helper `ray_stay_set_bddAbove`)  |
 
 </div>
+
+
+</div>
 </div>
 
 ---
+
 <!-- SLIDE 49 | Lemma 6.2 (real case) — walkthrough 6.10–6.12 -->
+
+
 # Lemma 6.2 (real case) — walkthrough 6.10–6.12
 <div class="codeside">
+<div class="cover">
+
 <div class="lean"><div class="lean-head">Lemma62.lean:191-220, 6.10–6.12 highlighted</div>
 <pre style="font-size:0.52em;line-height:1.25;"><span class="grp mk1"><span class="gn">6.10</span><span class="gbox">    <span class="tok-kw">let</span> t1 := sSup <span class="tok-var">S</span>
     <span class="tok-kw">have</span> h_max : t1 ∈ <span class="tok-var">S</span> := <span class="tok-tac">by</span>
@@ -1559,6 +2541,11 @@ The Lean proof splits on `s_star.im = 0` (`by_cases hreal`): the **real case** (
       <span class="tok-type">rootspace_mem_of_eval_zero</span> s_star.re δ_star hδ_star_in_Psr (<span class="tok-type">relativeBoundary</span> <span class="tok-var">F</span>) hδ_star_rel_boundary
     <span class="tok-tac">rw</span> [h_s_star_eq]
     <span class="tok-tac">exact</span> h_r_in_RF</span></span></pre></div>
+
+
+</div>
+<div class="cover">
+
 <div class="side">
 
 ### Map
@@ -1570,12 +2557,18 @@ The Lean proof splits on `s_star.im = 0` (`by_cases hreal`): the **real case** (
 |  **6.12** | $\delta^\star$ itself works; same transfer  |
 
 </div>
+
+
+</div>
 </div>
 
 ---
 
 <!-- SLIDE 50 | Lemma 6.2 (real case) — proof map (1/2) -->
+
 # Lemma 6.2 (real case) — proof map (1/2)
+<div class="cover">
+
 | Step | Content |
 |:---|:---|
 |  **6.1** | $F$ compact and convex  |
@@ -1586,10 +2579,16 @@ The Lean proof splits on `s_star.im = 0` (`by_cases hreal`): the **real case** (
 |  **6.6** | $U \sqcap V$ nontrivial $\to$ nonzero $v$  |
 | helpers | Step-2 formula + ray escape | `finrank_inf_ge_one` (Step 2); `ray_escapes_of_bounded` (bounded $\Omega$ forces exit) |
 
+
+</div>
+
 ---
 
 <!-- SLIDE 51 | Lemma 6.2 (real case) — proof map (2/2) -->
+
 # Lemma 6.2 (real case) — proof map (2/2)
+<div class="cover">
+
 | Step | Content |
 |:---|:---|
 |  **6.7** | Direction split, escape time, ray-stay set  |
@@ -1601,9 +2600,14 @@ The Lean proof splits on `s_star.im = 0` (`by_cases hreal`): the **real case** (
 | dispatcher | `lemma62` (`Lemma62.lean:1446`) | Real branch $\to$ here; complex branch $\to$ next slide |
 | complex twin | `lemma62_complex_case` (`Lemma62.lean:1164`) | $W$-matrix Case A/B; proof overview on the next slide |
 
+
+</div>
+
 ---
 
 <!-- SLIDE 52 | Lemma 6.2: complex case — what is extra -->
+
+
 # Lemma 6.2: complex case — what is extra
 
 <style scoped>
@@ -1612,23 +2616,83 @@ h1 { font-size: 1.15em; margin-bottom: 2px; }
 <div class="columns">
 <div class="col">
 
+<div class="cover">
+
 ### Mathematics
+
+
+</div>
+<div class="cover">
+
 - **Claim.** Same goal for non-real $s^\star$: a boundary root of $R(F)$ already lives on the relative boundary of $F$ (complex slice $P_{s_c}$ in place of $P_{s_r}$).
+
+
+</div>
+<div class="cover">
+
 - **New split.** The slice $P_{s_c}(s^\star)$ and the face directions $\mathrm{dir}\,\mathrm{aff}\,F$ generically meet only in $\{0\}$ — no direction to walk. Case A shares a nonzero direction $v$; Case B ($\dim = 0$) is transverse.
+
+
+</div>
+<div class="cover">
+
 - **Case A ($\dim \ge 1$).** Walk $v$ to the relative boundary and transfer the root — the real-case escape.
+
+
+</div>
+<div class="cover">
+
 - **Case B ($\dim = 0$).** Non-roots $s_k \to s^\star$; Cramer on $V_0, V_1$ ($\det \ne 0$) gives $\delta_k \to \delta^\star$ in $\mathrm{aff}(F)$ carrying $s_k$.
+
+
+</div>
+<div class="cover">
+
 - **Limit.** $\delta_k \notin F$ yet $\delta_k \to \delta^\star$ rules out interior — $\delta^\star$ is on the relative boundary carrying $s^\star$.
+
+
+</div>
 
 </div>
 <div class="col">
 
+<div class="cover">
+
 <div class="figs"><figure class="fig-card"><img src="./Complex_Visual/complex_caseAB_3d.png" alt="True-3D view. Case A: the complex slice shares a direction v with the face flat; Case B: transverse slice meeting the flat only at the root witness" style="height:150px;"></figure></div>
 
+
+</div>
+
+<div class="cover">
+
 ### Lean
+
+
+</div>
+<div class="cover">
+
 - Same opening via `isExposedFace_isCompact`, `rootSpaceSet_isClosed_of_isCompact`, `mem_P_sc_of_isRoot`.
+
+
+</div>
+<div class="cover">
+
 - Case A: `exists_boundary_point_in_face_rootspace_complex` (via `h_inter_dim_of_meet`), then `rootspace_mem_of_isRoot` — the real-case escape replayed in $P_{s_c}$.
+
+
+</div>
+<div class="cover">
+
 - Case B: `exists_seq_notin_RootSpaceSet_tendsto` (the $s_k$); `faceCols` basis with `detOf_ne_zero_of_transverse` + `tendsto_detOf` (determinant stays nonzero); Cramer corrections `lam0`/`lam1` with `hev_root` ($\delta_k$ carries $s_k$ while $\det_k \ne 0$); `hdeltak_tendsto` ($\lambda_k \to 0$); the interior assumption contradicts `hev_notF` — hence `hnot_ri`.
+
+
+</div>
+<div class="cover">
+
 - Machinery: quadratic-factor perturbations `Wcol`/`Wmul` staying inside the slice (`evalAtComplex_Wcol`, `Wmul_mem_Psc`, `tendsto_Wmul`); `evalAtComplex` with `tendsto_evalAtComplex`; transverse $2 \times 2$ `detOf`.
+
+
+</div>
 
 </div>
 </div>
@@ -1636,32 +2700,104 @@ h1 { font-size: 1.15em; margin-bottom: 2px; }
 ---
 
 <!-- SLIDE 53 | Edge Theorem — formal proof -->
+
+
 # Edge Theorem — formal proof
+<div class="cover">
+
 <div class="thm">
 
 **Theorem (Edge Theorem).** Let $\Omega \subset \mathbb{R}^{n+1}$ ($n \ge 1$) be a polytope satisfying Assumption 6.1. Then every $s \in \partial R(\Omega)$ lies in $R(E)$ for some exposed edge $E$ of $\Omega$.
 
 </div>
+
+
+</div>
 <div class="columns">
 <div class="col">
 
+<div class="cover">
+
 ### Proof
+
+
+</div>
+<div class="cover">
+
 1. Let $s \in \partial R(\Omega)$. Since $R(\Omega)$ is closed, $s \in R(\Omega)$ and $s \notin \mathrm{int}\,R(\Omega)$.
+
+
+</div>
+<div class="cover">
+
 2. If $\mathrm{Im}(s) = 0$, Lemma 6.1 (real case) gives an exposed edge $E$ with $s \in R(E)$. Done.
+
+
+</div>
+<div class="cover">
+
 3. Else $\mathrm{Im}(s) \ne 0$: Lemma 6.1 (complex case) gives an exposed face $F$ with $s \in R(F)$ and $\dim\mathrm{aff}(F) \le 2$.
+
+
+</div>
+<div class="cover">
+
 4. If $\dim = 2$: $R(F)$ is closed, and $\mathrm{int}\,R(F) \subseteq \mathrm{int}\,R(\Omega) \not\ni s$, so $s \in \partial R(F)$. Lemma 6.2 moves $s$ to $R(\mathrm{relativeBoundary}\,F)$; the witness lies on the relative boundary, giving a proper exposed subface $G \subsetneq F$ ($\dim G \le 1$) with $s \in R(G)$.
+
+
+</div>
+<div class="cover">
+
 5. If $\dim \le 1$: the face ($G$, resp. $F$) is already an edge ($\dim = 1$) or a singleton ($\dim = 0$), and a singleton face sits on an exposed edge through it. Either way $s \in R(E)$ for an exposed edge $E$. ∎
+
+
+</div>
 
 </div>
 <div class="col">
 
+<div class="cover">
+
 ### Lean (`EdgeTheorem.lean`)
+
+
+</div>
+<div class="cover">
+
 - Closedness + unpacking: `rootSpaceSet_isClosed_of_isCompact`, `frontier_subset_closure`.
+
+
+</div>
+<div class="cover">
+
 - Step 2 is `edge_real` (exactly `lemma61_real`).
+
+
+</div>
+<div class="cover">
+
 - Step 3 is `lemma61_complex_with_dim` (face of dimension at most two).
+
+
+</div>
+<div class="cover">
+
 - Step 4 uses `interior_mono` with $R(F) \subseteq R(\Omega)$ to land in $\partial R(F)$; Lemma 6.2 enters as `face_boundary_subset`.
+
+
+</div>
+<div class="cover">
+
 - The last descent is `exists_proper_subface_of_boundary_point`, closing via `isExposedEdge_of_dim_1` or `exposed_face_dim_zero_singleton` + `exists_exposed_edge_of_singleton` (factored as `exposed_face_root_dim_le1_to_edge`).
+
+
+</div>
+<div class="cover">
+
 - Assembly: `edge_theorem` (`by_cases hreal`, then `by_cases hdim2`).
+
+
+</div>
 
 </div>
 </div>
@@ -1669,6 +2805,8 @@ h1 { font-size: 1.15em; margin-bottom: 2px; }
 ---
 
 <!-- SLIDE 54 | Edge Theorem — lemmas behind steps 1–5 -->
+
+
 # Edge Theorem — lemmas behind steps 1–5
 
 <style scoped>
@@ -1680,42 +2818,104 @@ p { margin: 2px 0; font-size: 0.82em; }
 <div class="columns">
 <div class="col">
 
+<div class="cover">
+
 **Step 1.** Root spaces over compact sets are closed, so a boundary root is a genuine root outside the interior.
+
+
+</div>
+<div class="cover">
+
 <div class="lean"><div class="lean-head">Lemma62.lean:37-38</div>
 <pre><span class="tok-kw">lemma</span> <span class="tok-type">rootSpaceSet_isClosed_of_isCompact</span> {n : <span class="tok-type">ℕ</span>} {<span class="tok-var">W</span> : <span class="tok-type">Set</span> (<span class="tok-type">CoeffVec</span> n)} (hW : <span class="tok-type">IsCompact</span> <span class="tok-var">W</span>) :
     <span class="tok-type">IsClosed</span> (<span class="tok-type">RootSpaceSet</span> <span class="tok-var">W</span>)</pre></div>
 
+
+</div>
+
+<div class="cover">
+
 **How:** Let $Z = \{(\delta, s) \in W \times \mathbb{C} : \tilde P_\delta(s) = 0\}$, the set of polynomial–root pairs. It is closed, being the zero set of the continuous evaluation map. $\pi(\delta, s) = s$ satisfies $\pi(Z) = R(W)$: indeed $s \in \pi(Z)$ iff some $\delta \in W$ vanishes at $s$. Since $W$ is compact, $\pi : W \times \mathbb{C} \to \mathbb{C}$ is a closed map, so $\pi(Z) = R(W)$ is closed.
 **Step 2.** Every real root of the family already lives on an exposed edge.
+
+
+</div>
+<div class="cover">
+
 <div class="lean"><div class="lean-head">EdgeTheorem.lean:37-40</div>
 <pre><span class="tok-kw">theorem</span> <span class="tok-type">edge_real</span> {n : <span class="tok-type">ℕ</span>} (hn : n ≥ <span class="tok-num">1</span>) (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n) (s : <span class="tok-type">ℂ</span>)
     (hs : s ∈ <span class="tok-type">RootSpace</span> <span class="tok-var">P</span>) (hreal : s.im = <span class="tok-num">0</span>) :
     ∃ <span class="tok-var">E</span>, <span class="tok-type">IsExposedEdge</span> <span class="tok-var">P</span> <span class="tok-var">E</span> ∧ s ∈ <span class="tok-type">RootSpaceSet</span> <span class="tok-var">E</span></pre></div>
 
+
+</div>
+
+<div class="cover">
+
 How: Lemma 6.1, real case: $s = \bar{r} \in R(\Omega)$ yields $E$ with $s \in R(E)$.
 
+
+</div>
+
+<div class="cover">
+
 **Step 3.** Every non-real root lives on an exposed face of dimension at most two.
+
+
+</div>
+<div class="cover">
+
 <div class="lean"><div class="lean-head">Lemma61.lean:208-211</div>
 <pre><span class="tok-kw">theorem</span> <span class="tok-type">lemma61_complex_with_dim</span> (hn : n ≥ <span class="tok-num">1</span>) (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n) (s : <span class="tok-type">ℂ</span>) (hs : s ∈ <span class="tok-type">RootSpace</span> <span class="tok-var">P</span>)
     (hleading : ∀ v ∈ <span class="tok-type">P.vertices</span>, <span class="tok-num">0</span> &lt; v (<span class="tok-type">Fin.last</span> n)) : s.im ≠ <span class="tok-num">0</span> →
     ∃ <span class="tok-var">F</span>, <span class="tok-type">IsExposedFace</span> <span class="tok-var">P</span> <span class="tok-var">F</span> ∧ s ∈ <span class="tok-type">RootSpaceSet</span> <span class="tok-var">F</span> ∧
       <span class="tok-type">Module.finrank</span> <span class="tok-type">ℝ</span> (affineSpan <span class="tok-type">ℝ</span> <span class="tok-var">F</span>).direction ≤ <span class="tok-num">2</span></pre></div>
 
+
+</div>
+
+<div class="cover">
+
 How: Steps 1–5 in the $(n-1)$-dimensional slice, descending to $\dim \le 2$ (the count requires $\dim \ge 3$); $n = 1$ excluded by the leading coefficient.
+
+
+</div>
 
 </div>
 <div class="col">
 
+<div class="cover">
+
 **Step 4.** Boundary roots of a two-dimensional exposed face live on its relative boundary.
+
+
+</div>
+<div class="cover">
+
 <div class="lean"><div class="lean-head">EdgeTheorem.lean:56-60</div>
 <pre><span class="tok-kw">theorem</span> <span class="tok-type">face_boundary_subset</span> {n : <span class="tok-type">ℕ</span>} (hn : n ≥ <span class="tok-num">1</span>) (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n)
     (<span class="tok-var">F</span> : <span class="tok-type">Set</span> (<span class="tok-type">CoeffVec</span> n)) (hF_exp : <span class="tok-type">IsExposedFace</span> <span class="tok-var">P</span> <span class="tok-var">F</span>)
     (hF_dim_2 : <span class="tok-type">dim</span> (affineSpan <span class="tok-type">ℝ</span> <span class="tok-var">F</span>).direction = <span class="tok-num">2</span>) :
     frontier (<span class="tok-type">RootSpaceSet</span> <span class="tok-var">F</span>) ⊆ <span class="tok-type">RootSpaceSet</span> (<span class="tok-type">relativeBoundary</span> <span class="tok-var">F</span>)</pre></div>
 
+
+</div>
+
+<div class="cover">
+
 How: split on $\mathrm{Im}(s^\star) = 0$ into the real and complex cases.
 
+
+</div>
+
+<div class="cover">
+
 **Step 5.** Roots on an at-most-one-dimensional exposed face move to an exposed edge — directly at dimension one, through a singleton vertex at dimension zero.
+
+
+</div>
+<div class="cover">
+
 <div class="lean"><div class="lean-head">EdgeTheorem.lean:66-70</div>
 <pre><span class="tok-kw">private</span> <span class="tok-kw">theorem</span> <span class="tok-type">exposed_face_root_dim_le1_to_edge</span> {n : <span class="tok-type">ℕ</span>} (hn : n ≥ <span class="tok-num">1</span>) (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n)
     (s : <span class="tok-type">ℂ</span>) (<span class="tok-var">F</span> : <span class="tok-type">Set</span> (<span class="tok-type">CoeffVec</span> n)) (hF_exp : <span class="tok-type">IsExposedFace</span> <span class="tok-var">P</span> <span class="tok-var">F</span>)
@@ -1723,7 +2923,15 @@ How: split on $\mathrm{Im}(s^\star) = 0$ into the real and complex cases.
     (hF_dim : <span class="tok-type">Module.finrank</span> <span class="tok-type">ℝ</span> (affineSpan <span class="tok-type">ℝ</span> <span class="tok-var">F</span>).direction ≤ <span class="tok-num">1</span>) :
     ∃ <span class="tok-var">E</span>, <span class="tok-type">IsExposedEdge</span> <span class="tok-var">P</span> <span class="tok-var">E</span> ∧ s ∈ <span class="tok-type">RootSpaceSet</span> <span class="tok-var">E</span></pre></div>
 
+
+</div>
+
+<div class="cover">
+
 How: $\dim = 1$ is already an edge; $\dim = 0$ is a singleton lying on an edge through it.
+
+
+</div>
 
 </div>
 </div>
@@ -1731,7 +2939,11 @@ How: $\dim = 1$ is already an edge; $\dim = 0$ is a singleton lying on an edge t
 ---
 
 <!-- SLIDE 55 | Edge Theorem — Lean implementation -->
+
+
 # Edge Theorem — Lean implementation
+<div class="cover">
+
 <div class="lean"><div class="lean-head">EdgeTheorem.lean:82-89 — statement</div>
 <pre style="font-size:0.6em;line-height:1.3;">
 <span class="tok-kw">theorem</span> <span class="tok-type">edge_theorem</span> {n : <span class="tok-type">ℕ</span>} (hn : n ≥ <span class="tok-num">1</span>) (<span class="tok-var">P</span> : <span class="tok-type">Polytope</span> n) (s : <span class="tok-type">ℂ</span>)
@@ -1739,8 +2951,13 @@ How: $\dim = 1$ is already an edge; $\dim = 0$ is a singleton lying on an edge t
     (hs : s ∈ frontier (<span class="tok-type">RootSpace</span> <span class="tok-var">P</span>)) :
     ∃ <span class="tok-var">E</span>, <span class="tok-type">IsExposedEdge</span> <span class="tok-var">P</span> <span class="tok-var">E</span> ∧ s ∈ <span class="tok-type">RootSpaceSet</span> <span class="tok-var">E</span> := <span class="tok-tac">by</span></pre></div>
 
+
+</div>
+
 <div class="columns">
 <div class="col">
+<div class="cover">
+
 <div class="lean"><div class="lean-head">EdgeTheorem.lean:90-121 — proof (1/2)</div>
 <pre style="font-size:0.5em;line-height:1.25;">  <span class="tok-kw">have</span> hroot_closed : <span class="tok-type">IsClosed</span> (<span class="tok-type">RootSpace</span> <span class="tok-var">P</span>) := <span class="tok-tac">by</span>
     <span class="tok-tac">change</span> <span class="tok-type">IsClosed</span> (<span class="tok-type">RootSpaceSet</span> <span class="tok-type">P.Ω</span>)
@@ -1774,8 +2991,13 @@ How: $\dim = 1$ is already an edge; $\dim = 0$ is a singleton lying on an edge t
         <span class="tok-tac">change</span> s ∈ closure (<span class="tok-type">RootSpaceSet</span> <span class="tok-var">F</span>) \ interior (<span class="tok-type">RootSpaceSet</span> <span class="tok-var">F</span>)
         <span class="tok-tac">exact</span> ⟨hsF_mem, hsF_not_int⟩</pre></div>
 
+
+</div>
+
 </div>
 <div class="col">
+<div class="cover">
+
 <div class="lean"><div class="lean-head">EdgeTheorem.lean:122-151 — proof (2/2)</div>
 <pre style="font-size:0.5em;line-height:1.25;">      <span class="tok-kw">have</span> hs_rel : s ∈ <span class="tok-type">RootSpaceSet</span> (<span class="tok-type">relativeBoundary</span> <span class="tok-var">F</span>) :=
         <span class="tok-type">face_boundary_subset</span> hn <span class="tok-var">P</span> <span class="tok-var">F</span> hF_exp hdim2 hsF_front
@@ -1808,55 +3030,8 @@ How: $\dim = 1$ is already an edge; $\dim = 0$ is a singleton lying on an edge t
       <span class="tok-kw">have</span> hdim_le1 : <span class="tok-type">Module.finrank</span> <span class="tok-type">ℝ</span> (affineSpan <span class="tok-type">ℝ</span> <span class="tok-var">F</span>).direction ≤ <span class="tok-num">1</span> := <span class="tok-tac">by</span> <span class="tok-tac">omega</span>
       <span class="tok-tac">exact</span> <span class="tok-type">exposed_face_root_dim_le1_to_edge</span> hn <span class="tok-var">P</span> s <span class="tok-var">F</span> hF_exp hsF hdim_le1</pre></div>
 
-</div>
-</div>
-
----
-
-<!-- hiderDiv demo 1/2 | HIDDEN — overlays cover the content -->
-# hiderDiv demo — hidden
-
-<style scoped>
-p { font-size: 0.85em; }
-</style>
-
-<div class="cover">
-
-**Theorem (Edge Theorem).** $\partial R(\Omega) \subseteq \bigcup_{E} R(E)$ over the exposed edges $E$ of $\Omega$.
-
-<div class="hiderDiv"></div>
-</div>
-
-<div class="cover">
-
-<div class="lean"><div class="lean-head">EdgeTheoremDefs.lean</div>
-<pre><span class="tok-kw">abbrev</span> <span class="tok-type">CoeffVec</span> (n : <span class="tok-type">ℕ</span>) := <span class="tok-type">Fin</span> (n + <span class="tok-num">1</span>) → <span class="tok-type">ℝ</span></pre></div>
-
-<div class="hiderDiv"></div>
-</div>
-
-*The white boxes above are `hiderDiv` overlays hiding the theorem and the code.*
-
----
-
-<!-- hiderDiv demo 2/2 | REVEALED — same content, no overlays -->
-# hiderDiv demo — revealed
-
-<style scoped>
-p { font-size: 0.85em; }
-</style>
-
-<div class="cover">
-
-**Theorem (Edge Theorem).** $\partial R(\Omega) \subseteq \bigcup_{E} R(E)$ over the exposed edges $E$ of $\Omega$.
 
 </div>
 
-<div class="cover">
-
-<div class="lean"><div class="lean-head">EdgeTheoremDefs.lean</div>
-<pre><span class="tok-kw">abbrev</span> <span class="tok-type">CoeffVec</span> (n : <span class="tok-type">ℕ</span>) := <span class="tok-type">Fin</span> (n + <span class="tok-num">1</span>) → <span class="tok-type">ℝ</span></pre></div>
-
 </div>
-
-*Same slide with the `hiderDiv` overlays removed — content revealed.*
+</div>

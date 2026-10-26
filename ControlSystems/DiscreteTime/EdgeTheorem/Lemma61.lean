@@ -148,6 +148,7 @@ theorem lemma61_real (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootS
     apply Complex.ext
     · simp
     · simp [hreal]
+
   have hδ_in_Psr : δ ∈ (P_sr n s.re : Set (CoeffVec n)) := by
     rw [hs_real] at hδ_root
     exact mem_P_sr_of_isRoot s.re δ hδ_root
@@ -251,8 +252,7 @@ theorem lemma61_complex_with_dim (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs :
     unfold RootSpace RootSpaceSet at hs
     obtain ⟨δ, hδ_in_Ω, hδ_root⟩ := hs
     have h_eval : ((polyOfVec δ).map (algebraMap ℝ ℂ)).eval s = (δ 0 : ℂ) + (δ 1 : ℂ) * s := by
-      simp [polyOfVec, Polynomial.eval_add, Polynomial.eval_C, Polynomial.eval_X,
-        Polynomial.eval_mul, Polynomial.map_add]
+      simp [polyOfVec, Polynomial.eval_add, Polynomial.eval_C, Polynomial.map_add]
     have h_eval_zero : ((polyOfVec δ).map (algebraMap ℝ ℂ)).eval s = 0 := hδ_root
     rw [h_eval] at h_eval_zero
     have h_sum : (δ 0 : ℂ) + (δ 1 : ℂ) * s = 0 := h_eval_zero
