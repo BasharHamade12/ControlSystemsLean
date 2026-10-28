@@ -579,8 +579,8 @@ public lemma exists_proper_subface_of_boundary_point {n : ℕ} (P : Polytope n)
     hF_sub_Ω hδ_bound_in_F
   have hδ_f_val : hp.f δ_bound = hp.c :=
     hδ_in_ExF.2
-  have h_int_nonempty : (interior P.Ω).Nonempty :=
-    P.interior_nonempty
+  have h_int_nonempty : (intrinsicInterior ℝ P.Ω).Nonempty :=
+    polytope_relint_nonempty P
   have hΩ_convex : Convex ℝ P.Ω :=
     convex_convexHull ℝ _
   have hΩ_closed : IsClosed P.Ω :=
@@ -603,47 +603,33 @@ public lemma exists_proper_subface_of_boundary_point {n : ℕ} (P : Polytope n)
   -- STEP 3: δ_bound is on the frontier of P.Ω
   -- Any point on the relative boundary of F lies on the boundary of Ω
   -- ----------------------------------------------------------------
-  have hδ_in_front_Ω : δ_bound ∈ frontier P.Ω :=
-    frontier_of_exposed_face_implies_frontier_of_polytope P F hp hF_eq δ_bound
-      hδ_bound_in_F hδ_bound_front
-  have hδ_not_int_Ω : δ_bound ∉ interior P.Ω :=
-    frontier_point_not_interior P δ_bound hδ_in_front_Ω
-  -- ----------------------------------------------------------------
-  -- STEP 4: Find g_Ω via Hahn-Banach separation of int(Ω) from δ_bound
-  -- Since δ_bound ∉ int(Ω) and int(Ω) is convex open nonempty,
-  -- there exists a continuous linear functional strictly separating them.
-  -- ----------------------------------------------------------------
-  have hΩ_int_convex : Convex ℝ (interior P.Ω) :=
-    hΩ_convex.interior
-  obtain ⟨f_Ω, hf_Ω_strict⟩ :=
-    geometric_hahn_banach_open_point
-      hΩ_int_convex isOpen_interior hδ_not_int_Ω
-  let g_Ω : CoeffVec n →ₗ[ℝ] ℝ := f_Ω.toLinearMap
-  have hg_Ω_strict : ∀ x ∈ interior P.Ω, g_Ω x < g_Ω δ_bound :=
-    hf_Ω_strict
-  -- ----------------------------------------------------------------
-  -- STEP 5: g_Ω is an upper bound for all of Ω at δ_bound
-  -- By density of int(Ω) in Ω (convexity + nonempty interior),
-  -- the strict inequality extends to a weak inequality on Ω.
-  -- ----------------------------------------------------------------
-  let g_c : ℝ := g_Ω δ_bound
+  -- STEP 3'-5 (relint): separate δ_bound from the relative interior of P.Ω
+  have hδ_not_relint_Ω : δ_bound ∉ intrinsicInterior ℝ P.Ω := by
+    intro h_in_relint_Ω
+    have hF_eq_Ω := exposed_face_eq_Ω_of_mem_relint P δ_bound F hp hF_eq
+      hδ_bound_in_F h_in_relint_Ω
+    rw [hF_eq_Ω] at hδ_bound_not_relint
+    exact hδ_bound_not_relint h_in_relint_Ω
+  obtain ⟨f_clm, hf_ne, hf_le_upper, hf_strict⟩ :=
+    exists_supporting_hyperplane_relint P δ_bound hδ_in_Ω hδ_not_relint_Ω
+  let g_Ω : CoeffVec n →ₗ[ℝ] ℝ := f_clm.toLinearMap
+  have hcoe : ∀ x : CoeffVec n, g_Ω x = f_clm x := fun _ => rfl
+  have hg_Ω_nonzero : g_Ω ≠ 0 := by
+    intro heq
+    apply hf_ne
+    ext x
+    have hx_eq : g_Ω x = 0 := LinearMap.ext_iff.mp heq x
+    simpa [hx_eq] using (hcoe x).symm
   have hg_Ω_support : ∀ x ∈ P.Ω, g_Ω x ≤ g_Ω δ_bound := by
     intro x hx
-    have h_closed_le : IsClosed {y : CoeffVec n | g_Ω y ≤ g_Ω δ_bound} :=
-      isClosed_Iic.preimage
-        (LinearMap.continuous_of_finiteDimensional g_Ω)
-    have h_int_sub : interior P.Ω ⊆ {y | g_Ω y ≤ g_Ω δ_bound} :=
-      fun y hy => le_of_lt (hg_Ω_strict y hy)
-    have h_closure_Ω : closure (interior P.Ω) = P.Ω :=
-      calc
-        closure (interior P.Ω) = closure P.Ω :=
-          hΩ_convex.closure_interior_eq_closure_of_nonempty_interior h_int_nonempty
-        _ = P.Ω := hΩ_closed.closure_eq
-    have h_Ω_sub : P.Ω ⊆ {y | g_Ω y ≤ g_Ω δ_bound} := by
-      calc P.Ω = closure (interior P.Ω) := h_closure_Ω.symm
-        _ ⊆ closure {y | g_Ω y ≤ g_Ω δ_bound} := closure_mono h_int_sub
-        _ = {y | g_Ω y ≤ g_Ω δ_bound} := h_closed_le.closure_eq
-    exact h_Ω_sub hx
+    rw [hcoe, hcoe]
+    exact hf_le_upper x hx
+  have hg_Ω_strict : ∀ x ∈ intrinsicInterior ℝ P.Ω, g_Ω x < g_Ω δ_bound := by
+    intro x hx
+    rw [hcoe, hcoe]
+    exact hf_strict x hx
+  let g_c : ℝ := g_Ω δ_bound
+  have hg0 : g_Ω δ_bound = g_c := rfl
   -- ----------------------------------------------------------------
   -- STEP 6: Check if g_Ω is non-constant on F.
   -- If yes, use the existing construction to get a proper subface.
@@ -654,12 +640,8 @@ public lemma exists_proper_subface_of_boundary_point {n : ℕ} (P : Polytope n)
   by_cases hg_Ω_nonconst : ∃ x₀ ∈ ExposedFace hp, g_Ω x₀ < g_Ω δ_bound
   · -- Case A: g_Ω is non-constant on F → use the existing construction
     -- ----------------------------------------------------------------
-    -- STEP 7: g_Ω is nonzero
+    -- STEP 7: g_Ω is nonzero (already provided by the relint separation)
     -- ----------------------------------------------------------------
-    have hg_Ω_nonzero : g_Ω ≠ 0 := by
-      obtain ⟨x₀, _, hx₀_lt⟩ := hg_Ω_nonconst
-      intro h_zero
-      simp [g_Ω, h_zero] at hx₀_lt
     -- ----------------------------------------------------------------
     -- STEP 8: Find a direction v ∈ dir(F) with g_Ω v > 0
     -- ----------------------------------------------------------------

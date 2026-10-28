@@ -30,6 +30,9 @@ Marp/presentation.html
 # Marp presentation sources (original and staged-reveal copy)
 !/Marp/presentation.md
 !/Marp/presentation_animated.md
+# Basedslider deck source (self-contained .slide script) and its notes
+!/Marp/presentation_basedslider.slide
+!/Marp/BASEDSLIDER.md
 # Marp build outputs and temporary files (cleanup)
 Marp/*.pdf
 Marp/*.pptx

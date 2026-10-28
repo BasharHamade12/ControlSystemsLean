@@ -26,21 +26,6 @@ exposed face; descent (`EdgeDescent`) lowers `dim aff(F)` to 1 (real)
 or at most 2 (complex). See `lemma61_real`, `lemma61_complex`, `lemma61`.
 -/
 
-/-- A polytope with nonempty interior has affine dimension ≥ 1,
-    so m = 0 is impossible given interior_nonempty. -/
-lemma polytope_direction_dim_pos {n : ℕ} (P : Polytope n) :
-    Module.finrank ℝ (affineSpan ℝ P.Ω).direction ≥ 1 := by
-  have h_convex : Convex ℝ P.Ω := convex_convexHull ℝ _
-  have h_findim : FiniteDimensional ℝ (CoeffVec n) := by infer_instance
-  have h_span_eq_top : affineSpan ℝ P.Ω = ⊤ :=
-    ((Convex.interior_nonempty_iff_affineSpan_eq_top h_convex).mp (by
-      simpa using P.interior_nonempty))
-  have h_finrank : Module.finrank ℝ (affineSpan ℝ P.Ω).direction =
-      Module.finrank ℝ (CoeffVec n) := by
-    rw [h_span_eq_top, AffineSubspace.direction_top, finrank_top]
-  rw [h_finrank, finrank_CoeffVec]
-  omega
-
 /-- If the affine dimension of P.Ω equals 1, then P.Ω is itself an exposed edge.
     Requires n ≥ 1 because IsExposedEdge is impossible when n = 0. -/
 lemma polytope_dim1_is_exposed_edge {n : ℕ} (hn : n ≥ 1) (P : Polytope n)
@@ -101,8 +86,8 @@ lemma polytope_dim1_is_exposed_edge {n : ℕ} (hn : n ≥ 1) (P : Polytope n)
     rw [h_dir_span] at hv
     rcases Submodule.mem_span_singleton.mp hv with ⟨μ, hμ⟩
     rw [← hμ, map_smul, hf_d_val, smul_zero]
-  obtain ⟨δ0, hδ0_in_int⟩ := P.interior_nonempty
-  have hδ0_in_Ω : δ0 ∈ P.Ω := interior_subset hδ0_in_int
+  obtain ⟨δ0, hδ0_relint⟩ := polytope_relint_nonempty P
+  have hδ0_in_Ω : δ0 ∈ P.Ω := intrinsicInterior_subset hδ0_relint
   have hf_const : ∀ x ∈ affineSpan ℝ P.Ω, f x = f δ0 := by
     intro x hx
     have hδ0_span : δ0 ∈ affineSpan ℝ P.Ω := subset_affineSpan ℝ P.Ω hδ0_in_Ω
@@ -139,7 +124,8 @@ lemma polytope_dim1_is_exposed_edge {n : ℕ} (hn : n ≥ 1) (P : Polytope n)
   exact ⟨hp, h_exposed, h_dir_finrank⟩
 
 /-- Real case of Lemma 6.1: If `s` is a real root of `P` (i.e., `s.im = 0`), then there exists an exposed edge `E` of `P` such that `s ∈ RootSpaceSet E`. -/
-theorem lemma61_real (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootSpace P) :
+theorem lemma61_real (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootSpace P)
+    (hdir_ne0 : Module.finrank ℝ (affineSpan ℝ P.Ω).direction ≠ 0) :
     s.im = 0 → ∃ E, IsExposedEdge P E ∧ s ∈ RootSpaceSet E := by
   intro hreal
   unfold RootSpace RootSpaceSet at hs
@@ -166,14 +152,12 @@ theorem lemma61_real (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootS
     obtain ⟨δ_bound, hδ_bound⟩ := h_boundary_root
     have hδ_bound_front : δ_bound ∈ frontier P.Ω := hδ_bound.2
     have hδ_bound_Psr : δ_bound ∈ (P_sr n s.re : Set (CoeffVec n)) := hδ_bound.1
-    have h_int_nonempty : (interior P.Ω).Nonempty := P.interior_nonempty
     obtain ⟨F, hF_exposed, hδ_in_F, hs_in_RF⟩ :=
       exists_exposed_face_containing_boundary_point P s.re δ_bound hδ_bound_front hδ_bound_Psr
-        h_int_nonempty
     let m_F := Module.finrank ℝ (affineSpan ℝ F).direction
     by_cases hm_F_ge_2 : m_F ≥ 2
     · obtain ⟨E, hE_edge, h_edge_re⟩ :=
-        descend_to_exposed_edge hn P s.re F hF_exposed hs_in_RF hm_F_ge_2
+        descend_to_exposed_edge hn P s.re F hF_exposed hs_in_RF hm_F_ge_2 hdir_ne0
       use E, hE_edge
       rw [← hs_real] at h_edge_re
       exact h_edge_re
@@ -186,13 +170,12 @@ theorem lemma61_real (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootS
           frontier_point_in_Ω P δ_bound hδ_bound_front
         obtain ⟨E, hE_edge, hs_re_RF⟩ :=
           exists_exposed_edge_through_vertex hn P s.re δ_bound hδ_bound_in_Ω hδ_bound_front hδ_bound_Psr
+            hdir_ne0
         use E, hE_edge
         rw [hs_real]
         exact hs_re_RF
   · by_cases hm0 : m = 0
-    · have h_pos : Module.finrank ℝ (affineSpan ℝ P.Ω).direction ≥ 1 :=
-        polytope_direction_dim_pos P
-      omega
+    · omega
     · have hm1 : m = 1 := by omega
       have h_Ω_is_edge : IsExposedEdge P P.Ω :=
         polytope_dim1_is_exposed_edge hn P hm1
@@ -213,17 +196,28 @@ theorem lemma61_complex_with_dim (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs :
   intro hcomplex
   by_cases hn2 : n ≥ 2
   · unfold RootSpace RootSpaceSet at hs
+    -- The family `Ω` is non-degenerate here: with `s` complex, `δ` varies, so
+    -- `affineSpan ℝ P.Ω` cannot have direction 0. See `hdir_ne0` uses below.
     obtain ⟨δ, hδ_in_Ω, hδ_root⟩ := hs
     have hδ_in_Psc : δ ∈ (P_sc n s : Set (CoeffVec n)) :=
       mem_P_sc_of_isRoot s δ hδ_root
-    let m := Module.finrank ℝ (affineSpan ℝ (P.Ω)).direction
-    have hm_ge_3 : m ≥ 3 := by
-      dsimp [m]
-      have h_span_top : affineSpan ℝ P.Ω = ⊤ :=
-        ((Convex.interior_nonempty_iff_affineSpan_eq_top (convex_convexHull ℝ _)).mp
-          (by simpa using P.interior_nonempty))
-      rw [h_span_top, AffineSubspace.direction_top, finrank_top, finrank_CoeffVec]
+    by_cases hmm3 : Module.finrank ℝ (affineSpan ℝ (P.Ω)).direction ≥ 3
+    case neg =>
+      -- Direction at most 2 < n + 1 (this branch has n ≥ 2): the family `Ω`
+      -- sits in a proper affine slice, so `Ω` itself is an exposed face.
+      have hlt : (affineSpan ℝ P.Ω).direction ≠ ⊤ := by
+        intro heq
+        apply hmm3
+        have hdir : Module.finrank ℝ (affineSpan ℝ P.Ω).direction
+            = Module.finrank ℝ (CoeffVec n) := by
+          rw [heq, finrank_top]
+        rw [hdir, finrank_CoeffVec]
+        omega
+      refine ⟨P.Ω, isExposedFace_Ω_of_direction_ne_top P hlt, ⟨δ, hδ_in_Ω, hδ_root⟩, ?_⟩
+      have hle : Module.finrank ℝ ↥(affineSpan ℝ P.Ω).direction < 3 := by
+        omega
       omega
+    have hmm3' : Module.finrank ℝ (affineSpan ℝ (P.Ω)).direction ≥ 3 := hmm3
     let affΩ : AffineSubspace ℝ (CoeffVec n) := affineSpan ℝ (P.Ω)
     have hdim_Psc : Module.finrank ℝ (P_sc n s) = n - 1 :=
       P_sc_dimension hn s hcomplex
@@ -231,15 +225,14 @@ theorem lemma61_complex_with_dim (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs :
     let dir' := meetDir n (P_sc n s) affΩ
     have hA_dim : Module.finrank ℝ (↥dir') ≥ 1 :=
       intersection_affine_dim_ge_one_complex (P_sc n s) affΩ δ hδ_in_Psc hδ_aff
-        hdim_Psc hm_ge_3
+        hdim_Psc hmm3'
     obtain ⟨δ_bound, hδ_bound⟩ :=
       exists_boundary_point_in_Psc P s δ hδ_in_Ω hδ_in_Psc affΩ hδ_aff hA_dim
     have hδ_bound_front : δ_bound ∈ frontier P.Ω := hδ_bound.2
     have hδ_bound_Psc : δ_bound ∈ (P_sc n s : Set (CoeffVec n)) := hδ_bound.1
-    have h_int_nonempty : (interior P.Ω).Nonempty := P.interior_nonempty
     obtain ⟨F, hF_exposed, hδ_in_F, hs_in_RF⟩ :=
       exists_exposed_face_containing_boundary_point_complex P s δ_bound
-        hδ_bound_front hδ_bound_Psc h_int_nonempty
+        hδ_bound_front hδ_bound_Psc
     let m_F := Module.finrank ℝ (affineSpan ℝ F).direction
     by_cases hm_F_ge_3 : m_F ≥ 3
     · exact descend_to_exposed_face_with_dim hn P s hcomplex F hF_exposed hs_in_RF hm_F_ge_3
@@ -319,9 +312,10 @@ theorem lemma61_complex (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ Ro
   with `s` in its root space set) or `s` is complex (in which case there exists an exposed face with
   `s` in its root space set). -/
 theorem lemma61 (hn : n ≥ 1) (P : Polytope n) (s : ℂ) (hs : s ∈ RootSpace P)
-    (hleading : ∀ v ∈ P.vertices, 0 < v (Fin.last n)) :
+    (hleading : ∀ v ∈ P.vertices, 0 < v (Fin.last n))
+    (hdir_ne0 : Module.finrank ℝ (affineSpan ℝ P.Ω).direction ≠ 0) :
     (s.im = 0 → ∃ E, IsExposedEdge P E ∧ s ∈ RootSpaceSet E) ∧
     (s.im ≠ 0 → ∃ F, IsExposedFace P F ∧ s ∈ RootSpaceSet F) :=
-  ⟨lemma61_real hn P s hs, lemma61_complex hn P s hs hleading⟩
+  ⟨lemma61_real hn P s hs hdir_ne0, lemma61_complex hn P s hs hleading⟩
 
 end CoeffBox

@@ -92,19 +92,6 @@ private lemma upper_on_Ω_of_upper_on_vertices {n : ℕ} (P : Polytope n)
     exact convexHull_min hsub (convex_sublevel f c)
   exact hΩ hx
 
-/-- Full-dimensionality: interior nonempty forces `affineSpan P.Ω = ⊤`. -/
-private lemma affΩ_eq_top {n : ℕ} (P : Polytope n) :
-    affineSpan ℝ P.Ω = ⊤ := by
-  have h_convex : Convex ℝ P.Ω := convex_convexHull ℝ _
-  have := (Convex.interior_nonempty_iff_affineSpan_eq_top h_convex).mp (by
-    simpa using P.interior_nonempty)
-  exact this
-
-/-- `P.Ω` has direction dimension `n+1`. -/
-private lemma polytope_dir_finrank {n : ℕ} (P : Polytope n) :
-    Module.finrank ℝ (affineSpan ℝ P.Ω).direction = n + 1 := by
-  rw [affΩ_eq_top, AffineSubspace.direction_top, finrank_top, finrank_CoeffVec]
-
 /-- A point of a singleton exposed face is on the frontier of `P.Ω`.
 We show `v ∈ frontier G` (`G = {v}` closed with empty interior), then
 transport via `frontier_of_exposed_face_implies_frontier_of_polytope`. -/
@@ -148,6 +135,25 @@ private lemma singleton_face_point_frontier {n : ℕ} (P : Polytope n)
     exact ⟨hv_in_G, hv_not_int_G⟩
   exact frontier_of_exposed_face_implies_frontier_of_polytope P G hp hG_eq v hv_in_G hv_front_G
 
+/-- A polytope whose `Ω` has direction dimension exactly 1 (a segment family)
+is itself an exposed edge of `P`. -/
+private lemma exposed_edge_of_dir_one {n : ℕ} (hn : n ≥ 1) (P : Polytope n)
+    (v : CoeffVec n) (hv_in_Ω : v ∈ P.Ω)
+    (hdir1 : Module.finrank ℝ (affineSpan ℝ P.Ω).direction = 1) :
+    IsExposedEdge P P.Ω := by
+  have h2 : n + 1 ≥ 2 := by omega
+  have hlt_top : (affineSpan ℝ P.Ω).direction ≠ ⊤ := by
+    intro heq
+    have h3 : Module.finrank ℝ (affineSpan ℝ P.Ω).direction
+        = Module.finrank ℝ (CoeffVec n) := by
+      rw [heq, finrank_top]
+    rw [finrank_CoeffVec] at h3
+    omega
+  obtain ⟨hp, hE_eq⟩ := isExposedFace_Ω_of_direction_ne_top P hlt_top
+  refine ⟨hp, hE_eq, ?_⟩
+  rw [← hE_eq]
+  exact hdir1
+
 /-- Geometric vertex → exposed edge.
 
 Given a singleton exposed face `G = {v}`, there is an exposed edge
@@ -157,16 +163,23 @@ the maximum. If several vertices tie at once on different rays, a
 coordinate-projection perturbation strictly shrinks the tying set;
 strong induction on its cardinality leaves a collinear tying set,
 whose convex hull with `v` is a segment.
--/
+
+The polytope must be non-degenerate (`direction (aff Ω) ≠ 0`); the
+degenerate case `dir = 1` is handled directly by taking `E = Ω`. -/
 theorem exists_exposed_edge_of_singleton {n : ℕ} (hn : n ≥ 1) (P : Polytope n)
     (v : CoeffVec n) (G : Set (CoeffVec n))
-    (hG_exp : IsExposedFace P G) (hG1 : G = {v}) :
+    (hG_exp : IsExposedFace P G) (hG1 : G = {v})
+    (hdir_ne0 : Module.finrank ℝ (affineSpan ℝ P.Ω).direction ≠ 0) :
     ∃ E, IsExposedEdge P E ∧ v ∈ E := by
   obtain ⟨hp0, hG_eq⟩ := hG_exp
   have hv_in_Ω : v ∈ P.Ω := (hG_eq ▸ (by rw [hG1]; rfl : v ∈ G)).1
   have hv_val : hp0.f v = hp0.c := (hG_eq ▸ (by rw [hG1]; rfl : v ∈ G)).2
-  have hfull : Module.finrank ℝ (affineSpan ℝ P.Ω).direction = n + 1 :=
-    polytope_dir_finrank P
+  -- Degenerate segment case (`dir = 1`): the family `Ω` itself is the edge.
+  by_cases hdir1 : Module.finrank ℝ (affineSpan ℝ P.Ω).direction = 1
+  · exact ⟨P.Ω, exposed_edge_of_dir_one hn P v hv_in_Ω hdir1, hv_in_Ω⟩
+  -- Main case: direction ≥ 2 (≠ 0 by hypothesis, ≠ 1 by the case), so some
+  -- vertex differs from `v`.
+  have hdir2 : 1 < Module.finrank ℝ (affineSpan ℝ P.Ω).direction := by omega
   -- Strict separation of all other vertices.
   have hbelow : ∀ u ∈ P.vertices, u ≠ v → hp0.f u < hp0.c := by
     intro u hu hne
@@ -178,12 +191,32 @@ theorem exists_exposed_edge_of_singleton {n : ℕ} (hn : n ≥ 1) (P : Polytope 
       rw [hG1] at hu_G
       exact hne (Set.mem_singleton_iff.mp hu_G)
     exact lt_of_le_of_ne hle hne'
-  -- An interior point differs from `v` (since `v` is frontier).
-  have hv_front : v ∈ frontier P.Ω :=
-    singleton_face_point_frontier P v G ⟨hp0, hG_eq⟩ hG1
-  have hv_not_int : v ∉ interior P.Ω := frontier_point_not_interior P v hv_front
-  obtain ⟨y0, hy0⟩ := P.interior_nonempty
-  have hy0_ne : y0 ≠ v := fun h => hv_not_int (h ▸ hy0)
+  -- Since direction ≥ 2, some vertex differs from `v`; use it as `y0`.
+  have hy0_exists : ∃ y0 ∈ P.vertices, y0 ≠ v := by
+    by_contra hall
+    push_neg at hall
+    have hΩv : P.Ω = {v} := by
+      ext x
+      constructor
+      · intro hx
+        have hx_sub : (P.Ω : Set (CoeffVec n)) ⊆ convexHull ℝ ({v} : Set (CoeffVec n)) := by
+          refine convexHull_mono ?_
+          intro y hy
+          simp [hall y hy]
+        have hx' : x ∈ convexHull ℝ ({v} : Set (CoeffVec n)) :=
+          hx_sub (by unfold Polytope.Ω at hx; exact hx)
+        rwa [convexHull_singleton] at hx'
+      · intro hx
+        simp only [Set.mem_singleton_iff] at hx
+        subst hx
+        exact hv_in_Ω
+    have hdir0 : Module.finrank ℝ (affineSpan ℝ P.Ω).direction = 0 :=
+      Submodule.finrank_eq_zero.mpr (by
+        rw [hΩv, direction_affineSpan, vectorSpan_singleton])
+    omega
+  obtain ⟨y0, hy0v, hy0ne⟩ := hy0_exists
+  have hy0_in_Ω : y0 ∈ P.Ω := subset_convexHull ℝ _ hy0v
+  have hy0_ne : y0 ≠ v := hy0ne
   -- A coordinate functional separating `y0 - v`.
   have hsep : ∃ j : Fin (n+1), y0 j ≠ v j := by
     by_contra h; push_neg at h
@@ -210,7 +243,7 @@ theorem exists_exposed_edge_of_singleton {n : ℕ} (hn : n ≥ 1) (P : Polytope 
     have hΩ : ∀ x ∈ P.Ω, p x ≤ p v := fun x hx => by
       have := convexHull_min hsub (convex_sublevel p (p v)) (by unfold Polytope.Ω at hx; exact hx)
       exact this
-    have := hΩ y0 (interior_subset hy0)
+    have := hΩ y0 hy0_in_Ω
     linarith [hp_gt]
   classical
   -- Work with vertices as a filtered finset excluding `v` itself.
@@ -573,9 +606,10 @@ theorem exists_exposed_edge_of_singleton {n : ℕ} (hn : n ≥ 1) (P : Polytope 
             have hcv : cstar = 0 := by rw [← hℓv, hzero]; rfl
             rw [hzero, hcv]
             simp
-        have hdimΩ : Module.finrank ℝ (affineSpan ℝ Estar).direction = n + 1 := by
-          rw [hEΩ]; exact hfull
-        rw [hdim] at hdimΩ
+        have hdirΩ : Module.finrank ℝ (affineSpan ℝ Estar).direction
+            = Module.finrank ℝ (affineSpan ℝ P.Ω).direction := by
+          rw [hEΩ]
+        rw [hdim] at hdirΩ
         omega
       obtain ⟨hpE, hEface⟩ : IsExposedFace P Estar :=
         ⟨⟨ℓstar, cstar, hne_star,

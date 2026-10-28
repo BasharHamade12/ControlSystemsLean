@@ -74,21 +74,19 @@ abbrev CoeffVec (n : ℕ) := Fin (n + 1) → ℝ
 
 /--
 A polytope Ω in coefficient space ℝ^{n+1}.
-It is defined as the convex hull of a finite set of vertices V,
-and is assumed to have nonempty topological interior.
+It is defined as the convex hull of a finite set of vertices V.
+No full-dimensionality is assumed: Ω may live in a proper affine
+slice (e.g. Example 6.2's `δ₃ = 1` box), in which case its ambient
+interior is empty and all boundary arguments use the relative
+(intrinsic) interior, see `RelativeInterior.lean`.
 -/
 structure Polytope (n : ℕ) where
   vertices : Finset (CoeffVec n)
   nonempty  : vertices.Nonempty
-  interior_nonempty : (interior (convexHull ℝ (vertices : Set (CoeffVec n)))).Nonempty
 
 /-- The actual set Ω ⊆ ℝ^{n+1} as the convex hull of the vertices. -/
 def Polytope.Ω (P : Polytope n) : Set (CoeffVec n) :=
   convexHull ℝ (P.vertices : Set (CoeffVec n))
-
-/-- The interior of the polytope is nonempty by construction. -/
-lemma Polytope.interior_Ω_nonempty (P : Polytope n) : (interior P.Ω).Nonempty :=
-  P.interior_nonempty
 
 open Polynomial
 
@@ -280,8 +278,7 @@ dimension `n+1`.
 -/
 lemma finrank_CoeffVec {n : ℕ} :
   Module.finrank ℝ (CoeffVec n) = n + 1 := by
-  rw [Module.finrank_fintype_fun_eq_card]
-  simp
+  simp only [Module.finrank_fintype_fun_eq_card, Fintype.card_fin]
 
 /--
 The evaluation linear functional `evalLinear r : CoeffVec n → ℝ` is

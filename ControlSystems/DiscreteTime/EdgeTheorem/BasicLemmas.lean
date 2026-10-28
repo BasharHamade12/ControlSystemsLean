@@ -215,4 +215,26 @@ lemma not_mem_intrinsicInterior_of_escapes_along_direction {n : ℕ}
     nlinarith
   exact h_contra h_mem_F
 
+lemma convex_coeff_pos (i : Fin (n + 1)) :
+    Convex ℝ {x : CoeffVec n | 0 < x i} := by
+  intro x hx y hy a b ha hb hab
+  have hx1 : 0 < x i := hx
+  have hy1 : 0 < y i := hy
+  have hcalc : (a • x + b • y) i = a * (x i) + b * (y i) := by
+    simp
+  have hpos : 0 < a * (x i) + b * (y i) := by
+    by_cases ha0 : a = 0
+    · subst ha0
+      have hb1 : b = 1 := by linarith
+      subst hb1
+      simpa
+    · have ha_pos : 0 < a := by
+        by_contra! h
+        have ha0' : a = 0 := by nlinarith
+        exact ha0 ha0'
+      have ha_i_pos : 0 < a * (x i) := mul_pos ha_pos hx1
+      have hb_i_nonneg : 0 ≤ b * (y i) := mul_nonneg hb (by linarith)
+      nlinarith
+  simpa [hcalc] using hpos
+
 end CoeffBox

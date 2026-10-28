@@ -691,7 +691,8 @@ lemma exposed_face_dim_zero_mem_vertices {n : ℕ} (P : Polytope n) (G : Set (Co
 lemma descend_to_exposed_edge {n : ℕ} (hn : n ≥ 1) (P : Polytope n) (r : ℝ)
     (F : Set (CoeffVec n)) (hF_exp : IsExposedFace P F)
     (hs_F : (r : ℂ) ∈ RootSpaceSet F)
-    (hF_dim_ge_2 : Module.finrank ℝ (affineSpan ℝ F).direction ≥ 2) :
+    (hF_dim_ge_2 : Module.finrank ℝ (affineSpan ℝ F).direction ≥ 2)
+    (hdir_ne0 : Module.finrank ℝ (affineSpan ℝ P.Ω).direction ≠ 0) :
     ∃ E, IsExposedEdge P E ∧ (r : ℂ) ∈ RootSpaceSet E := by
   let m_F := Module.finrank ℝ (affineSpan ℝ F).direction
   by_cases hm_F_1 : m_F = 1
@@ -714,7 +715,7 @@ lemma descend_to_exposed_edge {n : ℕ} (hn : n ≥ 1) (P : Polytope n) (r : ℝ
     have hs_G : (r : ℂ) ∈ RootSpaceSet G :=
       rootspace_mem_of_eval_zero r δ_bound hδ_bound_Psr G hδ_bound_in_G
     by_cases hG_dim_ge_2 : Module.finrank ℝ (affineSpan ℝ G).direction ≥ 2
-    · exact descend_to_exposed_edge hn P r G hG_exp hs_G hG_dim_ge_2
+    · exact descend_to_exposed_edge hn P r G hG_exp hs_G hG_dim_ge_2 hdir_ne0
     · by_cases hG_dim_1 : Module.finrank ℝ (affineSpan ℝ G).direction = 1
       · refine ⟨G, isExposedEdge_of_dim_1 hG_exp hG_dim_1, hs_G⟩
       · -- dim(G) = 0: G is the singleton {δ_bound}; get an edge through it.
@@ -725,7 +726,7 @@ lemma descend_to_exposed_edge {n : ℕ} (hn : n ≥ 1) (P : Polytope n) (r : ℝ
         have hG_single : G = {δ_bound} :=
           exposed_face_dim_zero_singleton G hG_dim_0 δ_bound hδ_bound_in_G
         obtain ⟨E, hE_edge, hδ_in_E⟩ :=
-          exists_exposed_edge_of_singleton hn P δ_bound G hG_exp hG_single
+          exists_exposed_edge_of_singleton hn P δ_bound G hG_exp hG_single hdir_ne0
         have h_root_E : (r : ℂ) ∈ RootSpaceSet E :=
           rootspace_mem_of_eval_zero r δ_bound hδ_bound_Psr E hδ_in_E
         exact ⟨E, hE_edge, h_root_E⟩
@@ -787,21 +788,21 @@ lemma descend_to_exposed_face {n : ℕ} (hn : n ≥ 1) (P : Polytope n) (s : ℂ
 -/
 lemma exists_exposed_edge_through_vertex {n : ℕ} (hn : n ≥ 1) (P : Polytope n) (r : ℝ) (δ_bound : CoeffVec n)
     (hδ_bound_in_Ω : δ_bound ∈ P.Ω) (hδ_bound_front : δ_bound ∈ frontier P.Ω)
-    (hδ_bound_Psr : δ_bound ∈ (P_sr n r : Set (CoeffVec n))) :
+    (hδ_bound_Psr : δ_bound ∈ (P_sr n r : Set (CoeffVec n)))
+    (hdir_ne0 : Module.finrank ℝ (affineSpan ℝ P.Ω).direction ≠ 0) :
     ∃ E, IsExposedEdge P E ∧ (r : ℂ) ∈ RootSpaceSet E := by
-  have h_int_nonempty : (interior P.Ω).Nonempty := P.interior_nonempty
   obtain ⟨F, hF_exposed, hδ_in_F, hs_in_RF⟩ :=
-    exists_exposed_face_containing_boundary_point P r δ_bound hδ_bound_front hδ_bound_Psr h_int_nonempty
+    exists_exposed_face_containing_boundary_point P r δ_bound hδ_bound_front hδ_bound_Psr
   let m_F := Module.finrank ℝ (affineSpan ℝ F).direction
   by_cases hm_F_ge_2 : m_F ≥ 2
-  · exact descend_to_exposed_edge hn P r F hF_exposed hs_in_RF hm_F_ge_2
+  · exact descend_to_exposed_edge hn P r F hF_exposed hs_in_RF hm_F_ge_2 hdir_ne0
   · by_cases hm_F_1 : m_F = 1
     · refine ⟨F, isExposedEdge_of_dim_1 hF_exposed hm_F_1, hs_in_RF⟩
     · have hm_F_0 : m_F = 0 := by omega
       have hF_single : F = {δ_bound} :=
         exposed_face_dim_zero_singleton F hm_F_0 δ_bound hδ_in_F
       obtain ⟨E, hE_edge, hδ_in_E⟩ :=
-        exists_exposed_edge_of_singleton hn P δ_bound F hF_exposed hF_single
+        exists_exposed_edge_of_singleton hn P δ_bound F hF_exposed hF_single hdir_ne0
       have h_root_E : (r : ℂ) ∈ RootSpaceSet E :=
         rootspace_mem_of_eval_zero r δ_bound hδ_bound_Psr E hδ_in_E
       exact ⟨E, hE_edge, h_root_E⟩
