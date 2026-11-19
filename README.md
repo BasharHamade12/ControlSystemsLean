@@ -100,6 +100,20 @@ python3 -m http.server 8000 --directory docbuild/.lake/build/doc
 
 Run `lake build ControlSystems:docs` again after changing any Lean source;
 docstrings (`/-- ... -/` and `/-! ... -/` sections) appear in the output.
+`docbuild/` is generated (locally by `lake update`, in CI by the docs workflow)
+and is not tracked, so a fresh clone only needs the commands above.
+
+### Hosted documentation
+
+`.github/workflows/docs.yml` builds the same site on every push to `master` and
+publishes it to GitHub Pages, so it can be read without building anything:
+
+**https://basharhamade12.github.io/ControlSystemsLean/docs/**
+
+This needs GitHub Pages to be enabled once for the repository
+(Settings → Pages → Build and deployment → Source: **GitHub Actions**). The
+first run also generates the pages for the Mathlib modules in the import
+closure, which takes a while; later runs restore them from the Actions cache.
 
 ## Dependencies
 

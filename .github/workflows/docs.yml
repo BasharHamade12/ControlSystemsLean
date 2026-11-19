@@ -1,0 +1,38 @@
+name: Documentation
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# Permissions needed to upload and deploy the site to GitHub Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two documentation deployments at once.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: https://basharhamade12.github.io/ControlSystemsLean/docs/
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v5
+
+      - name: Build the library
+        uses: leanprover/lean-action@v1
+
+      # Creates docbuild/ pinned to the doc-gen4 tag matching lean-toolchain,
+      # runs `lake build ControlSystems:docs` and deploys the result to
+      # https://<owner>.github.io/<repo>/docs/
+      - name: Build and deploy API documentation
+        uses: leanprover-community/docgen-action@main
+        with:
+          build-page: false
