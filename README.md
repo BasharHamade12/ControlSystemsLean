@@ -77,6 +77,30 @@ Requires Lean 4.27.0 and Mathlib v4.27.0.
 lake build
 ```
 
+## Documentation
+
+API documentation (Mathlib-docs style, generated with
+[doc-gen4](https://github.com/leanprover/doc-gen4)) is built from the nested
+Lake project in `docbuild/`, which is pinned to the doc-gen4 release matching
+the toolchain (`v4.27.0`):
+
+```bash
+cd docbuild
+MATHLIB_NO_CACHE_ON_UPDATE=1 lake update doc-gen4   # first time only
+lake build ControlSystems:docs
+```
+
+The generated site is written to `docbuild/.lake/build/doc/`. It must be served
+over HTTP (opening `index.html` directly leaves search and links broken):
+
+```bash
+python3 -m http.server 8000 --directory docbuild/.lake/build/doc
+# then open http://localhost:8000
+```
+
+Run `lake build ControlSystems:docs` again after changing any Lean source;
+docstrings (`/-- ... -/` and `/-! ... -/` sections) appear in the output.
+
 ## Dependencies
 
 - [Mathlib](https://github.com/leanprover-community/mathlib4) (v4.27.0)

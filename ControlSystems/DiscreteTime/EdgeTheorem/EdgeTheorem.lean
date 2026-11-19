@@ -54,6 +54,39 @@ lemma polyOfVec_denomCoeffVec {n : ℕ} (H : TransferFunction)
         rw [Fin.sum_univ_eq_sum_range (fun i => monomial i (H.denom.coeff i))]
         exact (Polynomial.as_sum_range' H.denom (n + 1) (by omega)).symm
 
+/-- The coefficient vector of the **closed-loop characteristic polynomial**
+`charPoly K H = H.denom + C K * H.num` of the unity-feedback loop with real gain `K`.
+This, rather than the open-loop denominator vector `denomCoeffVec`, is the vector the
+Edge Theorem is applied to. -/
+noncomputable def charCoeffVec {n : ℕ} (K : ℝ) (H : TransferFunction) : CoeffVec n :=
+  fun j => ((H.charPoly ((K : ℝ) : ℂ)).coeff j.val).re
+
+/-- `charCoeffVec` reconstructs the closed-loop characteristic polynomial, for a
+characteristic polynomial with real coefficients of `natDegree ≤ n`. -/
+lemma polyOfVec_charCoeffVec {n : ℕ} (K : ℝ) (H : TransferFunction)
+    (hdeg : (H.charPoly ((K : ℝ) : ℂ)).natDegree ≤ n)
+    (hreal : ∀ m, ((H.charPoly ((K : ℝ) : ℂ)).coeff m).im = 0) :
+    (polyOfVec (charCoeffVec (n := n) K H)).map (algebraMap ℝ ℂ)
+      = H.charPoly ((K : ℝ) : ℂ) := by
+  have hre : ∀ m, (((H.charPoly ((K : ℝ) : ℂ)).coeff m).re : ℂ)
+      = (H.charPoly ((K : ℝ) : ℂ)).coeff m := by
+    intro m
+    apply Complex.ext <;> simp [hreal m]
+  have hmap : (polyOfVec (charCoeffVec (n := n) K H)).map (algebraMap ℝ ℂ)
+      = ∑ j : Fin (n + 1),
+          monomial j.val ((H.charPoly ((K : ℝ) : ℂ)).coeff j.val) := by
+    simp only [polyOfVec, Polynomial.map_sum, Polynomial.map_monomial]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    simp only [charCoeffVec]
+    exact congrArg (monomial j.val) (hre j.val)
+  calc (polyOfVec (charCoeffVec (n := n) K H)).map (algebraMap ℝ ℂ)
+      = ∑ j : Fin (n + 1),
+          monomial j.val ((H.charPoly ((K : ℝ) : ℂ)).coeff j.val) := hmap
+    _ = H.charPoly ((K : ℝ) : ℂ) := by
+        rw [Fin.sum_univ_eq_sum_range
+          (fun i => monomial i ((H.charPoly ((K : ℝ) : ℂ)).coeff i))]
+        exact (Polynomial.as_sum_range' (H.charPoly ((K : ℝ) : ℂ)) (n + 1) (by omega)).symm
+
 /-! ### From the Edge Theorem to Schur stability
 
 Reduction of Schur stability of the family to stability of its exposed edges — the
@@ -77,6 +110,9 @@ condition (Jury's segment criterion).
 Given those, the assembly is three lines: `edge_theorem` bounds the frontier by the
 exposed edges, hypothesis (2) transports the union into the disc, and a root of
 `H.denom` lies in `RootSpace P` via `denomCoeffVec` / `polyOfVec_denomCoeffVec`.
+The same assembly with the closed-loop vector — `charCoeffVec` /
+`polyOfVec_charCoeffVec` — is `edge_theorem_to_schur_stability_char`: it speaks
+about the roots of the loop's characteristic polynomial `charPoly K H`.
 -/
 
 
@@ -407,6 +443,25 @@ theorem frontier_disc_of_compact {R : Set ℂ}
   simp only [Set.mem_setOf_eq] at hw_disc
   linarith
 
+/-- Private core of the two Schur assemblies below: a root `z` of a polynomial of the
+family — witnessed by a coefficient vector `δ ∈ P.Ω` whose `polyOfVec` reconstructs the
+polynomial — lies in the open unit disc, given `EdgewiseSchur P` (`edge_theorem` confines
+the frontier to the edges, and compactness via `rootSpace_isCompact` lifts the frontier
+bound to the whole root space). -/
+private theorem isSchurStable_of_rootSpace_mem {n : ℕ} (hn : 1 ≤ n) (P : Polytope n) {z : ℂ}
+    (hzP : ∃ δ ∈ P.Ω, ((polyOfVec δ).map (algebraMap ℝ ℂ)).IsRoot z)
+    (hleading : ∀ v ∈ P.vertices, 0 < v (Fin.last n))
+    (hdir_ne0 : Module.finrank ℝ ↥(affineSpan ℝ P.Ω).direction ≠ 0)
+    (hedge : EdgewiseSchur P) : ‖z‖ < 1 := by
+  have hzP' : z ∈ RootSpace P := by
+    obtain ⟨δ, hδΩ, hroot⟩ := hzP
+    exact ⟨δ, hδΩ, hroot⟩
+  have hfront : frontier (RootSpace P) ⊆ { z : ℂ | ‖z‖ < 1 } := by
+    intro s hs
+    obtain ⟨E, hE, hsE⟩ := edge_theorem hn P s hleading hs hdir_ne0
+    exact hedge E hE hsE
+  exact frontier_disc_of_compact (rootSpace_isCompact hn P hleading) hfront hzP'
+
 /-- **From the Edge Theorem to Schur stability.** A transfer function whose denominator's
 coefficient vector lies in a polytope `P` obeying Assumption 6.1 is Schur stable provided
 every exposed edge of `P` has its root space in the open unit disc (`EdgewiseSchur P`). -/
@@ -420,23 +475,95 @@ theorem edge_theorem_to_schur_stability {n : ℕ} (hn : 1 ≤ n) (P : Polytope n
     (hedge : EdgewiseSchur P) :
     H.IsSchurStable := by
   intro z hz
-  have hroot : ((polyOfVec (denomCoeffVec (n := n) H)).map (algebraMap ℝ ℂ)).IsRoot z := by
-    rw [polyOfVec_denomCoeffVec H hdeg hreal]
+  refine isSchurStable_of_rootSpace_mem hn P ⟨denomCoeffVec (n := n) H, hδ, ?_⟩
+    hleading hdir_ne0 hedge
+  rw [polyOfVec_denomCoeffVec H hdeg hreal]
+  exact hz
+
+/-- **From the Edge Theorem to Schur stability, closed-loop form.** The unity-feedback
+loop `1 + K·H` with real gain `K`: if the characteristic-coefficient vector
+`charCoeffVec K H` lies in a polytope `P` obeying Assumption 6.1 and every exposed edge
+of `P` has its root space in the open unit disc (`EdgewiseSchur P`), then every root of
+the loop's characteristic polynomial `charPoly K H` lies in the open unit disc. This is
+the form the Edge Theorem is applied to in closed-loop analysis: the vector is
+`charCoeffVec`, not the open-loop `denomCoeffVec`. -/
+theorem edge_theorem_to_schur_stability_char {n : ℕ} (hn : 1 ≤ n) (P : Polytope n)
+    (K : ℝ) (H : TransferFunction)
+    (hδ : charCoeffVec (n := n) K H ∈ P.Ω)
+    (hdeg : (H.charPoly ((K : ℝ) : ℂ)).natDegree ≤ n)
+    (hreal : ∀ m, ((H.charPoly ((K : ℝ) : ℂ)).coeff m).im = 0)
+    (hleading : ∀ v ∈ P.vertices, 0 < v (Fin.last n))
+    (hdir_ne0 : Module.finrank ℝ ↥(affineSpan ℝ P.Ω).direction ≠ 0)
+    (hedge : EdgewiseSchur P) :
+    ∀ z : ℂ, (H.charPoly ((K : ℝ) : ℂ)).IsRoot z → ‖z‖ < 1 := by
+  intro z hz
+  refine isSchurStable_of_rootSpace_mem hn P ⟨charCoeffVec (n := n) K H, hδ, ?_⟩
+    hleading hdir_ne0 hedge
+  rw [polyOfVec_charCoeffVec K H hdeg hreal]
+  exact hz
+
+/-! ### Schur stability from coefficient bounds
+
+The dominance criterion: on `‖z‖ ≥ 1` the leading term `z ^ n` of a monic polynomial
+dominates the sum of the others as soon as their norm-sum is `< 1`, so no root can lie
+outside the open unit disc. -/
+
+/-- **Dominance criterion.**  If the non-leading coefficients of a monic `p` have
+norm-sum `< 1`, then `p` has no root outside the open unit disc. -/
+theorem roots_norm_lt_one_of_sum_norm_lt {p : Polynomial ℂ} (hp : p.Monic)
+    (hS : Finset.sum (Finset.range p.natDegree) (fun i => ‖p.coeff i‖) < 1) {z : ℂ}
+    (hz : p.IsRoot z) : ‖z‖ < 1 := by
+  by_contra hlt
+  have h1 : (1 : ℝ) ≤ ‖z‖ := not_lt.mp hlt
+  have heval : p.eval z
+      = Finset.sum (Finset.range p.natDegree) (fun i => p.coeff i * z ^ i) + z ^ p.natDegree := by
+    rw [Polynomial.eval_eq_sum_range, Finset.sum_range_succ, hp.coeff_natDegree, one_mul]
+  have hz0 : Finset.sum (Finset.range p.natDegree) (fun i => p.coeff i * z ^ i)
+      + z ^ p.natDegree = 0 := by
+    rw [← heval]
     exact hz
-  have hzR : z ∈ RootSpaceSet ({denomCoeffVec (n := n) H} : Set (CoeffVec n)) :=
-    rootspace_mem_of_isRoot z (denomCoeffVec (n := n) H) hroot _ rfl
-  have hzP : z ∈ RootSpace P := by
-    obtain ⟨δ, hδs, hδroot⟩ := hzR
-    rw [Set.mem_singleton_iff] at hδs
-    subst hδs
-    exact ⟨_, hδ, hδroot⟩
-  have hfront : frontier (RootSpace P) ⊆ { z : ℂ | ‖z‖ < 1 } := by
-    intro s hs
-    obtain ⟨E, hE, hsE⟩ := edge_theorem hn P s hleading hs hdir_ne0
-    exact hedge E hE hsE
-  exact frontier_disc_of_compact (rootSpace_isCompact hn P hleading) hfront hzP
+  have hzp : z ^ p.natDegree
+      = -(Finset.sum (Finset.range p.natDegree) (fun i => p.coeff i * z ^ i)) :=
+    eq_neg_of_add_eq_zero_right hz0
+  have hbound : ‖z‖ ^ p.natDegree
+      ≤ Finset.sum (Finset.range p.natDegree) (fun i => ‖p.coeff i‖ * ‖z‖ ^ i) := by
+    calc ‖z‖ ^ p.natDegree = ‖z ^ p.natDegree‖ := (norm_pow z _).symm
+      _ = ‖Finset.sum (Finset.range p.natDegree) (fun i => p.coeff i * z ^ i)‖ := by
+          rw [hzp, norm_neg]
+      _ ≤ Finset.sum (Finset.range p.natDegree) (fun i => ‖p.coeff i * z ^ i‖) := norm_sum_le _ _
+      _ = Finset.sum (Finset.range p.natDegree) (fun i => ‖p.coeff i‖ * ‖z‖ ^ i) := by
+          simp only [norm_mul, norm_pow]
+  have hstep : Finset.sum (Finset.range p.natDegree) (fun i => ‖p.coeff i‖ * ‖z‖ ^ i)
+      ≤ (Finset.sum (Finset.range p.natDegree) (fun i => ‖p.coeff i‖))
+        * ‖z‖ ^ (p.natDegree - 1) := by
+    calc Finset.sum (Finset.range p.natDegree) (fun i => ‖p.coeff i‖ * ‖z‖ ^ i)
+        ≤ Finset.sum (Finset.range p.natDegree)
+            (fun i => ‖p.coeff i‖ * ‖z‖ ^ (p.natDegree - 1)) := by
+          refine Finset.sum_le_sum fun i hi => ?_
+          have hi' : i ≤ p.natDegree - 1 := Nat.le_pred_of_lt (Finset.mem_range.mp hi)
+          exact mul_le_mul_of_nonneg_left (pow_le_pow_right₀ h1 hi') (norm_nonneg _)
+      _ = (Finset.sum (Finset.range p.natDegree) (fun i => ‖p.coeff i‖))
+            * ‖z‖ ^ (p.natDegree - 1) := by
+          rw [Finset.sum_mul]
+  have hmono : ‖z‖ ^ (p.natDegree - 1) ≤ ‖z‖ ^ p.natDegree :=
+    pow_le_pow_right₀ h1 (Nat.sub_le _ _)
+  have hpos : (0 : ℝ) < ‖z‖ ^ p.natDegree := pow_pos (by linarith) _
+  have hSnn : 0 ≤ Finset.sum (Finset.range p.natDegree) (fun i => ‖p.coeff i‖) :=
+    Finset.sum_nonneg fun i _ => norm_nonneg _
+  nlinarith [hS, hbound, hstep, hmono, hpos, hSnn]
 
+/-- Interval-family form: per-coefficient bounds whose sum is `< 1`. -/
+theorem roots_norm_lt_one_of_coeff_bounds {p : Polynomial ℂ} (hp : p.Monic) (b : ℕ → ℝ)
+    (hb : ∀ i < p.natDegree, ‖p.coeff i‖ ≤ b i)
+    (hS : Finset.sum (Finset.range p.natDegree) b < 1) {z : ℂ} (hz : p.IsRoot z) : ‖z‖ < 1 :=
+  roots_norm_lt_one_of_sum_norm_lt hp
+    (lt_of_le_of_lt (Finset.sum_le_sum fun i hi => hb i (Finset.mem_range.mp hi)) hS) hz
 
-
+/-- `p / q` has denominator `q` when `q` is monic and coprime to `p`, so `ofPolys p q`
+constructs a transfer function with a prescribed pole polynomial. -/
+theorem denom_ofPolys_of_coprime {p q : Polynomial ℂ} (hq : q.Monic) (hgcd : gcd p q = 1) :
+    (TransferFunction.ofPolys p q).denom = q := by
+  have h := TransferFunction.charPoly_ofPolys (p := p) (q := q) hq hgcd (0 : ℂ)
+  simpa [TransferFunction.charPoly] using h
 
 end CoeffBox
